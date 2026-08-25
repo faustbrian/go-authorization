@@ -7,6 +7,8 @@ versioning for its Go API and portable policy format.
 
 ## Unreleased
 
+## 1.0.0 - 2026-08-25
+
 ### Fixed
 
 - Refresh the exported API baseline with the repository's Go 1.26 toolchain so
@@ -36,8 +38,6 @@ versioning for its Go API and portable policy format.
 
 - Correct stale package, standalone, and authoritative-source links in public
   documentation.
-
-## 1.0.0 - 2026-08-25
 
 ### Documentation
 
