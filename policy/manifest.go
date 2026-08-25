@@ -9,7 +9,7 @@ import (
 	"io"
 	"time"
 
-	authorization "github.com/faustbrian/golib/pkg/authorization"
+	authorization "github.com/faustbrian/go-authorization"
 )
 
 var (

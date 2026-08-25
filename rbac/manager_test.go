@@ -7,8 +7,8 @@ import (
 	"sync"
 	"testing"
 
-	authorization "github.com/faustbrian/golib/pkg/authorization"
-	"github.com/faustbrian/golib/pkg/authorization/rbac"
+	authorization "github.com/faustbrian/go-authorization"
+	"github.com/faustbrian/go-authorization/rbac"
 )
 
 func TestManagerAssignInspectRevokeAndSnapshot(t *testing.T) {

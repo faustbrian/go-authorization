@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	authorization "github.com/faustbrian/golib/pkg/authorization"
+	authorization "github.com/faustbrian/go-authorization"
 )
 
 type allowAuthorizer struct{}

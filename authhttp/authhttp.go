@@ -5,8 +5,8 @@ import (
 	"context"
 	"net/http"
 
-	authorization "github.com/faustbrian/golib/pkg/authorization"
-	"github.com/faustbrian/golib/pkg/authorization/httpauth"
+	authorization "github.com/faustbrian/go-authorization"
+	"github.com/faustbrian/go-authorization/httpauth"
 )
 
 type Authorizer = httpauth.Authorizer

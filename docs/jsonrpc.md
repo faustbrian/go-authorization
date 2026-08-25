@@ -1,7 +1,7 @@
 # JSON-RPC integration
 
 The `authrpc` package provides native middleware for
-`github.com/faustbrian/golib/pkg/jsonrpc`. Applications map each method's context and
+`github.com/faustbrian/go-jsonrpc`. Applications map each method's context and
 raw parameters to a typed authorization request.
 
 ```go

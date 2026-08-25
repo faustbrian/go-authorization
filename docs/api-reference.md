@@ -5,7 +5,7 @@ field and method; the checked-in API baseline detects incompatible changes.
 
 ## Core package
 
-`github.com/faustbrian/golib/pkg/authorization` defines the shared contract:
+`github.com/faustbrian/go-authorization` defines the shared contract:
 
 - `Request`, `Subject`, `Resource`, and `Environment` carry typed inputs.
 - `Value` constructors create closed string, bool, integer, float, time, IP,

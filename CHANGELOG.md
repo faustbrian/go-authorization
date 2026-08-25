@@ -7,12 +7,15 @@ versioning for its Go API and portable policy format.
 
 ## Unreleased
 
+## 1.0.0 - 2026-08-25
+
 ### Documentation
 
 - Link the package README to the repository-wide Golib documentation portal.
 
 ### Changed
 
+- Publish the module from its standalone `github.com/faustbrian/go-authorization` identity while preserving its documented API and behavior.
 - Replace obsolete owned-module pseudo-version pins with the monorepo's local
   `v0.0.0` source-proxy coordinates; release tooling continues to emit exact
   `v1.0.0` dependency versions.

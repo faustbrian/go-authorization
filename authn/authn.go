@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"time"
 
-	authorization "github.com/faustbrian/golib/pkg/authorization"
+	authorization "github.com/faustbrian/go-authorization"
 )
 
 const defaultMaxGroups = 100

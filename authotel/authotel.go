@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"sync"
 
-	authorization "github.com/faustbrian/golib/pkg/authorization"
+	authorization "github.com/faustbrian/go-authorization"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/metric"
@@ -16,7 +16,7 @@ import (
 	tracenoop "go.opentelemetry.io/otel/trace/noop"
 )
 
-const scopeName = "github.com/faustbrian/golib/pkg/authorization/authotel"
+const scopeName = "github.com/faustbrian/go-authorization/authotel"
 
 type Config struct {
 	TracerProvider trace.TracerProvider

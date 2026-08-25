@@ -5,14 +5,14 @@ import (
 	"log/slog"
 	"testing"
 
-	authentication "github.com/faustbrian/golib/pkg/authentication"
-	authorization "github.com/faustbrian/golib/pkg/authorization"
-	"github.com/faustbrian/golib/pkg/authorization/authlog"
-	"github.com/faustbrian/golib/pkg/authorization/authn"
-	"github.com/faustbrian/golib/pkg/authorization/authotel"
-	log "github.com/faustbrian/golib/pkg/log"
-	"github.com/faustbrian/golib/pkg/log/handler/capture"
-	"github.com/faustbrian/golib/pkg/telemetry/testtelemetry"
+	authentication "github.com/faustbrian/go-authentication"
+	authorization "github.com/faustbrian/go-authorization"
+	"github.com/faustbrian/go-authorization/authlog"
+	"github.com/faustbrian/go-authorization/authn"
+	"github.com/faustbrian/go-authorization/authotel"
+	log "github.com/faustbrian/go-log"
+	"github.com/faustbrian/go-log/handler/capture"
+	"github.com/faustbrian/go-telemetry/testtelemetry"
 )
 
 func TestOwnedModuleInteroperability(t *testing.T) {

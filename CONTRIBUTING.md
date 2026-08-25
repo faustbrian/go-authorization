@@ -1,33 +1,55 @@
 # Contributing
 
-Changes must preserve default deny, tenant isolation, bounded evaluation, and
-snapshot atomicity. New policy behavior should begin with a failing test and
-must document compatibility implications for the Go API and portable policy
-format.
+## Before Editing
 
-Run the local quality gates before submitting a change:
+1. Read [`AGENTS.md`](AGENTS.md) and the affected module's goals and docs.
+2. Run `make inventory` and the narrow baseline gate for the module.
+3. Identify owned dependencies and reverse dependants in `modules.json`.
+4. Preserve unrelated work and generated/corpus provenance.
 
-```sh
-./scripts/check-format.sh
-./scripts/check-contracts.sh
-./scripts/check-docs.sh
-go vet ./...
-./scripts/check-coverage.sh
-go test -race ./...
-./scripts/check-mutation.sh
-golangci-lint run ./...
-govulncheck ./...
-./scripts/check-api.sh
+## Changes
+
+Keep commits focused and conventional. Update every affected changelog with
+the behavior and migration impact. Public API changes require compatibility
+evidence and documentation. Specification behavior requires a decision record,
+fixture coverage, and interoperability evidence.
+
+New direct dependencies and dependency updates must follow the
+[dependency governance policy](docs/dependency-governance.md). Package-local
+update bots are forbidden; the root policy owns every module and action update.
+
+Specification-backed changes must follow the
+[specification governance contract](docs/specification-governance.md), update
+the affected stable decision entries, and complete the Specification Decisions
+section of the pull request template. An unresolved interpretation or stale
+source pin is release-blocking; peer behavior cannot silently select policy.
+
+Do not add package-local workflows, permanent replacements, machine-specific
+paths, bypass flags, broad mutation exclusions, or aggregate quality metrics
+that hide a failing package.
+
+## Verification
+
+Run during development:
+
+```bash
+make inventory
+make specification-decisions
+make check MODULES=pkg/<library>
 ```
 
-PostgreSQL and Valkey integration tests run when `POSTGRES_URL` and
-`VALKEY_ADDRESS` are configured. They must not be pointed at shared or
-production services because the tests create and delete isolated test state.
+Before submitting a repository-wide change:
 
-`./scripts/check-contracts.sh` verifies the independent owned-module consumer
-under `integration/contracts`. Update its pinned revisions deliberately when a
-compatible upstream integration contract changes.
+```bash
+make ci-changed BASE=origin/main
+```
 
-Public API removals or incompatible semantic changes require an explicit
-versioning decision. Changes to the `authorization.policy/v1` envelope require
-a new format identifier and documented migration path.
+The full scheduled and release gate is `make ci`. Report every unavailable or
+failing command; do not describe partial results as release-ready.
+
+## Adding A Module
+
+Follow [module lifecycle procedures](docs/module-lifecycle.md). New modules
+require an explicit purpose, ownership boundary, dependency review, package
+catalog entry, full quality gates, documentation, changelog, license, security
+policy, compatibility plan, and release dry-run.

@@ -6,8 +6,8 @@ import (
 	"encoding/json"
 	"errors"
 
-	authorization "github.com/faustbrian/golib/pkg/authorization"
-	jsonrpc "github.com/faustbrian/golib/pkg/jsonrpc"
+	authorization "github.com/faustbrian/go-authorization"
+	jsonrpc "github.com/faustbrian/go-jsonrpc"
 )
 
 const CodeForbidden = -32001

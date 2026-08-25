@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"io"
 
-	authorization "github.com/faustbrian/golib/pkg/authorization"
+	authorization "github.com/faustbrian/go-authorization"
 )
 
 const DocumentVersion uint64 = 1

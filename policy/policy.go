@@ -8,7 +8,7 @@ import (
 	"maps"
 	"slices"
 
-	authorization "github.com/faustbrian/golib/pkg/authorization"
+	authorization "github.com/faustbrian/go-authorization"
 )
 
 var ErrNilSnapshot = errors.New("policy snapshot is nil")

@@ -5,8 +5,8 @@ import (
 	"errors"
 	"testing"
 
-	authorization "github.com/faustbrian/golib/pkg/authorization"
-	"github.com/faustbrian/golib/pkg/authorization/rbac"
+	authorization "github.com/faustbrian/go-authorization"
+	"github.com/faustbrian/go-authorization/rbac"
 )
 
 func TestEvaluatorCombinesAssignedRolePermissions(t *testing.T) {

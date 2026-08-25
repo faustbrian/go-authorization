@@ -5,8 +5,8 @@ import (
 	"context"
 	"errors"
 
-	authorization "github.com/faustbrian/golib/pkg/authorization"
-	"github.com/faustbrian/golib/pkg/authorization/policy"
+	authorization "github.com/faustbrian/go-authorization"
+	"github.com/faustbrian/go-authorization/policy"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )

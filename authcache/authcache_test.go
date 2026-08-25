@@ -6,10 +6,10 @@ import (
 	"testing"
 	"time"
 
-	authorization "github.com/faustbrian/golib/pkg/authorization"
-	"github.com/faustbrian/golib/pkg/authorization/policy"
-	cache "github.com/faustbrian/golib/pkg/cache"
-	"github.com/faustbrian/golib/pkg/cache/backend/memory"
+	authorization "github.com/faustbrian/go-authorization"
+	"github.com/faustbrian/go-authorization/policy"
+	cache "github.com/faustbrian/go-cache"
+	"github.com/faustbrian/go-cache/backend/memory"
 )
 
 func TestManifestCodecRoundTripsStrictPolicyFormat(t *testing.T) {

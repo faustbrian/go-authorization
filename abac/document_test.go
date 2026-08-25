@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	authorization "github.com/faustbrian/golib/pkg/authorization"
+	authorization "github.com/faustbrian/go-authorization"
 )
 
 func TestDocumentDecodeEncodeAndEvaluate(t *testing.T) {
