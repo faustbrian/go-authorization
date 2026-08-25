@@ -7,6 +7,11 @@ versioning for its Go API and portable policy format.
 
 ## Unreleased
 
+### Fixed
+
+- Bind the reviewed zero-mutant `authhttp` compatibility facade to its exact
+  standalone source identity.
+
 ### Changed
 
 - Exclude intentional nested modules from root local-proxy archives so local,
