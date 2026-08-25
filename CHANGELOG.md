@@ -9,6 +9,9 @@ versioning for its Go API and portable policy format.
 
 ### Fixed
 
+- Refresh the exported API baseline with the repository's Go 1.26 toolchain so
+  identical JSON types are compared by their current standard-library identity.
+
 - Bind the reviewed zero-mutant `authhttp` compatibility facade to its exact
   standalone source identity.
 
