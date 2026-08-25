@@ -4,7 +4,7 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/faustbrian/go-authentication v1.0.0 h1:mnj1+rPIE3WeB5WMj3m4bJljxIFpJTp5S78XT/BvVTc=
 github.com/faustbrian/go-authentication v1.0.0/go.mod h1:cLbyMCC4LxGQvUuB+Rx/lbnVvYiBN23mLn7z5TwMRNQ=
-github.com/faustbrian/go-authorization v1.0.0 h1:vb6Stz5VkTZxLApI6RdqXFOJMBZ8WWnsI0nT8I9DyO0=
+github.com/faustbrian/go-authorization v1.0.0 h1:anP2n0WelBEbm1IkCfZ0beNTwt1hHn3GdcWD4znhn1w=
 github.com/faustbrian/go-authorization v1.0.0/go.mod h1:Mh95Na8hTS5NotgUukv7X1oTUKpGF6spIo7j/RFBgpo=
 github.com/faustbrian/go-clock v1.0.0 h1:epaYb4WObVwF7YaeXZvfiyJ3/wrinKASY3GUKI1rJsw=
 github.com/faustbrian/go-clock v1.0.0/go.mod h1:WKZ5p79IKGNTZGDp2L81cYjbsEjv3+9U0be7uwS8t6Y=
