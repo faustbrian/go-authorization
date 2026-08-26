@@ -7,6 +7,11 @@ versioning for its Go API and portable policy format.
 
 ## Unreleased
 
+### Documentation
+
+- Replace release-process evidence and the archived monorepo link with a
+  package-owned documentation index.
+
 ## 1.0.0 - 2026-08-25
 
 ### Fixed

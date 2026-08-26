@@ -44,7 +44,7 @@ See the [five-minute ACL quickstart](docs/quickstart-acl.md) and
 standard HTTP integration are deliberately interface-based so applications can
 add framework-specific adapters without changing policy semantics.
 
-The complete guide map is in the [documentation index](docs/index.md). For a
+The complete guide map is in the [documentation index](docs/README.md). For a
 compiled multi-model application, see the
 [tenant documents example](examples/tenant_documents/main.go).
 
@@ -75,7 +75,7 @@ Security boundaries and operational assumptions are documented in the
 reporting guidance and [CONTRIBUTING.md](CONTRIBUTING.md) for local quality
 gates. The package is licensed under the [MIT License](LICENSE).
 
-## Ecosystem
+## Documentation
 
-Use the [Golib documentation portal](https://github.com/faustbrian/golib/blob/main/docs/index.md)
-to choose companion packages, supported stacks, recipes, and operations guidance.
+Start with the [documentation index](docs/README.md) for model selection,
+integration, persistence, operations, and security guidance.

@@ -23,7 +23,7 @@ Start with [model selection](model-selection.md), then use the five-minute
 - [Advisory cache integration](cache.md)
 - [Audit, metrics, and traces](observability.md)
 
-## Production readiness
+## Operations and security
 
 - [Operations](operations.md)
 - [Security model](security.md) and [threat model](threat-model.md)
@@ -31,7 +31,6 @@ Start with [model selection](model-selection.md), then use the five-minute
 - [Performance and limits](performance.md)
 - [FAQ and troubleshooting](faq.md)
 - [Compatibility and governance](compatibility.md)
-- [Hardening findings and evidence](hardening-report.md)
 
 The root [README](../README.md), [security policy](../SECURITY.md),
 [contribution guide](../CONTRIBUTING.md), and
