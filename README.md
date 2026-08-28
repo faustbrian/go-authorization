@@ -65,10 +65,10 @@ checks are documented in [authorization testing](docs/testing.md).
 Default resource bounds, the benchmark matrix, reference measurements, and
 scaling guidance are documented in [performance and limits](docs/performance.md).
 
-Repository checks are available as `./scripts/check-format.sh` and
-`./scripts/check-coverage.sh`. Integration tests run when `POSTGRES_URL` or
-`VALKEY_ADDRESS` is configured and otherwise skip without contacting local
-services.
+Install the `golib` version declared in `.golib.yaml`, then run the complete
+repository contract with `golib check --all`. Integration tests run when
+`POSTGRES_URL` or `VALKEY_ADDRESS` is configured and otherwise skip without
+contacting local services.
 
 Security boundaries and operational assumptions are documented in the
 [threat model](docs/threat-model.md). See [SECURITY.md](SECURITY.md) for private

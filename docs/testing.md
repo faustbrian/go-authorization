@@ -50,7 +50,7 @@ of internal errors into allows and loss of cancellation behavior.
 
 ## Mutation testing
 
-`./scripts/check-mutation.sh` delegates to the canonical repository runner for
-this module. It requires exact 100 percent efficacy and mutant coverage, a
-nonempty report, and `KILLED` status for every viable mutant. Lived, uncovered,
+`golib mutation --module .` runs the canonical mutation contract for this
+module. It requires exact 100 percent efficacy and mutant coverage, a nonempty
+report, and `KILLED` status for every viable mutant. Lived, uncovered,
 timed-out, malformed, missing, or unclassified results fail the gate.

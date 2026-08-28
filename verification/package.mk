@@ -1,0 +1,6 @@
+APIDIFF_VERSION ?= v0.0.0-20260718201538-764159d718ef
+
+.PHONY: api
+
+api:
+	APIDIFF_VERSION=$(APIDIFF_VERSION) ./scripts/check-api.sh
