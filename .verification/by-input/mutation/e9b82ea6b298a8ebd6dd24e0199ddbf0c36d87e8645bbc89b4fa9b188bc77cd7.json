@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "repository": "github.com/faustbrian/go-authorization",
+  "module": ".",
+  "package": "rbac",
+  "gate": "mutation",
+  "input_digest": "sha256:e9b82ea6b298a8ebd6dd24e0199ddbf0c36d87e8645bbc89b4fa9b188bc77cd7",
+  "verifier_digest": "sha256:9a9499ff68a8dfd49a0be7995590297a8ee563a1aa226bfd8b9361dc53058108",
+  "result": "passed",
+  "report_digest": "sha256:651a3b2f3b8b0a17b8621b19ae2aacf693823c6cf25a667d22c4a9bb04977b71",
+  "environment": {
+    "CGO_ENABLED": "1",
+    "GOARCH": "arm64",
+    "GOOS": "darwin",
+    "GOVERSION": "go1.27.0",
+    "gremlins_binary_sha256": "sha256:6a2beddc477eb410f8a670b6c9049558563d3c4327498fe31604d31c773a959e"
+  },
+  "completed_at": "2026-09-03T11:23:39.536192Z"
+}
