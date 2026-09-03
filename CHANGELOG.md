@@ -9,14 +9,21 @@ versioning for its Go API and portable policy format.
 
 ### Changed
 
+- Adopt the checksum-verified `go-library-tools` v1.4.0 CLI, schema-v2 cohesion
+  metadata, and repository-local cohesion gate without changing the public API
+  or runtime behavior.
+- Pin reusable CI to the immutable v1.4.0 W14-enforcement workflow.
+- Run API compatibility through the module-toolchain-aware W14 baseline gate.
 - Replace the repository-local verification implementation with the pinned
   `go-library-tools` v1.0.13 CLI and reusable workflow while preserving package
   policy and content-addressed evidence in this repository.
-- Use canonical public module checksums for the non-releasable integration
-  contract instead of bootstrap-only archives.
+- Use canonical public module checksums for the root module and non-releasable
+  integration contract instead of mutable-origin or bootstrap-only archives.
 
 ### Documentation
 
+- Link consumers to the immutable v1.4.0 Golib ecosystem index and Service edge
+  package-family guidance.
 - Replace release-process evidence and the archived monorepo link with a
   package-owned documentation index.
 

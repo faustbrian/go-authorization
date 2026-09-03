@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "repository": "github.com/faustbrian/go-authorization",
   "go_version": "1.26.6",
   "modules": [
@@ -271,6 +271,123 @@
         "race": true,
         "security": true,
         "tests": true
+      },
+      "cohesion": {
+        "family": "service-edge",
+        "secondary_capabilities": [
+          "database-and-storage",
+          "http-and-service-edge",
+          "identity-and-access",
+          "observability",
+          "protocols-and-schemas",
+          "testing-and-conformance"
+        ],
+        "responsibility": "Provide typed ACL, RBAC, and ABAC policy evaluation, immutable revisioned snapshots, bounded policy compilation, fail-closed transport integration, and explicit persistence and invalidation adapters.",
+        "non_goals": [
+          "Authenticate principals, establish tenant membership, own application resources, or infer authoritative request attributes.",
+          "Own database, cache, transport, logging, telemetry, or application lifecycle resources.",
+          "Provide a positional string policy language, hidden global policy registry, or permissive fallback behavior."
+        ],
+        "public_package_identifier": "authorization",
+        "primary_entry_packages": [
+          "github.com/faustbrian/go-authorization"
+        ],
+        "package_selection": {
+          "github.com/faustbrian/go-authorization": "Use for typed authorization requests and decisions, immutable snapshots, policy composition, and fail-closed evaluation.",
+          "github.com/faustbrian/go-authorization/abac": "Use for bounded attribute-based policies with typed conditions and deterministic evaluation limits.",
+          "github.com/faustbrian/go-authorization/acl": "Use for typed subject-to-resource access control lists and bounded resource listing.",
+          "github.com/faustbrian/go-authorization/authcache": "Use for advisory cache integration keyed by exact policy revision while retaining the repository as source of truth.",
+          "github.com/faustbrian/go-authorization/authhttp": "Use for the canonical fail-closed net/http authorization adapter.",
+          "github.com/faustbrian/go-authorization/authlog": "Use to emit bounded authorization audit events through log/slog.",
+          "github.com/faustbrian/go-authorization/authn": "Use to map an already authenticated principal into a typed authorization subject without validating credentials.",
+          "github.com/faustbrian/go-authorization/authorizationtest": "Use in tests for deterministic requests, evaluators, assertions, snapshots, and adapter conformance.",
+          "github.com/faustbrian/go-authorization/authotel": "Use to observe authorization decisions through caller-owned OpenTelemetry providers.",
+          "github.com/faustbrian/go-authorization/authrpc": "Use for fail-closed native go-jsonrpc authorization middleware.",
+          "github.com/faustbrian/go-authorization/httpauth": "Use only as the released compatibility path for the canonical authhttp adapter.",
+          "github.com/faustbrian/go-authorization/policy": "Use for strict portable manifests, compilation, diff, dry-run, synchronization, and revisioned activation.",
+          "github.com/faustbrian/go-authorization/postgres": "Use for caller-owned PostgreSQL persistence of complete policy manifests with optimistic revision checks.",
+          "github.com/faustbrian/go-authorization/rbac": "Use for tenant-safe roles, permissions, assignments, and bounded inheritance.",
+          "github.com/faustbrian/go-authorization/valkey": "Use for caller-owned Valkey revision invalidation with durable polling fallback."
+        },
+        "lifecycle_status": "active",
+        "maturity": "stable",
+        "construction_styles": [
+          "builder-build",
+          "functional-options",
+          "must-helper",
+          "new-config",
+          "new-options",
+          "plain-function",
+          "validated-value"
+        ],
+        "lifecycle_styles": [
+          "run",
+          "stateless"
+        ],
+        "ownership": {
+          "configuration": "caller",
+          "mutable_inputs": [
+            "borrow",
+            "copy"
+          ],
+          "runtime_resources": "caller",
+          "background_work": "caller"
+        },
+        "optional_owned_dependencies": [],
+        "adapters": [
+          "github.com/faustbrian/go-authorization/authcache",
+          "github.com/faustbrian/go-authorization/authhttp",
+          "github.com/faustbrian/go-authorization/authlog",
+          "github.com/faustbrian/go-authorization/authn",
+          "github.com/faustbrian/go-authorization/authotel",
+          "github.com/faustbrian/go-authorization/authrpc",
+          "github.com/faustbrian/go-authorization/httpauth",
+          "github.com/faustbrian/go-authorization/postgres",
+          "github.com/faustbrian/go-authorization/valkey"
+        ],
+        "companions": [
+          "github.com/faustbrian/go-authorization/abac",
+          "github.com/faustbrian/go-authorization/acl",
+          "github.com/faustbrian/go-authorization/authorizationtest",
+          "github.com/faustbrian/go-authorization/policy",
+          "github.com/faustbrian/go-authorization/rbac"
+        ],
+        "supported_go": {
+          "minimum": "1.26.6",
+          "tested": [
+            "1.26.6"
+          ]
+        },
+        "supported_platforms": [
+          "portable-go"
+        ],
+        "supported_backends": [
+          "postgresql",
+          "valkey"
+        ],
+        "supported_protocols": [
+          "http",
+          "json-rpc"
+        ],
+        "documentation": {
+          "readme": "README.md",
+          "api": "docs/api-reference.md",
+          "adoption": "docs/application-guide.md",
+          "security": "docs/security.md",
+          "compatibility": "docs/compatibility.md",
+          "performance": "docs/performance.md",
+          "examples": "examples/tenant_documents/main.go",
+          "faq": "docs/faq.md",
+          "changelog": "CHANGELOG.md",
+          "pkg_go_dev": "https://pkg.go.dev/github.com/faustbrian/go-authorization",
+          "ecosystem_index": "https://github.com/faustbrian/go-library-tools/blob/v1.4.0/docs/ecosystem/README.md"
+        },
+        "known_good_compatibility_sets": [],
+        "delivery": {
+          "implementation": "not-started",
+          "hardening": "not-started",
+          "release": "not-started"
+        }
       }
     },
     {
@@ -282,6 +399,10 @@
       "lifecycle": "internal",
       "kind": "interoperability harness",
       "releasable": false,
+      "family": "service-edge",
+      "family_label": "Service Edge",
+      "family_description": "Request-edge policy, identity, access decisions, routing, middleware, and process lifecycle.",
+      "family_order": 2,
       "version": "unreleased",
       "tag_prefix": "integration/contracts/v",
       "owned_dependencies": [
