@@ -7,6 +7,8 @@ versioning for its Go API and portable policy format.
 
 ## Unreleased
 
+## 1.1.0 - 2026-09-09
+
 ### Added
 
 - Add target-oriented `adapters/cache`, `adapters/http`,
