@@ -1,4 +1,9 @@
-// Package authhttp provides the canonical net/http authorization adapter.
+// Package authhttp provides the legacy net/http authorization adapter.
+//
+// Deprecated: use github.com/faustbrian/go-authorization/adapters/http. This
+// package remains supported for the longer of 180 days after successor public
+// availability and two subsequently published stable root-module minor
+// releases.
 package authhttp
 
 import (
@@ -6,7 +11,7 @@ import (
 	"net/http"
 
 	authorization "github.com/faustbrian/go-authorization"
-	"github.com/faustbrian/go-authorization/httpauth"
+	"github.com/faustbrian/go-authorization/httpauth" //nolint:staticcheck // Preserve released alias identities through the compatibility interval.
 )
 
 type Authorizer = httpauth.Authorizer

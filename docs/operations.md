@@ -29,7 +29,7 @@ A temporary Valkey outage can remain ready while repository polling succeeds.
 
 ## Metrics and alerts
 
-Record bounded decision count and duration through `authotel`. Alert on
+Record bounded decision count and duration through `adapters/otel`. Alert on
 evaluation errors, policy panics, invalid requests above the expected client
 baseline, repeated reload failures, revision lag, revision divergence, and
 repository optimistic conflicts.

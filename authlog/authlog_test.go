@@ -21,9 +21,9 @@ func TestInstrumenterWritesBoundedAuditEvent(t *testing.T) {
 		t.Fatalf("New() error = %v", err)
 	}
 	ctx := context.Background()
-	next, finish := instrumenter.Start(ctx)
+	next, finish := instrumenter.Begin(ctx)
 	if next != ctx {
-		t.Error("Start() changed context")
+		t.Error("Begin() changed context")
 	}
 	finish(authorization.Event{
 		Outcome: authorization.Allow, Reason: "acl-allow", Revision: 7,
@@ -39,6 +39,9 @@ func TestInstrumenterWritesBoundedAuditEvent(t *testing.T) {
 		record["reason"] != "acl-allow" || record["revision"] != float64(7) ||
 		record["duration_ms"] != 1.5 || record["failed"] != false {
 		t.Errorf("audit record = %#v", record)
+	}
+	if _, finish := instrumenter.Start(ctx); finish == nil {
+		t.Fatal("Start() did not delegate to Begin()")
 	}
 }
 

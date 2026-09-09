@@ -7,8 +7,24 @@ versioning for its Go API and portable policy format.
 
 ## Unreleased
 
+### Added
+
+- Add target-oriented `adapters/cache`, `adapters/http`,
+  `adapters/jsonrpc`, `adapters/otel`, and `adapters/slog` packages while
+  retaining every existing adapter path through compatibility facades or
+  implementations.
+- Add the context-first `BeginInstrumenter` contract and
+  `NewInstrumentedWithBegin` constructor with literal and typed-nil dependency
+  validation before decision work.
+
 ### Changed
 
+- Make the released `authlog` and `authotel` `Start` methods delegate to the
+  additive `Begin` lifecycle while preserving their prior completion and
+  provider-default behavior.
+- Deprecate `authcache`, `authhttp`, `httpauth`, `authlog`, `authotel`, and
+  `authrpc` in favor of their target-oriented successors without removing or
+  changing their released signatures and named types.
 - Adopt the checksum-verified `go-library-tools` v1.4.0 CLI, schema-v2 cohesion
   metadata, and repository-local cohesion gate without changing the public API
   or runtime behavior.

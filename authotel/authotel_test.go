@@ -27,7 +27,7 @@ func TestInstrumenterRecordsBoundedMetricsAndSpan(t *testing.T) {
 	if err != nil {
 		t.Fatalf("New() error = %v", err)
 	}
-	ctx, finish := instrumenter.Start(context.Background())
+	ctx, finish := instrumenter.Begin(context.Background())
 	finish(authorization.Event{
 		Outcome: authorization.Allow, Reason: "acl-allow", Revision: 7,
 		MatchedPolicyIDs: []authorization.PolicyID{"one"}, TraceCount: 2,
@@ -35,7 +35,7 @@ func TestInstrumenterRecordsBoundedMetricsAndSpan(t *testing.T) {
 	})
 	finish(authorization.Event{Outcome: authorization.Deny})
 	if !trace.SpanContextFromContext(ctx).IsValid() {
-		t.Error("Start() did not return span context")
+		t.Error("Begin() did not return span context")
 	}
 
 	var metrics metricdata.ResourceMetrics
@@ -54,6 +54,9 @@ func TestInstrumenterRecordsBoundedMetricsAndSpan(t *testing.T) {
 	spans := exporter.GetSpans()
 	if len(spans) != 1 || spans[0].Name != "authorization.decide" {
 		t.Fatalf("spans = %+v", spans)
+	}
+	if _, finish := instrumenter.Start(context.Background()); finish == nil {
+		t.Fatal("Start() did not delegate to Begin()")
 	}
 }
 

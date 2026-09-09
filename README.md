@@ -34,9 +34,9 @@ The current implementation includes:
   fallback;
 - direct source-of-truth synchronization independent of cache publication;
 - dependency-neutral authenticated-principal mapping;
-- fail-closed standard-library HTTP and native `jsonrpc` integration;
-- bounded `log` audit and `telemetry` metrics/trace adapters; and
-- explicit advisory `cache` manifest integration.
+- fail-closed `adapters/http` and native `adapters/jsonrpc` integration;
+- bounded `adapters/slog` audit and `adapters/otel` metrics/trace adapters; and
+- explicit advisory `adapters/cache` manifest integration.
 
 See the [five-minute ACL quickstart](docs/quickstart-acl.md) and
 [five-minute RBAC quickstart](docs/quickstart-rbac.md), plus the
@@ -60,6 +60,9 @@ Authentication mapping and transport behavior are documented in
 [HTTP integration](docs/http.md), and [JSON-RPC integration](docs/jsonrpc.md).
 Audit, telemetry, and cache boundaries are covered in
 [observability](docs/observability.md) and [cache integration](docs/cache.md).
+The released `authcache`, `authhttp`, `httpauth`, `authlog`, `authotel`, and
+`authrpc` paths remain supported compatibility paths during their documented
+migration interval.
 Reusable fixtures, assertions, decision snapshots, and integration conformance
 checks are documented in [authorization testing](docs/testing.md).
 Default resource bounds, the benchmark matrix, reference measurements, and

@@ -1,22 +1,26 @@
 # Observability and audit
 
-`authorization.NewInstrumented` decorates any authorizer without changing its
-decision or error. Instrumentation panics and nil derived contexts are isolated
-from authorization behavior. Events contain bounded decision metadata only:
+`authorization.NewInstrumentedWithBegin` decorates any authorizer through the
+context-first `BeginInstrumenter` contract without changing its decision or
+error. The released `NewInstrumented` constructor remains available for
+`Start`-based instrumenters. Instrumentation panics and nil derived contexts
+are isolated from authorization behavior. Events contain bounded decision
+metadata only:
 outcome, reason, revision, bounded matched policy IDs, trace counts, duration,
 and failure state. They never contain subjects, tenants, resources, attributes,
 or policy documents.
 
 ## Structured audit events
 
-`authlog` accepts the standard `*slog.Logger` returned by `log`:
+`adapters/slog` accepts the standard `*slog.Logger` returned by `log`. The
+released `authlog` path remains a deprecated compatibility implementation:
 
 ```go
-audit, err := authlog.New(logger, slog.LevelInfo)
+audit, err := authorizationslog.New(logger, slog.LevelInfo)
 if err != nil {
     return err
 }
-authorizer, err := authorization.NewInstrumented(engine, audit,
+authorizer, err := authorization.NewInstrumentedWithBegin(engine, audit,
     authorization.InstrumentationConfig{MaxPolicyIDs: 100})
 ```
 
@@ -27,11 +31,12 @@ business rules.
 
 ## Metrics and traces
 
-`authotel` accepts standard OpenTelemetry providers, including providers owned
-by a `telemetry` runtime:
+`adapters/otel` accepts explicit OpenTelemetry providers, including providers
+owned by a `telemetry` runtime. The released `authotel` path remains a
+deprecated compatibility implementation and retains its no-op defaults:
 
 ```go
-instrumenter, err := authotel.New(authotel.Config{
+instrumenter, err := authorizationotel.New(authorizationotel.Config{
     TracerProvider: telemetryRuntime.TracerProvider(),
     MeterProvider:  telemetryRuntime.MeterProvider(),
 })

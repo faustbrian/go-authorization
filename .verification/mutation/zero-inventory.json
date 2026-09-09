@@ -7,7 +7,7 @@
       "module_directory": ".",
       "package_directory": "authhttp",
       "reason": "The compatibility package contains aliases and direct delegations only; the complete enabled Gremlins operator set discovers no viable transformations.",
-      "source_digest": "3b401d59588ee7f4041b6dcf1b479626e0fd3a799a1afc8b72c249e14952ba71"
+      "source_digest": "7f09e178fe09ed1a59acbf820b6097d8940e56f48f14c91af3dfcea5394684f5"
     }
   ]
 }

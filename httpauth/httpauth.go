@@ -1,18 +1,24 @@
-// Package httpauth provides fail-closed net/http authorization integration.
+// Package httpauth provides the legacy fail-closed net/http authorization
+// integration.
+//
+// Deprecated: use github.com/faustbrian/go-authorization/adapters/http. This
+// package remains supported for the longer of 180 days after successor public
+// availability and two subsequently published stable root-module minor
+// releases.
 package httpauth
 
 import (
 	"context"
-	"errors"
 	"net/http"
 
 	authorization "github.com/faustbrian/go-authorization"
+	adapter "github.com/faustbrian/go-authorization/adapters/http"
 )
 
 var (
-	ErrNilAuthorizer    = errors.New("HTTP authorization authorizer is nil")
-	ErrNilRequestMapper = errors.New("HTTP authorization request mapper is nil")
-	ErrNilNextHandler   = errors.New("HTTP authorization next handler is nil")
+	ErrNilAuthorizer    = adapter.ErrNilAuthorizer
+	ErrNilRequestMapper = adapter.ErrNilRequestMapper
+	ErrNilNextHandler   = adapter.ErrNilNextHandler
 )
 
 type Authorizer interface {
@@ -62,60 +68,24 @@ func NewHandler(
 	if next == nil {
 		return nil, ErrNilNextHandler
 	}
-	configured := options{
-		denied: http.HandlerFunc(func(writer http.ResponseWriter, _ *http.Request) {
-			writer.WriteHeader(http.StatusForbidden)
-		}),
-		failed: http.HandlerFunc(func(writer http.ResponseWriter, _ *http.Request) {
-			writer.WriteHeader(http.StatusInternalServerError)
-		}),
-	}
+	configured := options{}
 	for _, option := range handlerOptions {
 		option(&configured)
 	}
-
-	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		authorizationRequest, err := mapper(request)
-		if err != nil {
-			configured.failed.ServeHTTP(writer, request.WithContext(withError(request.Context(), err)))
-			return
-		}
-		decision, err := authorizer.Decide(request.Context(), authorizationRequest)
-		if err != nil {
-			configured.failed.ServeHTTP(writer, request.WithContext(withError(request.Context(), err)))
-			return
-		}
-		if decision.Outcome > authorization.Deny {
-			configured.failed.ServeHTTP(
-				writer,
-				request.WithContext(withError(request.Context(), authorization.ErrInvalidOutcome)),
-			)
-			return
-		}
-		request = request.WithContext(context.WithValue(
-			request.Context(), decisionContextKey{}, decision,
-		))
-		if decision.Outcome != authorization.Allow {
-			configured.denied.ServeHTTP(writer, request)
-			return
-		}
-		next.ServeHTTP(writer, request)
-	}), nil
+	options := make([]adapter.Option, 0, 2)
+	if configured.denied != nil {
+		options = append(options, adapter.WithDeniedHandler(configured.denied))
+	}
+	if configured.failed != nil {
+		options = append(options, adapter.WithErrorHandler(configured.failed))
+	}
+	return adapter.NewHandler(authorizer, adapter.RequestMapper(mapper), next, options...)
 }
 
-type decisionContextKey struct{}
-type errorContextKey struct{}
-
 func DecisionFromContext(ctx context.Context) (authorization.Decision, bool) {
-	decision, ok := ctx.Value(decisionContextKey{}).(authorization.Decision)
-	return decision, ok
+	return adapter.DecisionFromContext(ctx)
 }
 
 func ErrorFromContext(ctx context.Context) (error, bool) {
-	err, ok := ctx.Value(errorContextKey{}).(error)
-	return err, ok
-}
-
-func withError(ctx context.Context, err error) context.Context {
-	return context.WithValue(ctx, errorContextKey{}, err)
+	return adapter.ErrorFromContext(ctx)
 }

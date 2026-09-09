@@ -1,26 +1,22 @@
-// Package authcache provides explicit advisory cache adapters for portable
-// policy manifests. Cached manifests never replace repository verification.
+// Package authcache provides the legacy authorization cache adapter.
+//
+// Deprecated: use github.com/faustbrian/go-authorization/adapters/cache. This
+// package remains supported for the longer of 180 days after successor public
+// availability and two subsequently published stable root-module minor
+// releases.
 package authcache
 
 import (
-	"context"
-	"errors"
-	"strconv"
-
 	authorization "github.com/faustbrian/go-authorization"
+	adapter "github.com/faustbrian/go-authorization/adapters/cache"
 	"github.com/faustbrian/go-authorization/policy"
 	cache "github.com/faustbrian/go-cache"
 )
 
-const (
-	defaultMaxEncodedSize = 1 << 20
-	defaultMaxKeySize     = 256
-)
-
 var (
-	ErrManifestTooLarge = errors.New("authorization cached manifest is too large")
-	ErrInvalidRevision  = errors.New("authorization cached revision is invalid")
-	ErrNilRepository    = errors.New("authorization cached repository is nil")
+	ErrManifestTooLarge = adapter.ErrManifestTooLarge
+	ErrInvalidRevision  = adapter.ErrInvalidRevision
+	ErrNilRepository    = adapter.ErrNilRepository
 )
 
 type ManifestCodec struct {
@@ -28,37 +24,17 @@ type ManifestCodec struct {
 }
 
 func (codec ManifestCodec) Encode(manifest policy.Manifest) ([]byte, error) {
-	encoded, err := policy.Encode(manifest)
-	if err != nil {
-		return nil, err
-	}
-	if len(encoded) > codec.limit() {
-		return nil, ErrManifestTooLarge
-	}
-	return encoded, nil
+	return adapter.ManifestCodec{MaxEncodedSize: codec.MaxEncodedSize}.Encode(manifest)
 }
 
 func (codec ManifestCodec) Decode(encoded []byte) (policy.Manifest, error) {
-	if len(encoded) > codec.limit() {
-		return policy.Manifest{}, ErrManifestTooLarge
-	}
-	return policy.Decode(encoded)
-}
-
-func (codec ManifestCodec) limit() int {
-	if codec.MaxEncodedSize <= 0 {
-		return defaultMaxEncodedSize
-	}
-	return codec.MaxEncodedSize
+	return adapter.ManifestCodec{MaxEncodedSize: codec.MaxEncodedSize}.Decode(encoded)
 }
 
 type RevisionKeyEncoder struct{}
 
 func (RevisionKeyEncoder) EncodeKey(revision authorization.Revision) ([]byte, error) {
-	if revision == 0 {
-		return nil, ErrInvalidRevision
-	}
-	return []byte(strconv.FormatUint(uint64(revision), 10)), nil
+	return (adapter.RevisionKeyEncoder{}).EncodeKey(revision)
 }
 
 type Config struct {
@@ -73,51 +49,15 @@ type Config struct {
 }
 
 func New(config Config) (*cache.Cache[authorization.Revision, policy.Manifest], error) {
-	if config.MaxValue == 0 {
-		config.MaxValue = defaultMaxEncodedSize
-	}
-	if config.MaxKeySize == 0 {
-		config.MaxKeySize = defaultMaxKeySize
-	}
-	keys, err := cache.NewKeySpace(
-		config.Namespace,
-		"authorization-policy",
-		1,
-		RevisionKeyEncoder{},
-		config.MaxKeySize,
-	)
-	if err != nil {
-		return nil, err
-	}
-	return cache.New(cache.Config[authorization.Revision, policy.Manifest]{
-		Backend:  config.Backend,
-		Keys:     keys,
-		Codec:    ManifestCodec{MaxEncodedSize: config.MaxValue},
-		TTL:      config.TTL,
-		Clock:    config.Clock,
-		MaxValue: config.MaxValue,
-		MaxBatch: config.MaxBatch,
-		Observer: config.Observer,
+	return adapter.New(adapter.Config{
+		Namespace: config.Namespace, Backend: config.Backend, TTL: config.TTL,
+		Clock: config.Clock, Observer: config.Observer, MaxValue: config.MaxValue,
+		MaxBatch: config.MaxBatch, MaxKeySize: config.MaxKeySize,
 	})
 }
 
 func RepositoryLoader(
 	repository policy.Repository,
 ) (cache.Loader[authorization.Revision, policy.Manifest], error) {
-	if repository == nil {
-		return nil, ErrNilRepository
-	}
-	return func(
-		ctx context.Context,
-		revision authorization.Revision,
-	) (cache.LoadResult[policy.Manifest], error) {
-		manifest, err := repository.Load(ctx)
-		if err != nil {
-			return cache.LoadResult[policy.Manifest]{}, err
-		}
-		if manifest.Revision != revision {
-			return cache.LoadResult[policy.Manifest]{}, nil
-		}
-		return cache.LoadResult[policy.Manifest]{Value: manifest, Found: true}, nil
-	}, nil
+	return adapter.RepositoryLoader(repository)
 }
