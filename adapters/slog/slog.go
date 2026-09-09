@@ -1,26 +1,26 @@
-// Package authlog provides the legacy bounded authorization slog adapter.
-//
-// Deprecated: use github.com/faustbrian/go-authorization/adapters/slog. This
-// package remains supported for the longer of 180 days after successor public
-// availability and two subsequently published stable root-module minor
-// releases.
-package authlog
+// Package authorizationslog emits bounded authorization audit events through
+// log/slog.
+package authorizationslog
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 
 	authorization "github.com/faustbrian/go-authorization"
-	adapter "github.com/faustbrian/go-authorization/adapters/slog"
 )
 
-var ErrNilLogger = adapter.ErrNilLogger
+// ErrNilLogger reports that New received no logger.
+var ErrNilLogger = errors.New("authorization audit logger is nil")
 
+// Instrumenter emits a bounded structured audit record for each completed observation.
+// The caller retains ownership of the logger and its handler.
 type Instrumenter struct {
 	logger *slog.Logger
 	level  slog.Level
 }
 
+// New constructs an audit Instrumenter at level and rejects a nil logger.
 func New(logger *slog.Logger, level slog.Level) (*Instrumenter, error) {
 	if logger == nil {
 		return nil, ErrNilLogger
@@ -47,6 +47,7 @@ func (instrumenter *Instrumenter) Begin(
 	}
 }
 
+// Start delegates to Begin for compatibility with authorization.Instrumenter.
 func (instrumenter *Instrumenter) Start(
 	ctx context.Context,
 ) (context.Context, func(authorization.Event)) {

@@ -3,6 +3,7 @@ package authorization
 import (
 	"context"
 	"errors"
+	"reflect"
 	"time"
 )
 
@@ -32,6 +33,11 @@ type Instrumenter interface {
 	Start(context.Context) (context.Context, func(Event))
 }
 
+// BeginInstrumenter starts one bounded authorization observation.
+type BeginInstrumenter interface {
+	Begin(context.Context) (context.Context, func(Event))
+}
+
 type InstrumentationConfig struct {
 	Clock        func() time.Time
 	MaxPolicyIDs int
@@ -55,6 +61,31 @@ func NewInstrumented(
 	if instrumenter == nil {
 		return nil, ErrNilInstrumenter
 	}
+	return newInstrumented(authorizer, instrumenter, config)
+}
+
+// NewInstrumentedWithBegin constructs an authorizer using the common Begin
+// observation lifecycle. Literal and typed-nil dependencies are rejected
+// before any decision work begins.
+func NewInstrumentedWithBegin(
+	authorizer Authorizer,
+	instrumenter BeginInstrumenter,
+	config InstrumentationConfig,
+) (*Instrumented, error) {
+	if isNilInterface(authorizer) {
+		return nil, ErrNilAuthorizer
+	}
+	if isNilInterface(instrumenter) {
+		return nil, ErrNilInstrumenter
+	}
+	return newInstrumented(authorizer, beginInstrumenterAdapter{instrumenter: instrumenter}, config)
+}
+
+func newInstrumented(
+	authorizer Authorizer,
+	instrumenter Instrumenter,
+	config InstrumentationConfig,
+) (*Instrumented, error) {
 	if config.MaxPolicyIDs < 0 {
 		return nil, ErrInvalidInstrumentationConfig
 	}
@@ -118,6 +149,25 @@ func safeInstrumentationStart(
 		next = candidate
 	}
 	return next, callback
+}
+
+type beginInstrumenterAdapter struct{ instrumenter BeginInstrumenter }
+
+func (adapter beginInstrumenterAdapter) Start(ctx context.Context) (context.Context, func(Event)) {
+	return adapter.instrumenter.Begin(ctx)
+}
+
+func isNilInterface(value any) bool {
+	if value == nil {
+		return true
+	}
+	reflected := reflect.ValueOf(value)
+	switch reflected.Kind() {
+	case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map, reflect.Pointer, reflect.Slice:
+		return reflected.IsNil()
+	default:
+		return false
+	}
 }
 
 func safeInstrumentationFinish(finish func(Event), event Event) {

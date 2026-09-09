@@ -55,19 +55,23 @@ default deny.
   optimistic revisions. It exports SQL and `migrations` forms of the schema.
 - `valkey` publishes a monotonic durable revision and uses pub/sub only as a
   wakeup hint.
-- `authcache` configures an explicit typed `cache` manifest cache with exact
-  revision loading. It is never a source of truth.
+- `adapters/cache` configures an explicit typed `cache` manifest cache with
+  exact revision loading. It is never a source of truth. `authcache` remains a
+  compatibility facade.
 
 ## Application adapters
 
 - `authn` maps a structurally compatible authenticated principal into a typed
   subject without coupling the core engine to authentication middleware.
-- `authhttp` is the canonical `net/http` package. `httpauth` remains the
-  underlying standard-library implementation.
-- `authrpc` supplies native `jsonrpc` fail-closed middleware.
-- `authlog` emits bounded `log/slog` records and accepts `log` loggers.
-- `authotel` records bounded OpenTelemetry metrics and spans and accepts
-  providers managed by `telemetry`.
+- `adapters/http` is the canonical `net/http` package. `authhttp` and
+  `httpauth` remain compatibility facades.
+- `adapters/jsonrpc` supplies native `jsonrpc` fail-closed middleware;
+  `authrpc` remains a compatibility facade.
+- `adapters/slog` emits bounded `log/slog` records and accepts `log` loggers;
+  `authlog` remains a compatibility implementation.
+- `adapters/otel` records bounded OpenTelemetry metrics and spans and accepts
+  providers managed by `telemetry`; `authotel` remains a compatibility
+  implementation.
 - `authorizationtest` supplies deterministic builders, evaluator fixtures,
   assertions, canonical decision JSON, and an authorizer conformance suite.
 

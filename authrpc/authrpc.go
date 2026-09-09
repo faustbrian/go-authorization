@@ -1,20 +1,26 @@
-// Package authrpc provides fail-closed jsonrpc authorization middleware.
+// Package authrpc provides the legacy fail-closed JSON-RPC authorization
+// middleware.
+//
+// Deprecated: use github.com/faustbrian/go-authorization/adapters/jsonrpc.
+// This package remains supported for the longer of 180 days after successor
+// public availability and two subsequently published stable root-module minor
+// releases.
 package authrpc
 
 import (
 	"context"
 	"encoding/json"
-	"errors"
 
 	authorization "github.com/faustbrian/go-authorization"
+	adapter "github.com/faustbrian/go-authorization/adapters/jsonrpc"
 	jsonrpc "github.com/faustbrian/go-jsonrpc"
 )
 
 const CodeForbidden = -32001
 
 var (
-	ErrNilAuthorizer    = errors.New("JSON-RPC authorization authorizer is nil")
-	ErrNilRequestMapper = errors.New("JSON-RPC authorization request mapper is nil")
+	ErrNilAuthorizer    = adapter.ErrNilAuthorizer
+	ErrNilRequestMapper = adapter.ErrNilRequestMapper
 )
 
 type Authorizer interface {
@@ -58,55 +64,20 @@ func NewMiddleware(
 	if mapper == nil {
 		return nil, ErrNilRequestMapper
 	}
-	configured := options{
-		denied: func(authorization.Decision) *jsonrpc.Error {
-			return jsonrpc.NewError(CodeForbidden, "Forbidden")
-		},
-		failed: func(err error) *jsonrpc.Error {
-			return jsonrpc.InternalError().WithCause(err)
-		},
-	}
+	configured := options{}
 	for _, option := range middlewareOptions {
 		option(&configured)
 	}
-
-	return func(next jsonrpc.Handler) jsonrpc.Handler {
-		return func(ctx context.Context, params json.RawMessage) (any, error) {
-			request, err := mapper(ctx, params)
-			if err != nil {
-				return nil, mapFailure(configured.failed, err)
-			}
-			decision, err := authorizer.Decide(ctx, request)
-			if err != nil {
-				return nil, mapFailure(configured.failed, err)
-			}
-			if decision.Outcome > authorization.Deny {
-				return nil, mapFailure(configured.failed, authorization.ErrInvalidOutcome)
-			}
-			ctx = context.WithValue(ctx, decisionContextKey{}, decision)
-			if decision.Outcome != authorization.Allow {
-				denied := configured.denied(decision)
-				if denied == nil {
-					return nil, jsonrpc.InternalError().WithCause(authorization.ErrInvalidOutcome)
-				}
-				return nil, denied
-			}
-			return next(ctx, params)
-		}
-	}, nil
+	options := make([]adapter.Option, 0, 2)
+	if configured.denied != nil {
+		options = append(options, adapter.WithDeniedError(adapter.DeniedError(configured.denied)))
+	}
+	if configured.failed != nil {
+		options = append(options, adapter.WithErrorMapper(adapter.ErrorMapper(configured.failed)))
+	}
+	return adapter.NewMiddleware(authorizer, adapter.RequestMapper(mapper), options...)
 }
-
-type decisionContextKey struct{}
 
 func DecisionFromContext(ctx context.Context) (authorization.Decision, bool) {
-	decision, ok := ctx.Value(decisionContextKey{}).(authorization.Decision)
-	return decision, ok
-}
-
-func mapFailure(mapper ErrorMapper, err error) *jsonrpc.Error {
-	mapped := mapper(err)
-	if mapped == nil {
-		return jsonrpc.InternalError().WithCause(err)
-	}
-	return mapped
+	return adapter.DecisionFromContext(ctx)
 }

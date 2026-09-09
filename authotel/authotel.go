@@ -1,5 +1,9 @@
-// Package authotel records bounded authorization metrics and traces through
-// standard OpenTelemetry providers, including providers owned by telemetry.
+// Package authotel provides the legacy authorization OpenTelemetry adapter.
+//
+// Deprecated: use github.com/faustbrian/go-authorization/adapters/otel. This
+// package remains supported for the longer of 180 days after successor public
+// availability and two subsequently published stable root-module minor
+// releases.
 package authotel
 
 import (
@@ -8,6 +12,8 @@ import (
 	"sync"
 
 	authorization "github.com/faustbrian/go-authorization"
+	adapter "github.com/faustbrian/go-authorization/adapters/otel"
+	internal "github.com/faustbrian/go-authorization/internal/authorizationotel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/metric"
@@ -17,6 +23,13 @@ import (
 )
 
 const scopeName = "github.com/faustbrian/go-authorization/authotel"
+
+var (
+	ErrNilTracerProvider = adapter.ErrNilTracerProvider
+	ErrNilMeterProvider  = adapter.ErrNilMeterProvider
+)
+
+func result(event authorization.Event) string { return internal.Result(event) }
 
 type Config struct {
 	TracerProvider trace.TracerProvider
@@ -54,14 +67,11 @@ func New(config Config) (*Instrumenter, error) {
 		return nil, err
 	}
 	return &Instrumenter{
-		tracer:   config.TracerProvider.Tracer(scopeName),
-		duration: duration, decisions: decisions,
+		tracer: config.TracerProvider.Tracer(scopeName), duration: duration, decisions: decisions,
 	}, nil
 }
 
-func (instrumenter *Instrumenter) Start(
-	ctx context.Context,
-) (context.Context, func(authorization.Event)) {
+func (instrumenter *Instrumenter) Begin(ctx context.Context) (context.Context, func(authorization.Event)) {
 	ctx, span := instrumenter.tracer.Start(
 		ctx,
 		"authorization.decide",
@@ -97,20 +107,11 @@ func (instrumenter *Instrumenter) Start(
 	}
 }
 
-func result(event authorization.Event) string {
-	if event.Failed {
-		return "error"
-	}
-	switch event.Outcome {
-	case authorization.Allow:
-		return "allow"
-	case authorization.Deny:
-		return "deny"
-	case authorization.NotApplicable:
-		return "not-applicable"
-	default:
-		return "error"
-	}
+func (instrumenter *Instrumenter) Start(ctx context.Context) (context.Context, func(authorization.Event)) {
+	return instrumenter.Begin(ctx)
 }
 
-var _ authorization.Instrumenter = (*Instrumenter)(nil)
+var (
+	_ authorization.BeginInstrumenter = (*Instrumenter)(nil)
+	_ authorization.Instrumenter      = (*Instrumenter)(nil)
+)

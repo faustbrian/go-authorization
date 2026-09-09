@@ -35,6 +35,166 @@ func (authorize authorizerFunc) Decide(ctx context.Context, request Request) (De
 	return authorize(ctx, request)
 }
 
+type beginInstrumenterStub struct {
+	beginPanic  bool
+	finishPanic bool
+	event       Event
+	begun       int
+	finished    int
+	derivedKey  any
+}
+
+func (instrumenter *beginInstrumenterStub) Begin(ctx context.Context) (context.Context, func(Event)) {
+	instrumenter.begun++
+	if instrumenter.beginPanic {
+		panic("begin")
+	}
+	ctx = context.WithValue(ctx, instrumenter.derivedKey, true)
+	return ctx, func(event Event) {
+		instrumenter.finished++
+		instrumenter.event = event
+		if instrumenter.finishPanic {
+			panic("finish")
+		}
+	}
+}
+
+type typedNilAuthorizer struct{}
+
+func (*typedNilAuthorizer) Decide(context.Context, Request) (Decision, error) {
+	return Decision{}, nil
+}
+
+type typedNilBeginInstrumenter struct{}
+
+func (*typedNilBeginInstrumenter) Begin(context.Context) (context.Context, func(Event)) {
+	return context.Background(), nil
+}
+
+type valueAuthorizer struct{}
+
+func (valueAuthorizer) Decide(context.Context, Request) (Decision, error) {
+	return Decision{Outcome: Allow}, nil
+}
+
+type valueBeginInstrumenter struct{}
+
+func (valueBeginInstrumenter) Begin(ctx context.Context) (context.Context, func(Event)) {
+	return ctx, func(Event) {}
+}
+
+func TestNewInstrumentedWithBeginRejectsNilDependenciesBeforeClock(t *testing.T) {
+	t.Parallel()
+
+	clockCalled := false
+	config := InstrumentationConfig{Clock: func() time.Time {
+		clockCalled = true
+		return time.Now()
+	}}
+	validAuthorizer := authorizerFunc(func(context.Context, Request) (Decision, error) {
+		return Decision{Outcome: Allow}, nil
+	})
+	validInstrumenter := &beginInstrumenterStub{}
+	var nilAuthorizer *typedNilAuthorizer
+	var nilInstrumenter *typedNilBeginInstrumenter
+
+	tests := []struct {
+		name         string
+		authorizer   Authorizer
+		instrumenter BeginInstrumenter
+		want         error
+	}{
+		{name: "literal nil authorizer", instrumenter: validInstrumenter, want: ErrNilAuthorizer},
+		{name: "typed nil authorizer", authorizer: nilAuthorizer, instrumenter: validInstrumenter, want: ErrNilAuthorizer},
+		{name: "literal nil instrumenter", authorizer: validAuthorizer, want: ErrNilInstrumenter},
+		{name: "typed nil instrumenter", authorizer: validAuthorizer, instrumenter: nilInstrumenter, want: ErrNilInstrumenter},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			_, err := NewInstrumentedWithBegin(test.authorizer, test.instrumenter, config)
+			if !errors.Is(err, test.want) {
+				t.Fatalf("NewInstrumentedWithBegin() error = %v, want %v", err, test.want)
+			}
+		})
+	}
+	if clockCalled {
+		t.Fatal("constructor evaluated clock")
+	}
+	if _, err := NewInstrumentedWithBegin(valueAuthorizer{}, valueBeginInstrumenter{}, config); err != nil {
+		t.Fatalf("value dependencies rejected: %v", err)
+	}
+}
+
+func TestInstrumentedWithBeginUsesBoundedCommonObservation(t *testing.T) {
+	t.Parallel()
+
+	key := struct{}{}
+	instrumenter := &beginInstrumenterStub{derivedKey: key}
+	authorizer := authorizerFunc(func(ctx context.Context, _ Request) (Decision, error) {
+		if value, _ := ctx.Value(key).(bool); !value {
+			t.Error("authorizer did not receive derived context")
+		}
+		return Decision{
+			Outcome: Allow, Revision: 9,
+			MatchedPolicyIDs: []PolicyID{"one", "two"},
+			Trace:            []TraceEntry{{}, {}},
+		}, nil
+	})
+	current := time.Unix(100, 0)
+	instrumented, err := NewInstrumentedWithBegin(authorizer, instrumenter, InstrumentationConfig{
+		Clock: func() time.Time {
+			current = current.Add(time.Millisecond)
+			return current
+		},
+		MaxPolicyIDs: 1,
+	})
+	if err != nil {
+		t.Fatalf("NewInstrumentedWithBegin() error = %v", err)
+	}
+	decision, err := instrumented.Decide(context.Background(), Request{})
+	if err != nil || decision.Revision != 9 {
+		t.Fatalf("Decide() = %+v, %v", decision, err)
+	}
+	if instrumenter.begun != 1 || instrumenter.finished != 1 {
+		t.Fatalf("callbacks = begin %d, finish %d", instrumenter.begun, instrumenter.finished)
+	}
+	if instrumenter.event.Duration != time.Millisecond ||
+		len(instrumenter.event.MatchedPolicyIDs) != 1 ||
+		!instrumenter.event.MatchedPolicyIDsTruncated || instrumenter.event.TraceCount != 2 {
+		t.Fatalf("event = %+v", instrumenter.event)
+	}
+}
+
+func TestInstrumentedWithBeginIsolatesObservationPanics(t *testing.T) {
+	t.Parallel()
+
+	for _, test := range []struct {
+		name         string
+		instrumenter *beginInstrumenterStub
+	}{
+		{name: "begin", instrumenter: &beginInstrumenterStub{beginPanic: true}},
+		{name: "completion", instrumenter: &beginInstrumenterStub{finishPanic: true}},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			authorizer := authorizerFunc(func(context.Context, Request) (Decision, error) {
+				return Decision{Outcome: Allow, Revision: 8}, nil
+			})
+			instrumented, err := NewInstrumentedWithBegin(
+				authorizer,
+				test.instrumenter,
+				InstrumentationConfig{},
+			)
+			if err != nil {
+				t.Fatal(err)
+			}
+			decision, err := instrumented.Decide(context.Background(), Request{})
+			if err != nil || decision.Outcome != Allow || decision.Revision != 8 {
+				t.Fatalf("Decide() = %+v, %v", decision, err)
+			}
+		})
+	}
+}
+
 func TestInstrumentedAuthorizerEmitsBoundedEvent(t *testing.T) {
 	t.Parallel()
 

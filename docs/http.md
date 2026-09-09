@@ -1,12 +1,13 @@
 # HTTP integration
 
-The `authhttp` package authorizes standard-library HTTP handlers without
+The `adapters/http` package authorizes standard-library HTTP handlers without
 coupling policy evaluation to routing, authentication, or transport details.
 Applications provide an explicit mapper from `*http.Request` to the typed
-authorization request.
+authorization request. The released `authhttp` and `httpauth` paths remain
+deprecated compatibility facades.
 
 ```go
-handler, err := authhttp.NewHandler(
+handler, err := authorizationhttp.NewHandler(
     engine,
     func(request *http.Request) (authorization.Request, error) {
         principal, ok := authenticatedPrincipal(request.Context())
@@ -33,6 +34,7 @@ handler, which returns HTTP 500 by default. Custom handlers can be installed
 with `WithDeniedHandler` and `WithErrorHandler`.
 
 Allowed downstream handlers can read the complete decision with
-`authhttp.DecisionFromContext`. Custom error handlers can read the original
-error with `authhttp.ErrorFromContext` for logging, but neither default handler
-writes policy details or internal errors to the response body.
+`authorizationhttp.DecisionFromContext`. Custom error handlers can read the
+original error with `authorizationhttp.ErrorFromContext` for logging, but
+neither default handler writes policy details or internal errors to the
+response body.
