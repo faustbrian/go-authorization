@@ -6,7 +6,7 @@
     {
       "directory": ".",
       "module_path": "github.com/faustbrian/go-authorization",
-      "go_version": "1.26.6",
+      "go_version": "1.27.0",
       "packages": [
         {
           "module_directory": ".",
@@ -425,7 +425,7 @@
           "github.com/faustbrian/go-authorization/rbac"
         ],
         "supported_go": {
-          "minimum": "1.26.6",
+          "minimum": "1.27.0",
           "tested": [
             "1.27.0"
           ]
@@ -465,7 +465,7 @@
     {
       "directory": "integration/contracts",
       "module_path": "github.com/faustbrian/go-authorization/integration/contracts",
-      "go_version": "1.26.6",
+      "go_version": "1.27.0",
       "packages": [],
       "purpose": "See the module README and goal files.",
       "lifecycle": "internal",

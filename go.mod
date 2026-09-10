@@ -1,6 +1,6 @@
 module github.com/faustbrian/go-authorization
 
-go 1.26.6
+go 1.27.0
 
 require (
 	github.com/faustbrian/go-cache v1.0.0
