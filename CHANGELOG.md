@@ -7,6 +7,10 @@ versioning for its Go API and portable policy format.
 
 ## Unreleased
 
+### Changed
+
+- Raise the minimum supported Go version from 1.26.6 to 1.27.0.
+
 ## 1.1.0 - 2026-09-09
 
 ### Added
