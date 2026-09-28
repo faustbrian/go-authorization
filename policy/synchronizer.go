@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	authorization "github.com/faustbrian/go-authorization"
+	authorization "github.com/faustbrian/go-authorization/v2"
 )
 
 const DefaultSyncInterval = 30 * time.Second

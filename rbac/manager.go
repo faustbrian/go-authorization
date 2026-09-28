@@ -3,7 +3,7 @@ package rbac
 import (
 	"sync"
 
-	authorization "github.com/faustbrian/go-authorization"
+	authorization "github.com/faustbrian/go-authorization/v2"
 )
 
 // Manager provides synchronized in-memory assignment administration. Each

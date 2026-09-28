@@ -1,7 +1,7 @@
 // Package httpauth provides the legacy fail-closed net/http authorization
 // integration.
 //
-// Deprecated: use github.com/faustbrian/go-authorization/adapters/http. This
+// Deprecated: use github.com/faustbrian/go-authorization/v2/adapters/http. This
 // package remains supported for the longer of 180 days after successor public
 // availability and two subsequently published stable root-module minor
 // releases.
@@ -11,8 +11,8 @@ import (
 	"context"
 	"net/http"
 
-	authorization "github.com/faustbrian/go-authorization"
-	adapter "github.com/faustbrian/go-authorization/adapters/http"
+	authorization "github.com/faustbrian/go-authorization/v2"
+	adapter "github.com/faustbrian/go-authorization/v2/adapters/http"
 )
 
 var (

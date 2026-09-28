@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	authorization "github.com/faustbrian/go-authorization"
-	"github.com/faustbrian/go-authorization/policy"
+	authorization "github.com/faustbrian/go-authorization/v2"
+	"github.com/faustbrian/go-authorization/v2/policy"
 )
 
 type evaluatorFunc func(context.Context, authorization.Request) (authorization.Decision, error)

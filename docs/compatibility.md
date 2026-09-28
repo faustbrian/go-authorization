@@ -7,6 +7,15 @@ method changes, and material semantic changes require the corresponding major
 version decision. `./scripts/check-api.sh` compares the current module with the
 checked-in API baseline.
 
+The v2 module uses `github.com/faustbrian/go-authorization/v2`. Applications
+must update authorization imports together; `postgres.GoMigration` returns a
+`github.com/faustbrian/go-migrations/v2` migration. The published v1 module
+remains available at its original import path.
+
+The `integration/contracts` module remains pinned to published authorization
+v1 for the first v2 source release. After the root v2 tag is public, migrate
+that separate consumer and regenerate its dependency sums.
+
 The supported Go versions are the versions exercised by the CI matrix. A
 change to the minimum Go version is documented in the changelog and release
 notes.

@@ -7,10 +7,10 @@ import (
 	"fmt"
 	"log"
 
-	authorization "github.com/faustbrian/go-authorization"
-	"github.com/faustbrian/go-authorization/abac"
-	"github.com/faustbrian/go-authorization/acl"
-	"github.com/faustbrian/go-authorization/rbac"
+	authorization "github.com/faustbrian/go-authorization/v2"
+	"github.com/faustbrian/go-authorization/v2/abac"
+	"github.com/faustbrian/go-authorization/v2/acl"
+	"github.com/faustbrian/go-authorization/v2/rbac"
 )
 
 func main() {

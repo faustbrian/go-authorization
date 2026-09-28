@@ -10,6 +10,10 @@ versioning for its Go API and portable policy format.
 ### Changed
 
 - Raise the minimum supported Go version from 1.26.6 to 1.27.0.
+- Move the Go module to `github.com/faustbrian/go-authorization/v2` and return
+  the `go-migrations/v2` type from `postgres.GoMigration`. Consumers must update
+  authorization imports and migrations integrations together; the schema SQL
+  and policy behavior are unchanged.
 
 ## 1.1.0 - 2026-09-09
 

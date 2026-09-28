@@ -8,8 +8,9 @@ import (
 	"strings"
 	"testing"
 
-	authorization "github.com/faustbrian/go-authorization"
-	"github.com/faustbrian/go-authorization/policy"
+	authorization "github.com/faustbrian/go-authorization/v2"
+	"github.com/faustbrian/go-authorization/v2/policy"
+	migrations "github.com/faustbrian/go-migrations/v2"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -156,8 +157,16 @@ func TestSchemaMigrationAndGoMigration(t *testing.T) {
 		!strings.Contains(migration.Down, "DROP TABLE") {
 		t.Errorf("SchemaMigration() = %+v", migration)
 	}
-	if _, err := GoMigration(); err != nil {
+	goMigration, err := GoMigration()
+	if err != nil {
 		t.Fatalf("GoMigration() error = %v", err)
+	}
+	if goMigration.Version() != migrations.Version(migration.Version) ||
+		goMigration.Name() != migration.Name ||
+		goMigration.TransactionMode() != migrations.TransactionModeDefault ||
+		goMigration.UpSQL() != migration.Up ||
+		goMigration.DownSQL() != migration.Down {
+		t.Errorf("GoMigration() does not match SchemaMigration()")
 	}
 	corpus, err := os.ReadFile("testdata/schema-v1-up.sql")
 	if err != nil {

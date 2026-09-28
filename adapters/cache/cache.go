@@ -8,8 +8,8 @@ import (
 	"errors"
 	"strconv"
 
-	authorization "github.com/faustbrian/go-authorization"
-	"github.com/faustbrian/go-authorization/policy"
+	authorization "github.com/faustbrian/go-authorization/v2"
+	"github.com/faustbrian/go-authorization/v2/policy"
 	cache "github.com/faustbrian/go-cache"
 )
 

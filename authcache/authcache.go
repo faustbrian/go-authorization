@@ -1,15 +1,15 @@
 // Package authcache provides the legacy authorization cache adapter.
 //
-// Deprecated: use github.com/faustbrian/go-authorization/adapters/cache. This
+// Deprecated: use github.com/faustbrian/go-authorization/v2/adapters/cache. This
 // package remains supported for the longer of 180 days after successor public
 // availability and two subsequently published stable root-module minor
 // releases.
 package authcache
 
 import (
-	authorization "github.com/faustbrian/go-authorization"
-	adapter "github.com/faustbrian/go-authorization/adapters/cache"
-	"github.com/faustbrian/go-authorization/policy"
+	authorization "github.com/faustbrian/go-authorization/v2"
+	adapter "github.com/faustbrian/go-authorization/v2/adapters/cache"
+	"github.com/faustbrian/go-authorization/v2/policy"
 	cache "github.com/faustbrian/go-cache"
 )
 

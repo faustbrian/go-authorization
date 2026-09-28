@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	authorization "github.com/faustbrian/go-authorization"
-	"github.com/faustbrian/go-authorization/acl"
+	authorization "github.com/faustbrian/go-authorization/v2"
+	"github.com/faustbrian/go-authorization/v2/acl"
 )
 
 func Example() {

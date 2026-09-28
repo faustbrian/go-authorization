@@ -5,10 +5,10 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/faustbrian/go-authorization/abac"
-	"github.com/faustbrian/go-authorization/acl"
-	"github.com/faustbrian/go-authorization/policy"
-	"github.com/faustbrian/go-authorization/rbac"
+	"github.com/faustbrian/go-authorization/v2/abac"
+	"github.com/faustbrian/go-authorization/v2/acl"
+	"github.com/faustbrian/go-authorization/v2/policy"
+	"github.com/faustbrian/go-authorization/v2/rbac"
 )
 
 func TestVersionOneCompatibilityCorpus(t *testing.T) {

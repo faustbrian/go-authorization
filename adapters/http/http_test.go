@@ -7,7 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	authorization "github.com/faustbrian/go-authorization"
+	authorization "github.com/faustbrian/go-authorization/v2"
 )
 
 type authorizerFunc func(context.Context, authorization.Request) (authorization.Decision, error)

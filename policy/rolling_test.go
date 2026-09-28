@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	authorization "github.com/faustbrian/go-authorization"
+	authorization "github.com/faustbrian/go-authorization/v2"
 )
 
 func TestRollingDeploymentConvergesOnOneRevision(t *testing.T) {

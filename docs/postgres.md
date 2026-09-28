@@ -5,7 +5,7 @@ authorization state. Updates use the manifest revision as an optimistic lock,
 so policy publication is atomic across every ACL, RBAC, ABAC, and composite
 record in that manifest.
 
-Apply `postgres.GoMigration()` with `migrations`, or apply the SQL returned
+Apply `postgres.GoMigration()` with `go-migrations/v2`, or apply the SQL returned
 by `postgres.SchemaMigration()` with the application's migration system. The
 migration creates the `authorization_policy_manifests` table.
 

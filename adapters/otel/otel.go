@@ -7,8 +7,8 @@ import (
 	"errors"
 	"reflect"
 
-	authorization "github.com/faustbrian/go-authorization"
-	internal "github.com/faustbrian/go-authorization/internal/authorizationotel"
+	authorization "github.com/faustbrian/go-authorization/v2"
+	internal "github.com/faustbrian/go-authorization/v2/internal/authorizationotel"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 )
