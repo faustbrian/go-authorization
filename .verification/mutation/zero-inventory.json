@@ -5,6 +5,14 @@
       "gremlins_verifier_sha256": "9a9499ff68a8dfd49a0be7995590297a8ee563a1aa226bfd8b9361dc53058108",
       "gremlins_version": "v0.6.0",
       "module_directory": ".",
+      "package_directory": "authcache",
+      "reason": "The compatibility facade only copies configuration and directly delegates to the cache adapter; the complete enabled Gremlins operator set discovers no viable transformations.",
+      "source_digest": "8778ccca53503d5712baff0544415796039a5e4e47bdbb5966b64b467689392f"
+    },
+    {
+      "gremlins_verifier_sha256": "9a9499ff68a8dfd49a0be7995590297a8ee563a1aa226bfd8b9361dc53058108",
+      "gremlins_version": "v0.6.0",
+      "module_directory": ".",
       "package_directory": "authhttp",
       "reason": "The compatibility package contains aliases and direct delegations only; the complete enabled Gremlins operator set discovers no viable transformations.",
       "source_digest": "14989d45ff5eb420455101397c6d2d53ff4d9749179e264647d7fbcfbaeef777"
