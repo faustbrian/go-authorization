@@ -3,7 +3,7 @@
 `authorization.NewInstrumentedWithBegin` decorates any authorizer through the
 context-first `BeginInstrumenter` contract without changing its decision or
 error. The released `NewInstrumented` constructor remains available for
-`Start`-based instrumenters. Instrumentation panics and nil derived contexts
+`Start`-based implementations. Instrumentation panics and nil derived contexts
 are isolated from authorization behavior. Events contain bounded decision
 metadata only:
 outcome, reason, revision, bounded matched policy IDs, trace counts, duration,

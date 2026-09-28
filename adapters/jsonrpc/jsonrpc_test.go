@@ -6,7 +6,7 @@ import (
 	"errors"
 	"testing"
 
-	authorization "github.com/faustbrian/go-authorization"
+	authorization "github.com/faustbrian/go-authorization/v2"
 	jsonrpc "github.com/faustbrian/go-jsonrpc"
 )
 

@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	authorization "github.com/faustbrian/go-authorization"
+	authorization "github.com/faustbrian/go-authorization/v2"
 )
 
 type fixedEvaluator struct {

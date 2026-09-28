@@ -10,18 +10,18 @@ import (
 	"testing"
 	"time"
 
-	authorization "github.com/faustbrian/go-authorization"
-	authorizationcache "github.com/faustbrian/go-authorization/adapters/cache"
-	authorizationhttp "github.com/faustbrian/go-authorization/adapters/http"
-	authorizationjsonrpc "github.com/faustbrian/go-authorization/adapters/jsonrpc"
-	authorizationotel "github.com/faustbrian/go-authorization/adapters/otel"
-	authorizationslog "github.com/faustbrian/go-authorization/adapters/slog"
-	legacycache "github.com/faustbrian/go-authorization/authcache"
-	legacyhttpa "github.com/faustbrian/go-authorization/authhttp"
-	legacylog "github.com/faustbrian/go-authorization/authlog"
-	legacyotel "github.com/faustbrian/go-authorization/authotel"
-	legacyjsonrpc "github.com/faustbrian/go-authorization/authrpc"
-	legacyhttpb "github.com/faustbrian/go-authorization/httpauth"
+	authorization "github.com/faustbrian/go-authorization/v2"
+	authorizationcache "github.com/faustbrian/go-authorization/v2/adapters/cache"
+	authorizationhttp "github.com/faustbrian/go-authorization/v2/adapters/http"
+	authorizationjsonrpc "github.com/faustbrian/go-authorization/v2/adapters/jsonrpc"
+	authorizationotel "github.com/faustbrian/go-authorization/v2/adapters/otel"
+	authorizationslog "github.com/faustbrian/go-authorization/v2/adapters/slog"
+	legacycache "github.com/faustbrian/go-authorization/v2/authcache"
+	legacyhttpa "github.com/faustbrian/go-authorization/v2/authhttp"
+	legacylog "github.com/faustbrian/go-authorization/v2/authlog"
+	legacyotel "github.com/faustbrian/go-authorization/v2/authotel"
+	legacyjsonrpc "github.com/faustbrian/go-authorization/v2/authrpc"
+	legacyhttpb "github.com/faustbrian/go-authorization/v2/httpauth"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -54,23 +54,23 @@ func TestLegacyAdaptersRetainNamedReflectionIdentity(t *testing.T) {
 		value any
 		path  string
 	}{
-		{legacycache.ManifestCodec{}, "github.com/faustbrian/go-authorization/authcache"},
-		{legacycache.RevisionKeyEncoder{}, "github.com/faustbrian/go-authorization/authcache"},
-		{legacycache.Config{}, "github.com/faustbrian/go-authorization/authcache"},
-		{(*legacyhttpa.Authorizer)(nil), "github.com/faustbrian/go-authorization/httpauth"},
-		{legacyhttpa.RequestMapper(nil), "github.com/faustbrian/go-authorization/httpauth"},
-		{legacyhttpa.Option(nil), "github.com/faustbrian/go-authorization/httpauth"},
-		{(*legacyhttpb.Authorizer)(nil), "github.com/faustbrian/go-authorization/httpauth"},
-		{legacyhttpb.RequestMapper(nil), "github.com/faustbrian/go-authorization/httpauth"},
-		{legacyhttpb.Option(nil), "github.com/faustbrian/go-authorization/httpauth"},
-		{legacylog.Instrumenter{}, "github.com/faustbrian/go-authorization/authlog"},
-		{legacyotel.Config{}, "github.com/faustbrian/go-authorization/authotel"},
-		{legacyotel.Instrumenter{}, "github.com/faustbrian/go-authorization/authotel"},
-		{(*legacyjsonrpc.Authorizer)(nil), "github.com/faustbrian/go-authorization/authrpc"},
-		{legacyjsonrpc.RequestMapper(nil), "github.com/faustbrian/go-authorization/authrpc"},
-		{legacyjsonrpc.DeniedError(nil), "github.com/faustbrian/go-authorization/authrpc"},
-		{legacyjsonrpc.ErrorMapper(nil), "github.com/faustbrian/go-authorization/authrpc"},
-		{legacyjsonrpc.Option(nil), "github.com/faustbrian/go-authorization/authrpc"},
+		{legacycache.ManifestCodec{}, "github.com/faustbrian/go-authorization/v2/authcache"},
+		{legacycache.RevisionKeyEncoder{}, "github.com/faustbrian/go-authorization/v2/authcache"},
+		{legacycache.Config{}, "github.com/faustbrian/go-authorization/v2/authcache"},
+		{(*legacyhttpa.Authorizer)(nil), "github.com/faustbrian/go-authorization/v2/httpauth"},
+		{legacyhttpa.RequestMapper(nil), "github.com/faustbrian/go-authorization/v2/httpauth"},
+		{legacyhttpa.Option(nil), "github.com/faustbrian/go-authorization/v2/httpauth"},
+		{(*legacyhttpb.Authorizer)(nil), "github.com/faustbrian/go-authorization/v2/httpauth"},
+		{legacyhttpb.RequestMapper(nil), "github.com/faustbrian/go-authorization/v2/httpauth"},
+		{legacyhttpb.Option(nil), "github.com/faustbrian/go-authorization/v2/httpauth"},
+		{legacylog.Instrumenter{}, "github.com/faustbrian/go-authorization/v2/authlog"},
+		{legacyotel.Config{}, "github.com/faustbrian/go-authorization/v2/authotel"},
+		{legacyotel.Instrumenter{}, "github.com/faustbrian/go-authorization/v2/authotel"},
+		{(*legacyjsonrpc.Authorizer)(nil), "github.com/faustbrian/go-authorization/v2/authrpc"},
+		{legacyjsonrpc.RequestMapper(nil), "github.com/faustbrian/go-authorization/v2/authrpc"},
+		{legacyjsonrpc.DeniedError(nil), "github.com/faustbrian/go-authorization/v2/authrpc"},
+		{legacyjsonrpc.ErrorMapper(nil), "github.com/faustbrian/go-authorization/v2/authrpc"},
+		{legacyjsonrpc.Option(nil), "github.com/faustbrian/go-authorization/v2/authrpc"},
 	}
 	for _, test := range tests {
 		typeOf := reflect.TypeOf(test.value)
@@ -137,20 +137,20 @@ func TestSuccessorAdaptersExposeTargetOrientedNamedIdentities(t *testing.T) {
 		value any
 		path  string
 	}{
-		{authorizationcache.ManifestCodec{}, "github.com/faustbrian/go-authorization/adapters/cache"},
-		{authorizationcache.RevisionKeyEncoder{}, "github.com/faustbrian/go-authorization/adapters/cache"},
-		{authorizationcache.Config{}, "github.com/faustbrian/go-authorization/adapters/cache"},
-		{(*authorizationhttp.Authorizer)(nil), "github.com/faustbrian/go-authorization/adapters/http"},
-		{authorizationhttp.RequestMapper(nil), "github.com/faustbrian/go-authorization/adapters/http"},
-		{authorizationhttp.Option(nil), "github.com/faustbrian/go-authorization/adapters/http"},
-		{authorizationslog.Instrumenter{}, "github.com/faustbrian/go-authorization/adapters/slog"},
-		{authorizationotel.Config{}, "github.com/faustbrian/go-authorization/adapters/otel"},
-		{authorizationotel.Instrumenter{}, "github.com/faustbrian/go-authorization/adapters/otel"},
-		{(*authorizationjsonrpc.Authorizer)(nil), "github.com/faustbrian/go-authorization/adapters/jsonrpc"},
-		{authorizationjsonrpc.RequestMapper(nil), "github.com/faustbrian/go-authorization/adapters/jsonrpc"},
-		{authorizationjsonrpc.DeniedError(nil), "github.com/faustbrian/go-authorization/adapters/jsonrpc"},
-		{authorizationjsonrpc.ErrorMapper(nil), "github.com/faustbrian/go-authorization/adapters/jsonrpc"},
-		{authorizationjsonrpc.Option(nil), "github.com/faustbrian/go-authorization/adapters/jsonrpc"},
+		{authorizationcache.ManifestCodec{}, "github.com/faustbrian/go-authorization/v2/adapters/cache"},
+		{authorizationcache.RevisionKeyEncoder{}, "github.com/faustbrian/go-authorization/v2/adapters/cache"},
+		{authorizationcache.Config{}, "github.com/faustbrian/go-authorization/v2/adapters/cache"},
+		{(*authorizationhttp.Authorizer)(nil), "github.com/faustbrian/go-authorization/v2/adapters/http"},
+		{authorizationhttp.RequestMapper(nil), "github.com/faustbrian/go-authorization/v2/adapters/http"},
+		{authorizationhttp.Option(nil), "github.com/faustbrian/go-authorization/v2/adapters/http"},
+		{authorizationslog.Instrumenter{}, "github.com/faustbrian/go-authorization/v2/adapters/slog"},
+		{authorizationotel.Config{}, "github.com/faustbrian/go-authorization/v2/adapters/otel"},
+		{authorizationotel.Instrumenter{}, "github.com/faustbrian/go-authorization/v2/adapters/otel"},
+		{(*authorizationjsonrpc.Authorizer)(nil), "github.com/faustbrian/go-authorization/v2/adapters/jsonrpc"},
+		{authorizationjsonrpc.RequestMapper(nil), "github.com/faustbrian/go-authorization/v2/adapters/jsonrpc"},
+		{authorizationjsonrpc.DeniedError(nil), "github.com/faustbrian/go-authorization/v2/adapters/jsonrpc"},
+		{authorizationjsonrpc.ErrorMapper(nil), "github.com/faustbrian/go-authorization/v2/adapters/jsonrpc"},
+		{authorizationjsonrpc.Option(nil), "github.com/faustbrian/go-authorization/v2/adapters/jsonrpc"},
 	}
 	for _, test := range tests {
 		typeOf := reflect.TypeOf(test.value)

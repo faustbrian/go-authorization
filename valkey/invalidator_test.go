@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	authorization "github.com/faustbrian/go-authorization"
+	authorization "github.com/faustbrian/go-authorization/v2"
 	native "github.com/valkey-io/valkey-go"
 	valkeymock "github.com/valkey-io/valkey-go/mock"
 	"go.uber.org/mock/gomock"

@@ -7,7 +7,7 @@ import (
 	"errors"
 	"log/slog"
 
-	authorization "github.com/faustbrian/go-authorization"
+	authorization "github.com/faustbrian/go-authorization/v2"
 )
 
 // ErrNilLogger reports that New received no logger.

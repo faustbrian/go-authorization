@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	authorization "github.com/faustbrian/go-authorization"
+	authorization "github.com/faustbrian/go-authorization/v2"
 )
 
 const (

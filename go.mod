@@ -1,11 +1,11 @@
-module github.com/faustbrian/go-authorization
+module github.com/faustbrian/go-authorization/v2
 
 go 1.27.0
 
 require (
 	github.com/faustbrian/go-cache v1.0.0
 	github.com/faustbrian/go-jsonrpc v1.0.0
-	github.com/faustbrian/go-migrations v1.0.0
+	github.com/faustbrian/go-migrations/v2 v2.0.0
 	github.com/jackc/pgx/v5 v5.10.0
 	github.com/valkey-io/valkey-go v1.0.76
 	github.com/valkey-io/valkey-go/mock v1.0.76

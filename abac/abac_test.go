@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	authorization "github.com/faustbrian/go-authorization"
-	"github.com/faustbrian/go-authorization/abac"
+	authorization "github.com/faustbrian/go-authorization/v2"
+	"github.com/faustbrian/go-authorization/v2/abac"
 )
 
 func TestEvaluatorUsesTypedAttributeSources(t *testing.T) {
