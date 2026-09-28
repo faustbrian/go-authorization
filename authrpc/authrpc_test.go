@@ -78,7 +78,7 @@ func TestMiddlewareMapsDenialsAndFailures(t *testing.T) {
 			authorizer: authorizerFunc(func(context.Context, authorization.Request) (authorization.Decision, error) {
 				return authorization.Decision{Outcome: authorization.Deny}, nil
 			}),
-			wantCode: -32001,
+			wantCode: CodeForbidden,
 		},
 		"not applicable": {
 			mapper: func(context.Context, json.RawMessage) (authorization.Request, error) {
