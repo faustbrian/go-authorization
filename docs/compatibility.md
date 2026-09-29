@@ -55,10 +55,10 @@ impact and provide a migration path when doing so does not preserve a bypass.
 
 ## Releases
 
-Releases are cut from annotated semantic-version tags after local and hosted
-quality gates pass. Release automation extracts the matching changelog section,
-repeats integration and security checks, builds reproducible source archives,
-and publishes checksums.
+Releases are cut from signed annotated semantic-version tags after local and
+hosted quality gates pass. The Go module proxy serves module archives and
+`go.mod` files, with their hashes recorded by the public checksum database.
+Optional custom GitHub release assets must be checksum-bound if published.
 
 Until a stable release, only the latest tagged pre-1.0 line is supported. After
 1.0, support windows and deprecation periods must be recorded here before an
