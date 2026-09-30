@@ -1,5 +1,25 @@
 # Threat model
 
+## Version 3 cache-adoption boundary
+
+The v3 candidate adopts the published `go-cache/v2` contract through both
+canonical and legacy adapters. Cache manifests remain reconstructible hints,
+not authorization decisions or an authoritative policy source.
+
+| Risk | Disposition and evidence | Owner, mitigation and review trigger |
+| --- | --- | --- |
+| High: distinct revision-key loads retain unbounded queued work after caller cancellation. | Mitigated by the v2 default 1024-flight admission budget. `TestManifestCacheBoundsCanceledDistinctKeyFlights` exercises both adapter paths and existing-key followers. | Maintainers and integrators; enforce request/key admission and bounded repository operations; review new loading paths or resource-limit incidents. |
+| Medium: sensitive repository diagnostics cross public cache errors. | Mitigated by v2 error protection. `TestManifestCacheProtectsRepositoryDiagnostics` checks redacted text and preserved `errors.Is`. | Maintainers and integrators; keep full diagnostics at a trusted repository boundary; review error/telemetry changes. |
+| Medium: trusted repository or backend ignores cancellation. | Accepted residual: bounded `Close` or `Shutdown(ctx)` can report incomplete cleanup; work may complete later. `TestManifestCacheCloseBoundsNonCooperativeRepository` checks bounded close, closed admission and successful join after release. | Integrators own callback/I/O deadlines and service supervision; maintainers own truthful lifecycle semantics. Review late-completion incidents or lifecycle/API changes. |
+| High: stale cache state overrides a newer authoritative manifest. | Cache remains advisory; exact-revision loaders return a miss on mismatch and policy synchronization verifies the repository independently. Existing canonical/legacy repository-loader and synchronizer tests preserve this boundary. | Maintainers and integrators; never authorize from an unverified stale cache hint; review repository, compiler or synchronizer changes. |
+
+The cancellation residual is Medium because it requires trusted application
+code or infrastructure that disregards its context; the cache itself bounds
+admission and the join deadline. These protections do not patch historical
+authorization v2 or guarantee distributed/durable mutation ordering.
+
+## Policy trust boundaries
+
 The engine assumes policy publishers and application request mappers are
 trusted code. Subjects, resource identifiers, tenant identifiers, attributes,
 persisted policy documents, cache messages, and transport inputs are treated as

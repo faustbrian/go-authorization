@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "repository": "github.com/faustbrian/go-authorization",
+  "module": ".",
+  "package": "abac",
+  "gate": "mutation",
+  "input_digest": "sha256:c0a2b518bc67492152f252c1fce2b7107f27452036a91a64a6c86360ea796337",
+  "verifier_digest": "sha256:9a9499ff68a8dfd49a0be7995590297a8ee563a1aa226bfd8b9361dc53058108",
+  "result": "passed",
+  "report_digest": "sha256:2f71f4964a908492f8566d6c1d12f4c6e198b63be17391fe6527dc2316b05cd3",
+  "environment": {
+    "CGO_ENABLED": "1",
+    "GOARCH": "amd64",
+    "GOOS": "linux",
+    "GOVERSION": "go1.27.0",
+    "gremlins_binary_sha256": "sha256:c445d9c04ffe4d2070617fd4df511cb19e48135950462912be29133b1b0169cc"
+  },
+  "completed_at": "2026-09-30T09:23:34.144976904Z"
+}

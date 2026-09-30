@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/faustbrian/go-authorization/v2/policy"
+	"github.com/faustbrian/go-authorization/v3/policy"
 )
 
 func TestManifestRoundTripsStrictHumanReadableJSON(t *testing.T) {

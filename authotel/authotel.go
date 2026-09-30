@@ -1,6 +1,6 @@
 // Package authotel provides the legacy authorization OpenTelemetry adapter.
 //
-// Deprecated: use github.com/faustbrian/go-authorization/v2/adapters/otel. This
+// Deprecated: use github.com/faustbrian/go-authorization/v3/adapters/otel. This
 // package remains supported for the longer of 180 days after successor public
 // availability and two subsequently published stable root-module minor
 // releases.
@@ -11,9 +11,9 @@ import (
 	"strconv"
 	"sync"
 
-	authorization "github.com/faustbrian/go-authorization/v2"
-	adapter "github.com/faustbrian/go-authorization/v2/adapters/otel"
-	internal "github.com/faustbrian/go-authorization/v2/internal/authorizationotel"
+	authorization "github.com/faustbrian/go-authorization/v3"
+	adapter "github.com/faustbrian/go-authorization/v3/adapters/otel"
+	internal "github.com/faustbrian/go-authorization/v3/internal/authorizationotel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/metric"

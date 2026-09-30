@@ -8,9 +8,9 @@ import (
 	"errors"
 	"strconv"
 
-	authorization "github.com/faustbrian/go-authorization/v2"
-	"github.com/faustbrian/go-authorization/v2/policy"
-	cache "github.com/faustbrian/go-cache"
+	authorization "github.com/faustbrian/go-authorization/v3"
+	"github.com/faustbrian/go-authorization/v3/policy"
+	cache "github.com/faustbrian/go-cache/v2"
 )
 
 const (

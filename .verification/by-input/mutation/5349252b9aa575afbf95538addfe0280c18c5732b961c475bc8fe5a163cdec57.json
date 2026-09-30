@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "repository": "github.com/faustbrian/go-authorization",
+  "module": ".",
+  "package": "adapters/slog",
+  "gate": "mutation",
+  "input_digest": "sha256:5349252b9aa575afbf95538addfe0280c18c5732b961c475bc8fe5a163cdec57",
+  "verifier_digest": "sha256:9a9499ff68a8dfd49a0be7995590297a8ee563a1aa226bfd8b9361dc53058108",
+  "result": "passed",
+  "report_digest": "sha256:b4e5e83b0a475917307e112ebf5d766655714cf908bc36c9f9bb489a4d623c24",
+  "environment": {
+    "CGO_ENABLED": "1",
+    "GOARCH": "amd64",
+    "GOOS": "linux",
+    "GOVERSION": "go1.27.0",
+    "gremlins_binary_sha256": "sha256:c445d9c04ffe4d2070617fd4df511cb19e48135950462912be29133b1b0169cc"
+  },
+  "completed_at": "2026-09-30T09:30:14.408118249Z"
+}

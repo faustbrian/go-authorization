@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "repository": "github.com/faustbrian/go-authorization",
+  "module": ".",
+  "package": "authotel",
+  "gate": "mutation",
+  "input_digest": "sha256:10d0eca73851ee30689a3becb3abae4e729d07cee586c70c1c606a8cda39e251",
+  "verifier_digest": "sha256:9a9499ff68a8dfd49a0be7995590297a8ee563a1aa226bfd8b9361dc53058108",
+  "result": "passed",
+  "report_digest": "sha256:d11452044c77d26cb0b0b0e3d77a165e6ea7a401a3f236b79fa55ba928fa7811",
+  "environment": {
+    "CGO_ENABLED": "1",
+    "GOARCH": "amd64",
+    "GOOS": "linux",
+    "GOVERSION": "go1.27.0",
+    "gremlins_binary_sha256": "sha256:c445d9c04ffe4d2070617fd4df511cb19e48135950462912be29133b1b0169cc"
+  },
+  "completed_at": "2026-09-30T09:33:09.343860234Z"
+}

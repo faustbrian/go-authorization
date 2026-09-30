@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "repository": "github.com/faustbrian/go-authorization",
+  "module": ".",
+  "package": "acl",
+  "gate": "mutation",
+  "input_digest": "sha256:c898ef5a26568d8b3c27baf17e40a59991e02f13b3d488064575bedd627c99fe",
+  "verifier_digest": "sha256:9a9499ff68a8dfd49a0be7995590297a8ee563a1aa226bfd8b9361dc53058108",
+  "result": "passed",
+  "report_digest": "sha256:36b63fcfaae8f41d808b2f78ced407089e0ae462857faded2c9f18a16ea222a9",
+  "environment": {
+    "CGO_ENABLED": "1",
+    "GOARCH": "amd64",
+    "GOOS": "linux",
+    "GOVERSION": "go1.27.0",
+    "gremlins_binary_sha256": "sha256:c445d9c04ffe4d2070617fd4df511cb19e48135950462912be29133b1b0169cc"
+  },
+  "completed_at": "2026-09-30T09:24:22.745260362Z"
+}

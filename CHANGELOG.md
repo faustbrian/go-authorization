@@ -12,6 +12,30 @@ versioning for its Go API and portable policy format.
 - Move the non-releasable integration contract to the published authorization
   v2.0.0 module while retaining principal, audit-log, and telemetry composition.
 
+## 3.0.0 - 2026-09-30
+
+### Changed
+
+- Move the root module and all authorization imports to
+  `github.com/faustbrian/go-authorization/v3` to adopt the published
+  `github.com/faustbrian/go-cache/v2` security contract. Canonical and legacy
+  cache adapters now expose v2 cache types rather than changing the published
+  authorization v2 API in place. Update both authorization and cache imports
+  together; published authorization v2 retains its historical behavior.
+- Bound default cache-aside work to 1024 distinct flights, including canceled
+  callers' retained work, and return `cache.ErrFlightLimit` at saturation.
+  Repository diagnostic text is protected while `errors.Is` classification
+  remains available. Cache `Close` has a five-second join bound;
+  `Shutdown(ctx)` accepts the application's deadline and reports incomplete
+  cleanup without claiming to terminate non-cooperative repository work.
+- Keep policy formats, exact-revision loading, authoritative repository
+  verification, and fail-closed authorization decisions unchanged.
+
+### Maintenance
+
+- Retain the non-releasable integration contract's published-v2 dependency
+  until v3 publication permits a separate public-consumer adoption.
+
 ## 2.0.0 - 2026-09-30
 
 ### Changed

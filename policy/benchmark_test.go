@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/faustbrian/go-authorization/v2/abac"
-	"github.com/faustbrian/go-authorization/v2/acl"
-	"github.com/faustbrian/go-authorization/v2/policy"
-	"github.com/faustbrian/go-authorization/v2/rbac"
+	"github.com/faustbrian/go-authorization/v3/abac"
+	"github.com/faustbrian/go-authorization/v3/acl"
+	"github.com/faustbrian/go-authorization/v3/policy"
+	"github.com/faustbrian/go-authorization/v3/rbac"
 )
 
 func BenchmarkCompilerCompile(b *testing.B) {
