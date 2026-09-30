@@ -7,7 +7,7 @@ method changes, and material semantic changes require the corresponding major
 version decision. `./scripts/check-api.sh` compares the current module with the
 checked-in API baseline.
 
-The v3 release candidate uses `github.com/faustbrian/go-authorization/v3`.
+The published v3 release uses `github.com/faustbrian/go-authorization/v3`.
 Update all authorization imports and cache imports together: canonical and
 legacy cache adapters expose `github.com/faustbrian/go-cache/v2` named types.
 The previous concrete cache return and configuration types cannot silently
@@ -22,11 +22,13 @@ repository verification, and authorization decision semantics are unchanged.
 Direct consumers must choose their major migration explicitly; binaries using
 different major imports can coexist but their named types are not interchangeable.
 
-The non-releasable `integration/contracts` module retains its published
-authorization v2.0.0 contract until v3 is public; it has no committed local
-replacement. A separate post-release adoption will move it to v3. It retains
-principal, audit-log, and telemetry interoperability checks against the
-historical public contract in this root release candidate.
+The non-releasable `integration/contracts` module consumes published
+authorization v3.0.0 and Cache/v2 v2.0.0 without local replacements. It exercises
+the canonical manifest cache adapter with the public memory backend, proving
+that a loaded manifest is stored and a subsequent hit does not reload it.
+Principal, audit-log, and telemetry interoperability remain covered against
+published v3. Historical authorization v1/v2 consumers remain separate
+compatibility variants; they do not exercise or inherit the v3 cache contract.
 
 The supported Go versions are the versions exercised by the CI matrix. A
 change to the minimum Go version is documented in the changelog and release
@@ -34,8 +36,9 @@ notes.
 
 `integration/contracts` is an independent consumer module pinned to published
 `authentication`, `log`, and `telemetry` revisions. Its test verifies
-principal mapping, audit emission, and telemetry provider interoperability
-without adding those modules to the core runtime dependency graph.
+principal mapping, manifest cache load/hit composition, audit emission, and
+telemetry provider interoperability without adding those modules to the core
+runtime dependency graph.
 
 ## Policy formats
 
