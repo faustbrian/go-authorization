@@ -9,7 +9,7 @@ import (
 	"io"
 	"time"
 
-	authorization "github.com/faustbrian/go-authorization/v2"
+	authorization "github.com/faustbrian/go-authorization/v3"
 )
 
 var (

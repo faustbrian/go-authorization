@@ -1,6 +1,6 @@
 // Package authlog provides the legacy bounded authorization slog adapter.
 //
-// Deprecated: use github.com/faustbrian/go-authorization/v2/adapters/slog. This
+// Deprecated: use github.com/faustbrian/go-authorization/v3/adapters/slog. This
 // package remains supported for the longer of 180 days after successor public
 // availability and two subsequently published stable root-module minor
 // releases.
@@ -10,8 +10,8 @@ import (
 	"context"
 	"log/slog"
 
-	authorization "github.com/faustbrian/go-authorization/v2"
-	adapter "github.com/faustbrian/go-authorization/v2/adapters/slog"
+	authorization "github.com/faustbrian/go-authorization/v3"
+	adapter "github.com/faustbrian/go-authorization/v3/adapters/slog"
 )
 
 var ErrNilLogger = adapter.ErrNilLogger

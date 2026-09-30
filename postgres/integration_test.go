@@ -8,9 +8,9 @@ import (
 	"testing"
 	"time"
 
-	authorization "github.com/faustbrian/go-authorization/v2"
-	"github.com/faustbrian/go-authorization/v2/policy"
-	store "github.com/faustbrian/go-authorization/v2/postgres"
+	authorization "github.com/faustbrian/go-authorization/v3"
+	"github.com/faustbrian/go-authorization/v3/policy"
+	store "github.com/faustbrian/go-authorization/v3/postgres"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 

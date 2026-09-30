@@ -11,7 +11,7 @@ run_apidiff() {
     fi
 }
 
-module="github.com/faustbrian/go-authorization/v2"
+module="github.com/faustbrian/go-authorization/v3"
 baseline="api/authorization.txt"
 current="$(mktemp)"
 report="$(mktemp)"

@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	authorization "github.com/faustbrian/go-authorization/v2"
+	authorization "github.com/faustbrian/go-authorization/v3"
 )
 
 type repositoryStub struct {

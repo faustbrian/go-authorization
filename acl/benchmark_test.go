@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	authorization "github.com/faustbrian/go-authorization/v2"
+	authorization "github.com/faustbrian/go-authorization/v3"
 )
 
 func BenchmarkEvaluateByPolicySize(b *testing.B) {

@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	authorization "github.com/faustbrian/go-authorization/v2"
+	authorization "github.com/faustbrian/go-authorization/v3"
 	jsonrpc "github.com/faustbrian/go-jsonrpc"
 )
 

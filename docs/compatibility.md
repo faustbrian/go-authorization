@@ -7,15 +7,26 @@ method changes, and material semantic changes require the corresponding major
 version decision. `./scripts/check-api.sh` compares the current module with the
 checked-in API baseline.
 
-The v2 module uses `github.com/faustbrian/go-authorization/v2`. Applications
-must update authorization imports together; `postgres.GoMigration` returns a
-`github.com/faustbrian/go-migrations/v2` migration. The published v1 module
-remains available at its original import path.
+The v3 release candidate uses `github.com/faustbrian/go-authorization/v3`.
+Update all authorization imports and cache imports together: canonical and
+legacy cache adapters expose `github.com/faustbrian/go-cache/v2` named types.
+The previous concrete cache return and configuration types cannot silently
+change in an authorization v2 patch. Published v1 and v2 authorization modules
+remain available at their historical import paths and behavior; they do not
+gain the v3 cache protections. No source directory or maintenance branch is
+created for either historical major.
 
-The non-releasable `integration/contracts` module selects the published
-authorization v2.0.0 module without a local replacement. It retains the
-principal, audit-log, and telemetry interoperability checks against that
-public contract.
+`postgres.GoMigration` continues returning a
+`github.com/faustbrian/go-migrations/v2` migration. Portable policy formats,
+repository verification, and authorization decision semantics are unchanged.
+Direct consumers must choose their major migration explicitly; binaries using
+different major imports can coexist but their named types are not interchangeable.
+
+The non-releasable `integration/contracts` module retains its published
+authorization v2.0.0 contract until v3 is public; it has no committed local
+replacement. A separate post-release adoption will move it to v3. It retains
+principal, audit-log, and telemetry interoperability checks against the
+historical public contract in this root release candidate.
 
 The supported Go versions are the versions exercised by the CI matrix. A
 change to the minimum Go version is documented in the changelog and release

@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	authorization "github.com/faustbrian/go-authorization/v2"
-	"github.com/faustbrian/go-authorization/v2/authorizationtest"
+	authorization "github.com/faustbrian/go-authorization/v3"
+	"github.com/faustbrian/go-authorization/v3/authorizationtest"
 )
 
 func TestRequestBuilderCreatesIndependentDeterministicRequests(t *testing.T) {

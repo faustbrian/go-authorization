@@ -1,7 +1,7 @@
 // Package authrpc provides the legacy fail-closed JSON-RPC authorization
 // middleware.
 //
-// Deprecated: use github.com/faustbrian/go-authorization/v2/adapters/jsonrpc.
+// Deprecated: use github.com/faustbrian/go-authorization/v3/adapters/jsonrpc.
 // This package remains supported for the longer of 180 days after successor
 // public availability and two subsequently published stable root-module minor
 // releases.
@@ -11,8 +11,8 @@ import (
 	"context"
 	"encoding/json"
 
-	authorization "github.com/faustbrian/go-authorization/v2"
-	adapter "github.com/faustbrian/go-authorization/v2/adapters/jsonrpc"
+	authorization "github.com/faustbrian/go-authorization/v3"
+	adapter "github.com/faustbrian/go-authorization/v3/adapters/jsonrpc"
 	jsonrpc "github.com/faustbrian/go-jsonrpc"
 )
 
