@@ -7,7 +7,12 @@ versioning for its Go API and portable policy format.
 
 ## Unreleased
 
-## 2.0.0 - 2026-09-28
+### Maintenance
+
+- Move the non-releasable integration contract to the published authorization
+  v2.0.0 module while retaining principal, audit-log, and telemetry composition.
+
+## 2.0.0 - 2026-09-30
 
 ### Changed
 
