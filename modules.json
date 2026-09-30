@@ -479,7 +479,8 @@
       "tag_prefix": "integration/contracts/v",
       "owned_dependencies": [
         "github.com/faustbrian/go-authentication",
-        "github.com/faustbrian/go-authorization/v2",
+        "github.com/faustbrian/go-authorization/v3",
+        "github.com/faustbrian/go-cache/v2",
         "github.com/faustbrian/go-clock",
         "github.com/faustbrian/go-log",
         "github.com/faustbrian/go-telemetry"

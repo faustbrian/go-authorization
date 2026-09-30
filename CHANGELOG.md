@@ -11,6 +11,10 @@ versioning for its Go API and portable policy format.
 
 - Move the non-releasable integration contract to the published authorization
   v2.0.0 module while retaining principal, audit-log, and telemetry composition.
+- Adopt published authorization v3.0.0 in that integration contract after
+  root publication, retaining its principal, audit-log, and telemetry assertions.
+- Exercise the public authorization v3 manifest cache adapter with Cache/v2
+  storage, including a load followed by a hit without another loader call.
 
 ## 3.0.0 - 2026-09-30
 

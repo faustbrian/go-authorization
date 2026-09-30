@@ -3,17 +3,65 @@ package contracts_test
 import (
 	"context"
 	"log/slog"
+	"sync/atomic"
 	"testing"
+	"time"
 
 	authentication "github.com/faustbrian/go-authentication"
-	authorization "github.com/faustbrian/go-authorization/v2"
-	authorizationotel "github.com/faustbrian/go-authorization/v2/adapters/otel"
-	authorizationslog "github.com/faustbrian/go-authorization/v2/adapters/slog"
-	"github.com/faustbrian/go-authorization/v2/authn"
+	authorization "github.com/faustbrian/go-authorization/v3"
+	authorizationcache "github.com/faustbrian/go-authorization/v3/adapters/cache"
+	authorizationotel "github.com/faustbrian/go-authorization/v3/adapters/otel"
+	authorizationslog "github.com/faustbrian/go-authorization/v3/adapters/slog"
+	"github.com/faustbrian/go-authorization/v3/authn"
+	"github.com/faustbrian/go-authorization/v3/policy"
+	cache "github.com/faustbrian/go-cache/v2"
+	memory "github.com/faustbrian/go-cache/v2/adapters/memory"
 	log "github.com/faustbrian/go-log"
 	"github.com/faustbrian/go-log/handler/capture"
 	"github.com/faustbrian/go-telemetry/testtelemetry"
 )
+
+func TestPublishedManifestCacheLoadsThenHits(t *testing.T) {
+	t.Parallel()
+	clock := cache.SystemClock{}
+	backend, err := memory.New(memory.Config{MaxEntries: 2, MaxBytes: 1 << 20, Clock: clock})
+	if err != nil {
+		t.Fatal(err)
+	}
+	store, err := authorizationcache.New(authorizationcache.Config{
+		Namespace: "contracts", Backend: backend, Clock: clock,
+		TTL: cache.TTLPolicy{TTL: time.Minute},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		if err := store.Shutdown(ctx); err != nil {
+			t.Error(err)
+		}
+	})
+	manifest := policy.Manifest{
+		Format: policy.FormatV1, Revision: 7, Algorithm: policy.AlgorithmDenyOverrides,
+		Policies: []policy.Record{},
+	}
+	var calls atomic.Int32
+	loader := func(context.Context, authorization.Revision) (cache.LoadResult[policy.Manifest], error) {
+		calls.Add(1)
+		return cache.LoadResult[policy.Manifest]{Value: manifest, Found: true}, nil
+	}
+	for attempt := 0; attempt < 2; attempt++ {
+		result, err := store.GetOrLoad(context.Background(), manifest.Revision, loader)
+		if err != nil || result.State != cache.Hit || result.Value.Revision != manifest.Revision ||
+			result.Value.Format != manifest.Format || result.Value.Algorithm != manifest.Algorithm {
+			t.Fatalf("load/hit attempt %d = (%+v, %v)", attempt, result, err)
+		}
+	}
+	if got := calls.Load(); got != 1 {
+		t.Fatalf("loader calls = %d, want one load followed by a stored hit", got)
+	}
+}
 
 func TestOwnedModuleInteroperability(t *testing.T) {
 	t.Parallel()
