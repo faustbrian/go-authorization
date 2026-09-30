@@ -9,7 +9,7 @@ import (
 	authorization "github.com/faustbrian/go-authorization/v3"
 	"github.com/faustbrian/go-authorization/v3/policy"
 	cache "github.com/faustbrian/go-cache/v2"
-	"github.com/faustbrian/go-cache/v2/backend/memory"
+	memory "github.com/faustbrian/go-cache/v2/adapters/memory"
 )
 
 func TestManifestCodecRoundTripsStrictPolicyFormat(t *testing.T) {
