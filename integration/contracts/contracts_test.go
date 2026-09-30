@@ -7,9 +7,9 @@ import (
 
 	authentication "github.com/faustbrian/go-authentication"
 	authorization "github.com/faustbrian/go-authorization/v2"
-	"github.com/faustbrian/go-authorization/v2/authlog"
+	authorizationotel "github.com/faustbrian/go-authorization/v2/adapters/otel"
+	authorizationslog "github.com/faustbrian/go-authorization/v2/adapters/slog"
 	"github.com/faustbrian/go-authorization/v2/authn"
-	"github.com/faustbrian/go-authorization/v2/authotel"
 	log "github.com/faustbrian/go-log"
 	"github.com/faustbrian/go-log/handler/capture"
 	"github.com/faustbrian/go-telemetry/testtelemetry"
@@ -55,9 +55,9 @@ func TestOwnedModuleInteroperability(t *testing.T) {
 	if err != nil {
 		t.Fatalf("log.New() error = %v", err)
 	}
-	logInstrumenter, err := authlog.New(logger, slog.LevelInfo)
+	logInstrumenter, err := authorizationslog.New(logger, slog.LevelInfo)
 	if err != nil {
-		t.Fatalf("authlog.New() error = %v", err)
+		t.Fatalf("authorizationslog.New() error = %v", err)
 	}
 	_, finishLog := logInstrumenter.Start(context.Background())
 	finishLog(authorization.Event{Outcome: authorization.Allow, Revision: 1})
@@ -71,12 +71,12 @@ func TestOwnedModuleInteroperability(t *testing.T) {
 			t.Errorf("telemetry.Shutdown() error = %v", err)
 		}
 	})
-	telemetryInstrumenter, err := authotel.New(authotel.Config{
+	telemetryInstrumenter, err := authorizationotel.New(authorizationotel.Config{
 		TracerProvider: telemetry.TracerProvider(),
 		MeterProvider:  telemetry.MeterProvider(),
 	})
 	if err != nil {
-		t.Fatalf("authotel.New() error = %v", err)
+		t.Fatalf("authorizationotel.New() error = %v", err)
 	}
 	_, finishTelemetry := telemetryInstrumenter.Start(context.Background())
 	finishTelemetry(authorization.Event{Outcome: authorization.Allow, Revision: 1})
