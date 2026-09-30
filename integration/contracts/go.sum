@@ -4,10 +4,14 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/faustbrian/go-authentication v1.0.0 h1:TD2CGRoH7Wyd6Ylztpe5GSPM4FLh0eYPgPniOYYApH4=
 github.com/faustbrian/go-authentication v1.0.0/go.mod h1:cLbyMCC4LxGQvUuB+Rx/lbnVvYiBN23mLn7z5TwMRNQ=
-github.com/faustbrian/go-authorization v1.0.0 h1:8Le49keu9GGDTu09pDBgXHcj4grZQvJ6HXnzRKxYjF8=
-github.com/faustbrian/go-authorization v1.0.0/go.mod h1:sbqcFYCCChWSkaO3hTYDv9eLWFQlgmyqYAMfOhBPafE=
+github.com/faustbrian/go-authorization/v2 v2.0.0 h1:Oz/OUaXm/1t6FNCM/ngiz06ePnlBtiulUZtTnBcWe1M=
+github.com/faustbrian/go-authorization/v2 v2.0.0/go.mod h1:B3vYeh8fZptih7Ac9lmlIkI/HwD6lELEWWQvwS2MZog=
+github.com/faustbrian/go-cache v1.0.0 h1:/B3O6vnO7nNKaHo7OyneRzKt0v4usW2cDfjK/nsPvaA=
+github.com/faustbrian/go-cache v1.0.0/go.mod h1:bV7c5/FSwYGqUaeqgnWTyZnAzEhwGQL4C1tFdu4Smrk=
 github.com/faustbrian/go-clock v1.0.0 h1:F7YEouU94Zu2mExFBep7JWEa8nMz7WzWi/SPrDz2yJY=
 github.com/faustbrian/go-clock v1.0.0/go.mod h1:WKZ5p79IKGNTZGDp2L81cYjbsEjv3+9U0be7uwS8t6Y=
+github.com/faustbrian/go-jsonrpc v1.0.0 h1:iQ/YxMkjKBlWyTPCYxQzuBBIV/73ImYWKNVGG7hZr8s=
+github.com/faustbrian/go-jsonrpc v1.0.0/go.mod h1:gdYA/wi8eAeptM4Lf9qwPA6eImChPa2Ng9/+/UvpOPQ=
 github.com/faustbrian/go-log v1.0.0 h1:OFH4CgQyIB+WGlKxXlWuJgK178sAmVUKVQBl3FwJgSY=
 github.com/faustbrian/go-log v1.0.0/go.mod h1:hwFD9uvNXWat2MF855ncxF4opNWHjhsErO/mE6SUN6E=
 github.com/faustbrian/go-telemetry v1.0.0 h1:stE8oAr6k2vG6yQGrZT4Sq6fpMaiqtrHXKOXn9+nIQg=
