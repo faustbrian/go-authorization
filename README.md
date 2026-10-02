@@ -69,7 +69,7 @@ Default resource bounds, the benchmark matrix, reference measurements, and
 scaling guidance are documented in [performance and limits](docs/performance.md).
 
 For ecosystem-wide construction, ownership, lifecycle, and composition
-guidance, see the versioned [Golib ecosystem index](https://github.com/faustbrian/go-library-tools/blob/v1.4.0/docs/ecosystem/README.md)
+guidance, see the versioned [Golib ecosystem index](https://github.com/faustbrian/go-library-tools/tree/531e4db50fd81a7201257a7b488a0cf22d333aca/docs/ecosystem)
 and its [Service edge family](https://github.com/faustbrian/go-library-tools/blob/v1.4.0/docs/ecosystem/design-language.md#package-families-and-selection).
 
 Install the `golib` version declared in `.golib.yaml`, then run the complete
