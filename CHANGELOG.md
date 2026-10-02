@@ -9,6 +9,11 @@ versioning for its Go API and portable policy format.
 
 ### Maintenance
 
+- Update OpenTelemetry API and SDK requirements from 1.44.0 to 1.46.0.
+  Default SDK histogram exemplars now use time-unbiased sampling; the update
+  also fixes retained exemplar contexts and concurrent span-attribute reads.
+  Review telemetry expectations when upgrading caller-owned providers;
+  authorization APIs and decision semantics remain unchanged.
 - Move the non-releasable integration contract to the published authorization
   v2.0.0 module while retaining principal, audit-log, and telemetry composition.
 - Adopt published authorization v3.0.0 in that integration contract after
