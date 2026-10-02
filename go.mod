@@ -8,7 +8,7 @@ require (
 	github.com/faustbrian/go-migrations/v2 v2.0.0
 	github.com/jackc/pgx/v5 v5.10.0
 	github.com/valkey-io/valkey-go v1.0.78
-	github.com/valkey-io/valkey-go/mock v1.0.76
+	github.com/valkey-io/valkey-go/mock v1.0.78
 	go.opentelemetry.io/otel v1.46.0
 	go.opentelemetry.io/otel/metric v1.46.0
 	go.opentelemetry.io/otel/sdk v1.46.0
