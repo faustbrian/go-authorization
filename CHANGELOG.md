@@ -9,6 +9,9 @@ versioning for its Go API and portable policy format.
 
 ### Maintenance
 
+- Update the caller-owned Valkey client from 1.0.76 to 1.0.78 for
+  connection shutdown and topology recovery fixes. Authorization APIs
+  and policy formats remain unchanged.
 - Update OpenTelemetry API and SDK requirements from 1.44.0 to 1.46.0.
   Default SDK histogram exemplars now use time-unbiased sampling; the update
   also fixes retained exemplar contexts and concurrent span-attribute reads.
