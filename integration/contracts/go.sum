@@ -16,8 +16,8 @@ github.com/faustbrian/go-identifier v1.0.0 h1:5lXZbS2wK4NelWv4ekRocwOwjkWt1ch/nh
 github.com/faustbrian/go-identifier v1.0.0/go.mod h1:Q2yS7Hk4N4i9Wd3OmPQGh657SHtA1IjvtT4PllphNlY=
 github.com/faustbrian/go-jsonrpc v1.0.0 h1:iQ/YxMkjKBlWyTPCYxQzuBBIV/73ImYWKNVGG7hZr8s=
 github.com/faustbrian/go-jsonrpc v1.0.0/go.mod h1:gdYA/wi8eAeptM4Lf9qwPA6eImChPa2Ng9/+/UvpOPQ=
-github.com/faustbrian/go-log v1.0.0 h1:OFH4CgQyIB+WGlKxXlWuJgK178sAmVUKVQBl3FwJgSY=
-github.com/faustbrian/go-log v1.0.0/go.mod h1:hwFD9uvNXWat2MF855ncxF4opNWHjhsErO/mE6SUN6E=
+github.com/faustbrian/go-log/v2 v2.0.0 h1:VQIEvZfXXEYXoTeavlEeMT1YtinFV1KDFAMyNhixQ7o=
+github.com/faustbrian/go-log/v2 v2.0.0/go.mod h1:FJ34JaICS4Lda+67LUgNp4e4S3y2GBl0l3UsvIqrVFY=
 github.com/faustbrian/go-service v1.0.0 h1:sxfwxfsHxD2EjsDthb+u29xpp3qMtUSu/LT5lPd8e4Q=
 github.com/faustbrian/go-service v1.0.0/go.mod h1:2klNLQJfgrbRX2N41iLSEPVFwLmyg4nMVQ+kWZZudAc=
 github.com/faustbrian/go-telemetry v1.0.0 h1:stE8oAr6k2vG6yQGrZT4Sq6fpMaiqtrHXKOXn9+nIQg=

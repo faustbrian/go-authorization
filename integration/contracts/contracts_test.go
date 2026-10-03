@@ -16,8 +16,8 @@ import (
 	"github.com/faustbrian/go-authorization/v3/policy"
 	cache "github.com/faustbrian/go-cache/v2"
 	memory "github.com/faustbrian/go-cache/v2/adapters/memory"
-	log "github.com/faustbrian/go-log"
-	"github.com/faustbrian/go-log/handler/capture"
+	log "github.com/faustbrian/go-log/v2"
+	"github.com/faustbrian/go-log/v2/handler/capture"
 	"github.com/faustbrian/go-telemetry/testtelemetry"
 )
 
