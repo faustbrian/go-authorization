@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	authentication "github.com/faustbrian/go-authentication"
+	authentication "github.com/faustbrian/go-authentication/v2"
 	authorization "github.com/faustbrian/go-authorization/v3"
 	authorizationcache "github.com/faustbrian/go-authorization/v3/adapters/cache"
 	authorizationotel "github.com/faustbrian/go-authorization/v3/adapters/otel"
@@ -96,6 +96,10 @@ func TestOwnedModuleInteroperability(t *testing.T) {
 	labels, ok := subject.Attributes["labels"].StringSet()
 	if !ok || len(labels) != 2 || labels[0] != "audited" {
 		t.Fatalf("mapped labels = %v, %v", labels, ok)
+	}
+	department, ok := subject.Attributes["department"].String()
+	if !ok || department != "finance" {
+		t.Fatal("mapped department was not preserved")
 	}
 
 	handler := capture.New()
