@@ -40,7 +40,6 @@ func TestIntegrationCanceledBlockedUpdateReleasesConnection(t *testing.T) {
 		t.Fatal(err)
 	}
 	config.MaxConns = 1
-	config.ConnConfig.RuntimeParams["application_name"] = "authorization-canceled-update"
 	pool, err := pgxpool.NewWithConfig(ctx, config)
 	if err != nil {
 		t.Fatal(err)
@@ -54,6 +53,12 @@ func TestIntegrationCanceledBlockedUpdateReleasesConnection(t *testing.T) {
 	if _, err := repository.Update(ctx, 0, first); err != nil {
 		t.Fatal(err)
 	}
+	writer, err := pool.Acquire(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	writerPID := writer.Conn().PgConn().PID()
+	writer.Release()
 	blocker, err := observer.Begin(ctx)
 	if err != nil {
 		t.Fatal(err)
@@ -74,7 +79,7 @@ func TestIntegrationCanceledBlockedUpdateReleasesConnection(t *testing.T) {
 	deadline := time.Now().Add(5 * time.Second)
 	for {
 		var waiting bool
-		err := observer.QueryRow(ctx, "SELECT EXISTS (SELECT 1 FROM pg_stat_activity WHERE application_name = $1 AND state = 'active' AND wait_event_type = 'Lock')", "authorization-canceled-update").Scan(&waiting)
+		err := observer.QueryRow(ctx, "SELECT EXISTS (SELECT 1 FROM pg_stat_activity WHERE pid = $1 AND state = 'active' AND wait_event_type = 'Lock')", writerPID).Scan(&waiting)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -96,6 +101,19 @@ func TestIntegrationCanceledBlockedUpdateReleasesConnection(t *testing.T) {
 		t.Fatal("canceled update did not return within the test deadline")
 	}
 	assertPersistedManifest(t, ctx, observer, first)
+	// A client context error can precede pgx's asynchronous server cleanup.
+	// Keep the write blocked until that exact backend has terminated; otherwise
+	// unlocking can let the already-submitted statement finish before cancellation.
+	for {
+		var active bool
+		if err := observer.QueryRow(ctx, "SELECT EXISTS (SELECT 1 FROM pg_stat_activity WHERE pid = $1)", writerPID).Scan(&active); err != nil {
+			t.Fatalf("observe canceled backend termination: %v", err)
+		}
+		if !active {
+			break
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
 	if err := blocker.Rollback(ctx); err != nil {
 		t.Fatal(err)
 	}
