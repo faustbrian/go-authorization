@@ -9,6 +9,14 @@ versioning for its Go API and portable policy format.
 
 ### Maintenance
 
+- Use Go 1.27.2 for development and CI builds to include patched standard
+  library HTTP and TLS behavior. The public module minimum stays 1.27.0;
+  applications should rebuild with the patched compiler.
+- Adopt JSON-RPC 1.1.1 with the authorization middleware APIs and
+  fail-closed admission rules unchanged. The host dispatcher now limits
+  encoded responses to four MiB: oversized results or custom errors become
+  internal errors. Aggregate overflow can fail after authorized methods
+  execute; callers must not replay a batch assuming no effects occurred.
 - Update the caller-owned Valkey client from 1.0.76 to 1.0.78 for
   connection shutdown and topology recovery fixes. Authorization APIs
   and policy formats remain unchanged.
