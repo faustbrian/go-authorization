@@ -9,6 +9,10 @@ versioning for its Go API and portable policy format.
 
 ### Maintenance
 
+- Adopt OpenTelemetry API and SDK 1.47 with authorization APIs and
+  decision semantics unchanged. Caller-owned metric exporters that used
+  OTEL_GO_X_METRIC_EXPORT_BATCH_SIZE must configure WithMaxExportBatchSize
+  instead; the experimental environment variable is no longer supported.
 - Adopt pgx 5.11 for caller-owned PostgreSQL pools without changing the
   authorization store API, atomic manifest updates, or schema. Review
   connection-string parsing and non-positive pool lifetime settings when
