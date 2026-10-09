@@ -2,8 +2,11 @@ package postgres_test
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
+	"reflect"
 	"sync"
 	"testing"
 	"time"
@@ -19,7 +22,8 @@ func TestIntegrationAtomicManifestUpdates(t *testing.T) {
 	if connectionString == "" {
 		t.Skip("POSTGRES_URL is not configured")
 	}
-	ctx := context.Background()
+	ctx, cancelTest := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancelTest()
 	pool, err := pgxpool.New(ctx, connectionString)
 	if err != nil {
 		t.Fatalf("pgxpool.New() error = %v", err)
@@ -49,11 +53,14 @@ func TestIntegrationAtomicManifestUpdates(t *testing.T) {
 	if err != nil || stored.Revision != 1 {
 		t.Fatalf("initial Update() = (%+v, %v)", stored, err)
 	}
+	assertIntegrationManifest(t, stored, first)
 	loaded, err := repository.Load(ctx)
 	if err != nil || loaded.Revision != 1 {
 		t.Fatalf("Load() = (%+v, %v)", loaded, err)
 	}
 
+	assertIntegrationManifest(t, loaded, first)
+	assertPersistedManifest(t, ctx, pool, first)
 	canceled, cancel := context.WithCancel(ctx)
 	cancel()
 	if _, err := repository.Update(canceled, 1, integrationManifest(2)); !errors.Is(err, context.Canceled) {
@@ -64,6 +71,7 @@ func TestIntegrationAtomicManifestUpdates(t *testing.T) {
 		t.Fatalf("Load() after canceled update = (%+v, %v), want revision 1", loaded, err)
 	}
 
+	assertIntegrationManifest(t, loaded, first)
 	type updateResult struct {
 		revision authorization.Revision
 		err      error
@@ -102,6 +110,8 @@ func TestIntegrationAtomicManifestUpdates(t *testing.T) {
 		t.Fatalf("Load() after concurrent updates = (%+v, %v), want revision %d", loaded, err, winner)
 	}
 
+	assertIntegrationManifest(t, loaded, integrationManifest(winner))
+	assertPersistedManifest(t, ctx, pool, integrationManifest(winner))
 	victim, err := pool.Acquire(ctx)
 	if err != nil {
 		t.Fatalf("acquire backend connection: %v", err)
@@ -131,6 +141,7 @@ func TestIntegrationAtomicManifestUpdates(t *testing.T) {
 		t.Fatalf("reconnected Load().Revision = %d, want %d", loaded.Revision, winner)
 	}
 
+	assertIntegrationManifest(t, loaded, integrationManifest(winner))
 	if _, err := repository.Update(ctx, 0, integrationManifest(2)); !errors.Is(err, store.ErrRevisionConflict) {
 		t.Fatalf("conflicting Update() error = %v, want ErrRevisionConflict", err)
 	}
@@ -143,6 +154,58 @@ func integrationManifest(revision authorization.Revision) policy.Manifest {
 	return policy.Manifest{
 		Format: policy.FormatV1, Revision: revision,
 		Algorithm: policy.AlgorithmDenyOverrides,
-		Policies:  []policy.Record{},
+		Policies: []policy.Record{
+			{ID: "documents", Revision: revision, Model: policy.ModelACL,
+				Priority: 10, Metadata: map[string]string{"owner": fmt.Sprintf("revision-%d", revision)},
+				Document: json.RawMessage(fmt.Sprintf(`{"version":1,"entries":[{"id":"read","subject_kind":"user","subject_id":"user-%d","action":"read","resource_type":"doc","effect":"allow"}]}`, revision))},
+			{ID: "roles", Revision: revision + 10, Model: policy.ModelRBAC,
+				Priority: 20, Metadata: map[string]string{"owner": "security"},
+				Document: json.RawMessage(`{"version":1,"roles":[],"permissions":[],"assignments":[]}`)},
+		},
 	}
+}
+
+func assertIntegrationManifest(t *testing.T, got, want policy.Manifest) {
+	t.Helper()
+	if got.Format != want.Format || got.Revision != want.Revision || got.Algorithm != want.Algorithm || len(got.Policies) != len(want.Policies) {
+		t.Fatalf("manifest envelope = %+v, want %+v", got, want)
+	}
+	for index, expected := range want.Policies {
+		actual := got.Policies[index]
+		var actualDocument, expectedDocument any
+		if err := json.Unmarshal(actual.Document, &actualDocument); err != nil {
+			t.Fatal(err)
+		}
+		if err := json.Unmarshal(expected.Document, &expectedDocument); err != nil {
+			t.Fatal(err)
+		}
+		actual.Document, expected.Document = nil, nil
+		if !reflect.DeepEqual(actual, expected) || !reflect.DeepEqual(actualDocument, expectedDocument) {
+			t.Fatalf("policy %d or its JSON document changed: got %+v / %v, want %+v / %v", index, actual, actualDocument, expected, expectedDocument)
+		}
+	}
+}
+
+func assertPersistedManifest(t *testing.T, ctx context.Context, pool *pgxpool.Pool, want policy.Manifest) {
+	t.Helper()
+	var count int
+	if err := pool.QueryRow(ctx, "SELECT count(*) FROM authorization_policy_manifests").Scan(&count); err != nil {
+		t.Fatal(err)
+	}
+	if count != 1 {
+		t.Fatalf("persisted manifest row count = %d, want 1", count)
+	}
+	var revision authorization.Revision
+	var encoded []byte
+	if err := pool.QueryRow(ctx, "SELECT revision, manifest FROM authorization_policy_manifests WHERE singleton = 1").Scan(&revision, &encoded); err != nil {
+		t.Fatal(err)
+	}
+	var persisted policy.Manifest
+	if err := json.Unmarshal(encoded, &persisted); err != nil {
+		t.Fatal(err)
+	}
+	if revision != want.Revision {
+		t.Fatalf("persisted revision = %d, want %d", revision, want.Revision)
+	}
+	assertIntegrationManifest(t, persisted, want)
 }

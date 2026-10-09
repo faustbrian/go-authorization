@@ -9,6 +9,10 @@ versioning for its Go API and portable policy format.
 
 ### Maintenance
 
+- Adopt pgx 5.11 for caller-owned PostgreSQL pools without changing the
+  authorization store API, atomic manifest updates, or schema. Review
+  connection-string parsing and non-positive pool lifetime settings when
+  constructing pools; custom pgx Rows implementations now need TypeMap.
 - Use Go 1.27.2 for development and CI builds to include patched standard
   library HTTP and TLS behavior. The public module minimum stays 1.27.0;
   applications should rebuild with the patched compiler.
