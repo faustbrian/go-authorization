@@ -50,7 +50,10 @@ of internal errors into allows and loss of cancellation behavior.
 
 ## Mutation testing
 
-`golib mutation --module .` runs the canonical mutation contract for this
-module. It requires exact 100 percent efficacy and mutant coverage, a nonempty
+For an optional package-local experiment, run
+`golib mutation --module . --package rbac`. Mutation is not required for ordinary
+edits or pull requests. `golib mutation --module .` runs the selected full
+mutation contract for this module. It requires exact 100 percent efficacy and
+mutant coverage, a nonempty
 report, and `KILLED` status for every viable mutant. Lived, uncovered,
 timed-out, malformed, missing, or unclassified results fail the gate.

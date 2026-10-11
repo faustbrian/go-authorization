@@ -3,7 +3,7 @@
 [![CI](https://github.com/faustbrian/go-authorization/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/faustbrian/go-authorization/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/badge/CodeQL-required-blue)](https://github.com/faustbrian/go-authorization/actions/workflows/ci.yml)
 [![Coverage](https://img.shields.io/badge/coverage-100%25_required-blue)](CONTRIBUTING.md#verification)
-[![Mutation](https://img.shields.io/badge/mutation-100%25_required-blue)](CONTRIBUTING.md#verification)
+[![Mutation](https://img.shields.io/badge/mutation-local_and_scheduled-blue)](CONTRIBUTING.md#verification)
 [![Documentation](https://img.shields.io/badge/docs-checked_in_CI-blue)](docs/)
 [![Go Reference](https://pkg.go.dev/badge/github.com/faustbrian/go-authorization/v3.svg)](https://pkg.go.dev/github.com/faustbrian/go-authorization/v3)
 [![Release](https://img.shields.io/github/v/release/faustbrian/go-authorization?sort=semver)](https://github.com/faustbrian/go-authorization/releases)
@@ -72,8 +72,13 @@ For ecosystem-wide construction, ownership, lifecycle, and composition
 guidance, see the versioned [Golib ecosystem index](https://github.com/faustbrian/go-library-tools/tree/531e4db50fd81a7201257a7b488a0cf22d333aca/docs/ecosystem)
 and its [Service edge family](https://github.com/faustbrian/go-library-tools/blob/v1.4.0/docs/ecosystem/design-language.md#package-families-and-selection).
 
-Install the `golib` version declared in `.golib.yaml`, then run the complete
-repository contract with `golib check --all`. Integration tests run when
+Use Go 1.27.2 for development and start with `GOWORK=off go test ./...`.
+Install the public `golib` release declared in `.golib.yaml` without building
+it from source. `make check`/`make ci` run bounded checks across both catalog
+modules, retaining PostgreSQL and Valkey prerequisites plus a selected
+snapshot-consistency race. Base-free checks run fuzz seeds/corpus, not active
+campaigns; `make check-full` retains the original full contract.
+Direct integration tests run when
 `POSTGRES_URL` or `VALKEY_ADDRESS` is configured and otherwise skip without
 contacting local services.
 
