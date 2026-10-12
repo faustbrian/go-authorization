@@ -25,23 +25,33 @@ import (
 const scopeName = "github.com/faustbrian/go-authorization/authotel"
 
 var (
+	// ErrNilTracerProvider preserves the direct adapter error identity for errors.Is.
 	ErrNilTracerProvider = adapter.ErrNilTracerProvider
-	ErrNilMeterProvider  = adapter.ErrNilMeterProvider
+	// ErrNilMeterProvider preserves the direct adapter error identity for errors.Is.
+	ErrNilMeterProvider = adapter.ErrNilMeterProvider
 )
 
 func result(event authorization.Event) string { return internal.Result(event) }
 
+// Config borrows legacy providers; literal nil selects no-op SDK defaults,
+// unlike the direct adapter. Typed-nil providers are not normalized/validated.
 type Config struct {
+	// TracerProvider is borrowed; it owns SDK export/sampling/shutdown.
 	TracerProvider trace.TracerProvider
-	MeterProvider  metric.MeterProvider
+	// MeterProvider is borrowed; it owns SDK collection/export/shutdown.
+	MeterProvider metric.MeterProvider
 }
 
+// Instrumenter retains the released nominal layout and borrowed SDK lifecycle;
+// use New rather than a zero value.
 type Instrumenter struct {
 	tracer    trace.Tracer
 	duration  metric.Float64Histogram
 	decisions metric.Int64Counter
 }
 
+// New constructs legacy-scope instruments, using no-op providers only for
+// literal nil. Raw instrument errors are returned; no provider shutdown is owned.
 func New(config Config) (*Instrumenter, error) {
 	if config.TracerProvider == nil {
 		config.TracerProvider = tracenoop.NewTracerProvider()
@@ -71,6 +81,8 @@ func New(config Config) (*Instrumenter, error) {
 	}, nil
 }
 
+// Begin returns a once-only span/metric callback with the legacy scope.
+// Direct calls do not cap event text; SDK panics before End can leave an open span.
 func (instrumenter *Instrumenter) Begin(ctx context.Context) (context.Context, func(authorization.Event)) {
 	ctx, span := instrumenter.tracer.Start(
 		ctx,
@@ -107,6 +119,7 @@ func (instrumenter *Instrumenter) Begin(ctx context.Context) (context.Context, f
 	}
 }
 
+// Start delegates to Begin for the released observation contract.
 func (instrumenter *Instrumenter) Start(ctx context.Context) (context.Context, func(authorization.Event)) {
 	return instrumenter.Begin(ctx)
 }

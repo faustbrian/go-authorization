@@ -1,5 +1,11 @@
-// Package policy provides snapshot inspection, diff, dry-run, and portable
-// policy manifest contracts.
+// Package policy owns the application authorization.policy/v1 manifest profile,
+// explicit decoder compilation, inspectable diffs, dry-runs and cooperative reload.
+// Decode admits envelope bytes but does not authenticate publishers or verify all
+// model semantics. Compiler borrows registered decoders/evaluators; snapshot
+// publication is local and does not transact with repository/invalidation I/O.
+// Synchronizer owns polling only while Run executes under the caller's context.
+// Revisions/metadata are trusted source declarations; no whole-process parser,
+// callback, string-byte or distributed freshness guarantee is implied.
 package policy
 
 import (
@@ -11,17 +17,29 @@ import (
 	authorization "github.com/faustbrian/go-authorization/v3"
 )
 
+// ErrNilSnapshot identifies policy snapshot is nil. Compare with errors.Is, not error text.
 var ErrNilSnapshot = errors.New("policy snapshot is nil")
 
+// SnapshotDiff compares inspectable policy metadata and algorithms, not evaluator
+// code or proof of semantic equivalence.
 type SnapshotDiff struct {
-	FromRevision     authorization.Revision
-	ToRevision       authorization.Revision
+	// FromRevision identifies the source view for inspection/comparison.
+	FromRevision authorization.Revision
+	// ToRevision identifies the candidate view; no publication is performed by the report.
+	ToRevision authorization.Revision
+	// AlgorithmChanged compares combining algorithms, not evaluator implementation.
 	AlgorithmChanged bool
-	Added            []authorization.PolicyID
-	Removed          []authorization.PolicyID
-	Changed          []authorization.PolicyID
+	// Added contains sorted newly introduced policy IDs.
+	Added []authorization.PolicyID
+	// Removed contains sorted removed policy IDs.
+	Removed []authorization.PolicyID
+	// Changed contains sorted IDs with changed inspectable metadata/revision/activation/priority.
+	Changed []authorization.PolicyID
 }
 
+// Diff rejects nil views and returns sorted added/removed/metadata-changed
+// IDs. Evaluator implementation and input ordering changes are not independently
+// inspected; publishers must assign meaningful policy revisions.
 func Diff(current, candidate *authorization.Snapshot) (SnapshotDiff, error) {
 	if current == nil {
 		return SnapshotDiff{}, ErrNilSnapshot
@@ -58,19 +76,34 @@ func Diff(current, candidate *authorization.Snapshot) (SnapshotDiff, error) {
 	return diff, nil
 }
 
+// DecisionComparison compares outcome/reason/matched IDs/truncation for one input;
+// revision and trace differences alone do not set Changed.
 type DecisionComparison struct {
-	Index     int
-	Current   authorization.Decision
+	// Index is the corresponding original request index.
+	Index int
+	// Current is the current-view decision including its owned result diagnostics.
+	Current authorization.Decision
+	// Candidate is the candidate-view decision, not an installed result.
 	Candidate authorization.Decision
-	Changed   bool
+	// Changed reports an outcome/reason/matched-ID or truncation difference; revision/trace alone are ignored.
+	Changed bool
 }
 
+// DryRunReport contains ordered decisions without installing the candidate.
 type DryRunReport struct {
+	// FromRevision identifies the source view for inspection/comparison.
 	FromRevision authorization.Revision
-	ToRevision   authorization.Revision
-	Decisions    []DecisionComparison
+	// ToRevision identifies the candidate view; no publication is performed by the report.
+	ToRevision authorization.Revision
+	// Decisions contains per-request comparisons in original order.
+	Decisions []DecisionComparison
 }
 
+// DryRun creates default-limited engines and evaluates current then candidate
+// sequentially, returning joined errors and available comparisons. Callback/clock
+// side effects are not rolled back, and omitted request time may sample different
+// clocks. Changed excludes revisions/traces; this is selected-request evidence,
+// not equivalence, authentication or publication qualification.
 func DryRun(
 	ctx context.Context,
 	current *authorization.Snapshot,

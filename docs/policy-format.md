@@ -35,15 +35,19 @@ priority, optional UTC activation window, review metadata, and a model document.
 format versions, unsupported algorithms or models, duplicate policy IDs,
 invalid revisions, malformed activation windows, and non-object documents.
 `policy.Encode` validates before producing deterministic indented JSON ending in
-a newline. Decode and encode reject manifests above the 16 MiB default before
-an oversized policy can reach activation.
+a newline. Decode admits at most 16 MiB before parsing; encode enforces the
+cap after serialization/allocation. Duplicate JSON member names are accepted
+with encoding/json last-member semantics, unlike duplicate policy IDs.
 
 The envelope does not deserialize Go evaluators by itself. `policy.Compiler`
 uses an explicit model decoder registry to validate each `document` payload and
-construct an immutable snapshot. Registries are copied at compiler construction.
+construct a structural snapshot. Registry keys are copied at compiler
+construction, but decoder implementations are borrowed. Callbacks have no context/panic sandbox, and earlier callback
+side effects are not rolled back when a later record fails.
 The compiler independently bounds policy count, each document, and aggregate
 document bytes; defaults are 1,000 policies, 1 MiB per document, and 16 MiB in
-aggregate.
+aggregate. Envelope validation traverses all records before these compiler caps;
+the limits are not whole-process parsing/allocation budgets.
 
 ```go
 compiler, err := policy.NewCompiler(map[policy.Model]policy.Decoder{
@@ -60,15 +64,18 @@ snapshot, err := compiler.Compile(manifest)
 
 A model decoder must validate its document into typed ACL, RBAC, ABAC, or
 application-specific definitions before calling their constructors. Missing
-decoders, oversized documents, decoder errors, and nil evaluators all fail
-compilation. An object that passes envelope validation but fails model
+decoders, oversized documents, decoder errors, and literal-nil evaluators all fail
+compilation. Typed-nil implementations are not detected and remain a trusted
+collaborator risk. An object that passes envelope validation but fails model
 validation is never activated.
 
 Built-in ACL, RBAC, and ABAC documents use model document version `1`. They
 reject unknown fields and trailing JSON, express effects as `"allow"` or
 `"deny"`, and pass decoded definitions through the same bounded constructors
 as in-memory configuration. Each decoder and encoder rejects a model document
-above 1 MiB. Their public `Document` values can be validated and encoded with
+above 1 MiB (encode checks after marshaling). The same duplicate-member JSON
+behavior applies, and constructors may materialize data before count admission.
+Their public `Document` values can be validated and encoded with
 each model package's `EncodeDocument` function.
 
 ```json

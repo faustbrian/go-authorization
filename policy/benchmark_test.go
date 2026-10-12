@@ -10,6 +10,7 @@ import (
 	"github.com/faustbrian/go-authorization/v3/rbac"
 )
 
+// BenchmarkCompilerCompile measures one empty ACL record compiled repeatedly; it excludes repository I/O.
 func BenchmarkCompilerCompile(b *testing.B) {
 	compiler, err := policy.NewCompiler(map[policy.Model]policy.Decoder{
 		policy.ModelACL: acl.Decoder{}, policy.ModelRBAC: rbac.Decoder{},

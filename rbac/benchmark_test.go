@@ -8,6 +8,7 @@ import (
 	authorization "github.com/faustbrian/go-authorization/v3"
 )
 
+// BenchmarkEvaluateInheritanceDepth varies one parent chain with a matching inherited permission, not arbitrary graph fan-out.
 func BenchmarkEvaluateInheritanceDepth(b *testing.B) {
 	for _, depth := range []int{1, 8, 32} {
 		b.Run(fmt.Sprintf("depth-%d", depth), func(b *testing.B) {

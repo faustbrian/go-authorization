@@ -1,5 +1,10 @@
 // Package authorizationjsonrpc provides fail-closed JSON-RPC authorization
-// middleware.
+// middleware. It grants only a valid explicit Allow and owns no authentication,
+// parser admission, transport worker or shutdown. Mappers/authorizers/next/error
+// callbacks are borrowed synchronous code and must support concurrent invocation.
+// Default wire errors are generic, while raw causes remain protected local state;
+// custom mappings own response privacy/size. Decisions stored in context are not
+// deep-copied. JSON-RPC dispatch limits belong to the separate go-jsonrpc module.
 package authorizationjsonrpc
 
 import (
@@ -23,6 +28,7 @@ var (
 
 // Authorizer decides whether a mapped JSON-RPC request may reach its method handler.
 type Authorizer interface {
+	// Decide returns a valid outcome or error; map errors to failure, never allow.
 	Decide(context.Context, authorization.Request) (authorization.Decision, error)
 }
 
@@ -64,7 +70,11 @@ func WithErrorMapper(mapper ErrorMapper) Option {
 }
 
 // NewMiddleware constructs fail-closed JSON-RPC authorization middleware.
-// Only Allow reaches the next handler; nil custom-mapper results are contained as internal errors.
+// Only Allow reaches next; nil error-mapper results become generic internal errors,
+// but panics/blocking callbacks are not contained. Constructor guards literal nil
+// authorizers and nil mapper functions only; a nil next handler is not rejected.
+// The same borrowed params reach mapper/next, and derived decision context retains
+// shared slices. Custom errors may contain data; downstream dispatch owns wire caps.
 func NewMiddleware(
 	authorizer Authorizer,
 	mapper RequestMapper,

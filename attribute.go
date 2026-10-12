@@ -10,20 +10,30 @@ import (
 	"time"
 )
 
+// ErrInvalidFloat identifies attribute float must be finite. Compare with errors.Is, not error text.
 var ErrInvalidFloat = errors.New("attribute float must be finite")
 
 // ValueKind is the closed set of supported attribute representations.
 type ValueKind uint8
 
 const (
+	// ValueMissing is the zero/missing representation, distinct from null.
 	ValueMissing ValueKind = iota
+	// ValueNull is explicit null.
 	ValueNull
+	// ValueString is exact text.
 	ValueString
+	// ValueBool is a boolean.
 	ValueBool
+	// ValueInt is a signed 64-bit integer.
 	ValueInt
+	// ValueFloat is a finite float64.
 	ValueFloat
+	// ValueTime is a UTC instant without monotonic data.
 	ValueTime
+	// ValueIP is an unmapped netip address, possibly invalid.
 	ValueIP
+	// ValueStringSet is an immutable sorted deduplicated string set.
 	ValueStringSet
 )
 
@@ -40,22 +50,27 @@ type Value struct {
 	setVal    []string
 }
 
+// NullValue returns explicit null, distinct from the zero missing Value.
 func NullValue() Value {
 	return Value{kind: ValueNull}
 }
 
+// StringValue retains text without copying, normalization or byte admission.
 func StringValue(value string) Value {
 	return Value{kind: ValueString, stringVal: value}
 }
 
+// BoolValue wraps a boolean without coercion.
 func BoolValue(value bool) Value {
 	return Value{kind: ValueBool, boolVal: value}
 }
 
+// IntValue wraps a signed 64-bit integer without coercion.
 func IntValue(value int64) Value {
 	return Value{kind: ValueInt, intVal: value}
 }
 
+// FloatValue rejects NaN/infinities with ErrInvalidFloat; finite values are retained.
 func FloatValue(value float64) (Value, error) {
 	if math.IsNaN(value) || math.IsInf(value, 0) {
 		return Value{}, ErrInvalidFloat
@@ -64,6 +79,7 @@ func FloatValue(value float64) (Value, error) {
 	return Value{kind: ValueFloat, floatVal: value}, nil
 }
 
+// MustFloatValue returns FloatValue or panics with ErrInvalidFloat; use only for trusted constants.
 func MustFloatValue(value float64) Value {
 	attribute, err := FloatValue(value)
 	if err != nil {
@@ -73,14 +89,17 @@ func MustFloatValue(value float64) Value {
 	return attribute
 }
 
+// TimeValue drops monotonic data and normalizes the instant to UTC.
 func TimeValue(value time.Time) Value {
 	return Value{kind: ValueTime, timeVal: value.Round(0).UTC()}
 }
 
+// IPValue normalizes IPv4-mapped addresses with Unmap; invalid addresses remain invalid.
 func IPValue(value netip.Addr) Value {
 	return Value{kind: ValueIP, ipVal: value.Unmap()}
 }
 
+// StringSetValue copies, sorts lexically and deduplicates values before returning immutable set state; no input/cardinality/byte cap is enforced.
 func StringSetValue(values []string) Value {
 	set := append([]string(nil), values...)
 	sort.Strings(set)
@@ -94,34 +113,42 @@ func StringSetValue(values []string) Value {
 	return Value{kind: ValueStringSet, setVal: unique}
 }
 
+// Kind reports the representation; zero is ValueMissing.
 func (value Value) Kind() ValueKind {
 	return value.kind
 }
 
+// String returns stored text and whether the value is a string.
 func (value Value) String() (string, bool) {
 	return value.stringVal, value.kind == ValueString
 }
 
+// Bool returns the stored boolean and whether that representation is present.
 func (value Value) Bool() (bool, bool) {
 	return value.boolVal, value.kind == ValueBool
 }
 
+// Int returns the stored int64 and whether that representation is present.
 func (value Value) Int() (int64, bool) {
 	return value.intVal, value.kind == ValueInt
 }
 
+// Float returns the stored finite float and whether that representation is present.
 func (value Value) Float() (float64, bool) {
 	return value.floatVal, value.kind == ValueFloat
 }
 
+// Time returns the stored UTC instant and whether that representation is present.
 func (value Value) Time() (time.Time, bool) {
 	return value.timeVal, value.kind == ValueTime
 }
 
+// IP returns the stored unmapped address and whether that representation is present.
 func (value Value) IP() (netip.Addr, bool) {
 	return value.ipVal, value.kind == ValueIP
 }
 
+// StringSet returns a copied sorted/deduplicated slice, or (nil, false) for a non-set.
 func (value Value) StringSet() ([]string, bool) {
 	if value.kind != ValueStringSet {
 		return nil, false
@@ -167,7 +194,8 @@ func (value Value) Equal(other Value) bool {
 	}
 }
 
-// Compare orders comparable values of the same kind without coercion.
+// Compare orders strings, integers, finite floats and times of the same kind.
+// Other/cross-kind pairs return (0, false); no numeric/string coercion occurs.
 func (value Value) Compare(other Value) (int, bool) {
 	if value.kind != other.kind {
 		return 0, false

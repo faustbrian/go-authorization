@@ -1,5 +1,12 @@
-// Package rbac provides typed roles, permissions, assignments, and bounded
-// role inheritance.
+// Package rbac resolves exact-scope subject/group assignments through a validated
+// acyclic role graph. New copies parent/group slices and builds a reusable view;
+// Evaluate applies exact action/resource matches and explicit deny over allow.
+// Permissions are ordered by descending priority then ID, not first-match wins.
+// No-match remains NotApplicable for the root engine to combine/default-deny.
+// Tenant inheritance is opt-in; authentication/group membership stays caller-owned.
+// Manager provides separate in-memory administration, not distributed persistence.
+// Request and unused Subject attributes remain borrowed; no I/O worker is owned.
+// Model documents use the application version-1 JSON profile.
 package rbac
 
 import (
@@ -13,24 +20,42 @@ import (
 )
 
 var (
-	ErrRoleCycle                = errors.New("RBAC role inheritance cycle")
+	// ErrRoleCycle identifies RBAC role inheritance cycle. Compare with errors.Is, not error text.
+	ErrRoleCycle = errors.New("RBAC role inheritance cycle")
+	// ErrInheritanceDepthExceeded identifies RBAC inheritance depth exceeded. Compare with errors.Is, not error text.
 	ErrInheritanceDepthExceeded = errors.New("RBAC inheritance depth exceeded")
-	ErrUnknownParentRole        = errors.New("RBAC parent role does not exist")
-	ErrCrossTenantInheritance   = errors.New("RBAC inheritance crosses tenants")
-	ErrInvalidRole              = errors.New("invalid RBAC role")
-	ErrDuplicateRole            = errors.New("duplicate RBAC role")
-	ErrInvalidPermission        = errors.New("invalid RBAC permission")
-	ErrDuplicatePermission      = errors.New("duplicate RBAC permission")
-	ErrInvalidAssignment        = errors.New("invalid RBAC assignment")
-	ErrDuplicateAssignment      = errors.New("duplicate RBAC assignment")
-	ErrUnknownRole              = errors.New("RBAC role does not exist")
-	ErrRoleTenantMismatch       = errors.New("RBAC role tenant mismatch")
-	ErrRoleLimitExceeded        = errors.New("RBAC role limit exceeded")
-	ErrPermissionLimitExceeded  = errors.New("RBAC permission limit exceeded")
-	ErrAssignmentLimitExceeded  = errors.New("RBAC assignment limit exceeded")
-	ErrGroupLimitExceeded       = errors.New("RBAC group limit exceeded")
-	ErrMatchLimitExceeded       = errors.New("RBAC match limit exceeded")
-	ErrBatchLimitExceeded       = errors.New("RBAC batch limit exceeded")
+	// ErrUnknownParentRole identifies RBAC parent role does not exist. Compare with errors.Is, not error text.
+	ErrUnknownParentRole = errors.New("RBAC parent role does not exist")
+	// ErrCrossTenantInheritance identifies RBAC inheritance crosses tenants. Compare with errors.Is, not error text.
+	ErrCrossTenantInheritance = errors.New("RBAC inheritance crosses tenants")
+	// ErrInvalidRole identifies invalid RBAC role. Compare with errors.Is, not error text.
+	ErrInvalidRole = errors.New("invalid RBAC role")
+	// ErrDuplicateRole identifies duplicate RBAC role. Compare with errors.Is, not error text.
+	ErrDuplicateRole = errors.New("duplicate RBAC role")
+	// ErrInvalidPermission identifies invalid RBAC permission. Compare with errors.Is, not error text.
+	ErrInvalidPermission = errors.New("invalid RBAC permission")
+	// ErrDuplicatePermission identifies duplicate RBAC permission. Compare with errors.Is, not error text.
+	ErrDuplicatePermission = errors.New("duplicate RBAC permission")
+	// ErrInvalidAssignment identifies invalid RBAC assignment. Compare with errors.Is, not error text.
+	ErrInvalidAssignment = errors.New("invalid RBAC assignment")
+	// ErrDuplicateAssignment identifies duplicate RBAC assignment. Compare with errors.Is, not error text.
+	ErrDuplicateAssignment = errors.New("duplicate RBAC assignment")
+	// ErrUnknownRole identifies RBAC role does not exist. Compare with errors.Is, not error text.
+	ErrUnknownRole = errors.New("RBAC role does not exist")
+	// ErrRoleTenantMismatch identifies RBAC role tenant mismatch. Compare with errors.Is, not error text.
+	ErrRoleTenantMismatch = errors.New("RBAC role tenant mismatch")
+	// ErrRoleLimitExceeded identifies RBAC role limit exceeded. Compare with errors.Is, not error text.
+	ErrRoleLimitExceeded = errors.New("RBAC role limit exceeded")
+	// ErrPermissionLimitExceeded identifies RBAC permission limit exceeded. Compare with errors.Is, not error text.
+	ErrPermissionLimitExceeded = errors.New("RBAC permission limit exceeded")
+	// ErrAssignmentLimitExceeded identifies RBAC assignment limit exceeded. Compare with errors.Is, not error text.
+	ErrAssignmentLimitExceeded = errors.New("RBAC assignment limit exceeded")
+	// ErrGroupLimitExceeded identifies RBAC group limit exceeded. Compare with errors.Is, not error text.
+	ErrGroupLimitExceeded = errors.New("RBAC group limit exceeded")
+	// ErrMatchLimitExceeded identifies RBAC match limit exceeded. Compare with errors.Is, not error text.
+	ErrMatchLimitExceeded = errors.New("RBAC match limit exceeded")
+	// ErrBatchLimitExceeded identifies RBAC batch limit exceeded. Compare with errors.Is, not error text.
+	ErrBatchLimitExceeded = errors.New("RBAC batch limit exceeded")
 )
 
 const (
@@ -44,23 +69,39 @@ const (
 )
 
 const (
-	ReasonAllow         authorization.ReasonCode = "rbac-allow"
-	ReasonExplicitDeny  authorization.ReasonCode = "rbac-explicit-deny"
+	// ReasonAllow marks a model grant.
+	ReasonAllow authorization.ReasonCode = "rbac-allow"
+	// ReasonExplicitDeny marks a matching model denial.
+	ReasonExplicitDeny authorization.ReasonCode = "rbac-explicit-deny"
+	// ReasonLimitExceeded marks model work rejected by a configured count/cost limit.
 	ReasonLimitExceeded authorization.ReasonCode = "rbac-limit-exceeded"
 )
 
+// Limits admits role/permission/assignment/group/match/batch counts and graph
+// depth; positive overrides are trusted policy, not a whole-process memory budget.
 type Limits struct {
+	// MaxInheritanceDepth admits validated role-graph depth; default is 32.
 	MaxInheritanceDepth int `json:"max_inheritance_depth,omitempty"`
-	MaxRoles            int `json:"max_roles,omitempty"`
-	MaxPermissions      int `json:"max_permissions,omitempty"`
-	MaxAssignments      int `json:"max_assignments,omitempty"`
-	MaxGroups           int `json:"max_groups,omitempty"`
-	MaxMatches          int `json:"max_matches,omitempty"`
-	MaxBatchSize        int `json:"max_batch_size,omitempty"`
+	// MaxRoles admits role count; default is 1000.
+	MaxRoles int `json:"max_roles,omitempty"`
+	// MaxPermissions admits permission count; default is 10000.
+	MaxPermissions int `json:"max_permissions,omitempty"`
+	// MaxAssignments admits assignment count; default is 10000.
+	MaxAssignments int `json:"max_assignments,omitempty"`
+	// MaxGroups caps admitted membership count; zero/default policy selects 100.
+	MaxGroups int `json:"max_groups,omitempty"`
+	// MaxMatches caps collected matching entries/permissions/rules; default is 100.
+	MaxMatches int `json:"max_matches,omitempty"`
+	// MaxBatchSize admits request count before result allocation; default is 1000.
+	MaxBatchSize int `json:"max_batch_size,omitempty"`
 }
 
+// Option configures construction synchronously. Nil/custom options may panic;
+// do not retain evaluator mutation access after New publishes its view.
 type Option func(*Evaluator)
 
+// WithLimits applies only positive fields; zero and negative fields retain defaults.
+// Limits admit selected counts, not total string bytes, wall time or collaborator memory.
 func WithLimits(limits Limits) Option {
 	return func(evaluator *Evaluator) {
 		if limits.MaxInheritanceDepth > 0 {
@@ -87,35 +128,59 @@ func WithLimits(limits Limits) Option {
 	}
 }
 
+// WithGlobalInheritance permits global assignments for non-global requests;
+// inheritance never crosses distinct nonempty tenant scopes.
 func WithGlobalInheritance() Option {
 	return func(evaluator *Evaluator) {
 		evaluator.inheritGlobal = true
 	}
 }
 
+// RoleID is an exact application role label, not authenticated membership.
 type RoleID string
+
+// Role defines same-tenant inheritance through copied parent IDs.
 type Role struct {
-	ID      RoleID
-	Tenant  authorization.TenantID
+	// ID is an exact application-defined label; keep diagnostic identifiers non-secret.
+	ID RoleID
+	// Tenant is exact scope; empty means global, not inferred tenant membership.
+	Tenant authorization.TenantID
+	// Parents lists same-tenant inherited roles; New copies and validates the acyclic graph.
 	Parents []RoleID
 }
 
+// Permission grants/denies one exact action/type and optional resource instance;
+// its tenant must match the referenced role.
 type Permission struct {
-	ID           authorization.PolicyID
-	RoleID       RoleID
-	Tenant       authorization.TenantID
-	Action       authorization.Action
+	// ID is an exact application-defined label; keep diagnostic identifiers non-secret.
+	ID authorization.PolicyID
+	// RoleID names an existing same-tenant role; constructors validate that relation.
+	RoleID RoleID
+	// Tenant is exact scope; empty means global, not inferred tenant membership.
+	Tenant authorization.TenantID
+	// Action is matched byte-for-byte; no wildcard, normalization or permission discovery is implied.
+	Action authorization.Action
+	// ResourceType is matched exactly; no wildcard or external lookup is implied.
 	ResourceType authorization.ResourceType
-	ResourceID   authorization.ResourceID
-	Effect       authorization.Outcome
-	Priority     int
+	// ResourceID is exact when nonempty; empty makes the grant/rule type-wide.
+	ResourceID authorization.ResourceID
+	// Effect must select an explicit allow or deny; model construction rejects other outcomes.
+	Effect authorization.Outcome
+	// Priority orders higher values first where the selected model supports ordering.
+	Priority int
 }
 
+// Assignment binds an exact subject kind/ID to a same-tenant role;
+// Subject attributes/groups do not expand assignment identity.
 type Assignment struct {
-	ID      authorization.PolicyID
+	// ID is an exact application-defined label; keep diagnostic identifiers non-secret.
+	ID authorization.PolicyID
+	// Subject supplies trusted kind/ID and optional group/fact state; it is not authenticated here.
 	Subject authorization.Subject
-	RoleID  RoleID
-	Tenant  authorization.TenantID
+	// RoleID names an existing same-tenant role; constructors validate that relation.
+	RoleID RoleID
+	// Tenant is exact scope; empty means global, not inferred tenant membership.
+	Tenant authorization.TenantID
 }
 
 type subjectKey struct {
@@ -123,6 +188,8 @@ type subjectKey struct {
 	id   authorization.SubjectID
 }
 
+// Evaluator is a reusable constructed role view with no background lifecycle.
+// Use New; requests/maps and unused assignment Subject attributes remain borrowed.
 type Evaluator struct {
 	roles         map[RoleID]Role
 	permissions   map[RoleID][]Permission
@@ -131,6 +198,11 @@ type Evaluator struct {
 	inheritGlobal bool
 }
 
+// New checks count/identity/tenant/role-reference constraints and acyclic
+// inheritance before publishing a view. Parent and assignment-group slices are
+// copied; unused Subject attributes remain borrowed. Initial maps are allocated
+// before count rejection; graph cycle detection precedes inheritance-depth admission.
+// Nil/custom options may panic; caller strings and constructor work need trusted budgets.
 func New(
 	roles []Role,
 	permissions []Permission,
@@ -222,6 +294,10 @@ func New(
 	return evaluator, nil
 }
 
+// Evaluate obtains effective permissions, matches exact action/type and optional
+// instance ID, and collects at most MaxMatches with deny overriding allow. It does
+// not call Request.Validate. Context is checked in EffectivePermissions at entry,
+// not at every recursive role/permission step; no-match is NotApplicable.
 func (evaluator *Evaluator) Evaluate(
 	ctx context.Context,
 	request authorization.Request,
@@ -260,6 +336,11 @@ func (evaluator *Evaluator) Evaluate(
 	return decision, nil
 }
 
+// EffectivePermissions returns a fresh priority-descending/ID-sorted permission
+// slice from exact-scope subject/groups and their role closures. Duplicate roles
+// are collapsed, not equal permissions across distinct roles. MaxGroups applies;
+// MaxMatches is enforced later by Evaluate, not as this collection size budget.
+// Groups/tenant membership are trusted facts, and context checks occur at entry.
 func (evaluator *Evaluator) EffectivePermissions(
 	ctx context.Context,
 	subject authorization.Subject,
@@ -339,6 +420,9 @@ func permissionMatchesRequest(permission Permission, request authorization.Reque
 	return permission.ResourceID == request.Resource.ID
 }
 
+// EvaluateBatch checks MaxBatchSize before allocation, then returns one ordered result
+// per request and joined errors. It continues after failures/cancellation; an empty
+// batch performs no per-request ctx check. No cross-request transaction is provided.
 func (evaluator *Evaluator) EvaluateBatch(
 	ctx context.Context,
 	requests []authorization.Request,

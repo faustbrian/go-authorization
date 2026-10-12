@@ -10,6 +10,7 @@ import (
 
 type existsCondition struct{ reference Reference }
 
+// Exists matches a present non-missing value, including explicit null.
 func Exists(reference Reference) Condition { return existsCondition{reference: reference} }
 
 func (condition existsCondition) evaluate(state *evaluationState) (Result, error) {
@@ -32,6 +33,7 @@ func (condition existsCondition) validate() error {
 
 type nullCondition struct{ reference Reference }
 
+// IsNull matches only a present explicit-null value, not absence.
 func IsNull(reference Reference) Condition { return nullCondition{reference: reference} }
 
 func (condition nullCondition) evaluate(state *evaluationState) (Result, error) {
@@ -51,6 +53,8 @@ func (condition nullCondition) validate() error {
 
 type anyCondition struct{ conditions []Condition }
 
+// Any copies child order, short-circuits on match/error and otherwise retains
+// the first non-NoMatch diagnostic status. Empty/nil children fail validation.
 func Any(conditions ...Condition) Condition {
 	return anyCondition{conditions: append([]Condition(nil), conditions...)}
 }
@@ -80,6 +84,8 @@ func (condition anyCondition) validate() error {
 
 type notCondition struct{ condition Condition }
 
+// Not negates Match/NoMatch only; missing/null/type-mismatch statuses remain
+// nonmatching rather than becoming an accidental allow. Nil fails later validation.
 func Not(condition Condition) Condition { return notCondition{condition: condition} }
 
 func (condition notCondition) evaluate(state *evaluationState) (Result, error) {
@@ -122,10 +128,14 @@ type comparisonCondition struct {
 	operator  comparison
 }
 
+// GreaterThan compares same-kind strings/int/float/time strictly above want;
+// unsupported comparison kinds fail validation.
 func GreaterThan(reference Reference, want authorization.Value) Condition {
 	return comparisonCondition{reference: reference, want: want, operator: compareGreater}
 }
 
+// LessThan compares same-kind strings/int/float/time strictly below want;
+// unsupported comparison kinds fail validation.
 func LessThan(reference Reference, want authorization.Value) Condition {
 	return comparisonCondition{reference: reference, want: want, operator: compareLess}
 }
@@ -166,6 +176,8 @@ type inCondition struct {
 	values    []authorization.Value
 }
 
+// In copies same-kind non-null candidates and tests structural membership.
+// Validation counts candidates, not all bytes/nested string-set element work.
 func In(reference Reference, values ...authorization.Value) Condition {
 	return inCondition{reference: reference, values: append([]authorization.Value(nil), values...)}
 }
@@ -207,6 +219,8 @@ type setContainsCondition struct {
 	value     string
 }
 
+// SetContains tests one string in a sorted typed string set, after set-size
+// admission; copied accessors may allocate and string-byte work is not cost-counted.
 func SetContains(reference Reference, value string) Condition {
 	return setContainsCondition{reference: reference, value: value}
 }
@@ -245,12 +259,17 @@ type stringCondition struct {
 	operator  stringOperator
 }
 
+// HasPrefix tests a case-sensitive string prefix without coercion or byte budgets.
 func HasPrefix(reference Reference, value string) Condition {
 	return stringCondition{reference: reference, value: value, operator: stringPrefix}
 }
+
+// HasSuffix tests a case-sensitive string suffix without coercion or byte budgets.
 func HasSuffix(reference Reference, value string) Condition {
 	return stringCondition{reference: reference, value: value, operator: stringSuffix}
 }
+
+// StringContains tests a case-sensitive string substring without coercion or byte budgets.
 func StringContains(reference Reference, value string) Condition {
 	return stringCondition{reference: reference, value: value, operator: stringContains}
 }
@@ -288,6 +307,8 @@ type ipCondition struct {
 	prefix    netip.Prefix
 }
 
+// IPIn masks the prefix and tests a typed address; invalid prefixes fail
+// validation. Address/prefix family compatibility is netip semantics, not identity trust.
 func IPIn(reference Reference, prefix netip.Prefix) Condition {
 	return ipCondition{reference: reference, prefix: prefix.Masked()}
 }

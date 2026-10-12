@@ -5,6 +5,7 @@ import (
 	"testing"
 )
 
+// BenchmarkEngineDecideWarm measures repeated evaluation with snapshot/engine setup outside the timer.
 func BenchmarkEngineDecideWarm(b *testing.B) {
 	snapshot, err := NewSnapshot(1, DenyOverrides, PolicyDefinition{
 		ID: "allow", Evaluator: evaluatorFunc(func(context.Context, Request) (Decision, error) {
@@ -28,6 +29,7 @@ func BenchmarkEngineDecideWarm(b *testing.B) {
 	}
 }
 
+// BenchmarkEngineDecideCold includes snapshot/engine construction in each measured decision.
 func BenchmarkEngineDecideCold(b *testing.B) {
 	request := validRequest()
 	evaluator := evaluatorFunc(func(context.Context, Request) (Decision, error) {
@@ -51,6 +53,7 @@ func BenchmarkEngineDecideCold(b *testing.B) {
 	}
 }
 
+// BenchmarkEngineDecideBatch100 measures one coherent 100-request batch, not concurrent callers.
 func BenchmarkEngineDecideBatch100(b *testing.B) {
 	snapshot, err := NewSnapshot(1, DenyOverrides, PolicyDefinition{
 		ID: "allow", Evaluator: evaluatorFunc(func(context.Context, Request) (Decision, error) {
@@ -77,6 +80,7 @@ func BenchmarkEngineDecideBatch100(b *testing.B) {
 	}
 }
 
+// BenchmarkEngineReload includes candidate construction and optimistic replacement, not repository I/O.
 func BenchmarkEngineReload(b *testing.B) {
 	evaluator := evaluatorFunc(func(context.Context, Request) (Decision, error) {
 		return Decision{Outcome: Allow}, nil

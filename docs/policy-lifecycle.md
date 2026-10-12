@@ -3,7 +3,9 @@
 One `policy.Manifest` is the portable source-of-truth unit. It names the format,
 revision, combining algorithm, and versioned ACL, RBAC, ABAC, or composite
 records. Activation compiles the complete manifest into one immutable snapshot;
-partial activation is not supported.
+partial activation is not supported. Snapshot metadata is copied, but evaluator
+implementations are borrowed; custom implementations must remain immutable,
+concurrency-safe and cooperative.
 
 ## Model and review
 
@@ -25,7 +27,12 @@ document size, and run model validation. Use `policy.Diff` to review structural
 changes and `policy.DryRun` with representative allowed, denied, boundary, and
 cross-tenant requests to review semantic changes.
 
-Dry-run does not install the candidate. Store its report with deployment
+Diff compares inspectable metadata, not evaluator code/order. Dry-run compares
+outcome, reason and matched-ID/truncation diagnostics for supplied requests; it
+is not proof of equivalence. Its evaluator calls may have side effects and use
+different sampled times when request time is omitted. Dry-run does not install
+the candidate or roll back callback side effects.
+Store its report with deployment
 evidence only after removing application-sensitive request data from the
 surrounding logs.
 
@@ -41,6 +48,10 @@ surrounding logs.
 
 Valkey failure does not invalidate the PostgreSQL write. The synchronizer polls
 the repository as a correctness path and eventually discovers the revision.
+An equal revision is marked fresh after envelope validation without recompile
+or content comparison; never mutate semantics in place. Freshness is checked at
+Decide entry, not as a deadline throughout callback work. Reload serializes over
+repository/compiler work; lock waits are not context-cancelable.
 Keep the last verified snapshot active when a reload fails; never synthesize an
 empty or allow-all snapshot.
 

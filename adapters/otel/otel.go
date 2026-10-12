@@ -1,5 +1,8 @@
-// Package authorizationotel records bounded authorization metrics and traces
-// through explicit OpenTelemetry providers.
+// Package authorizationotel records authorization metrics and traces
+// through explicit OpenTelemetry v1.47.0 providers. New borrows providers and
+// introduces no global registration/export loop/shutdown. Metric result labels
+// are closed; span reasons remain caller text. Begin's completion is once-only,
+// not an export/durability guarantee, and direct callback input has no byte cap.
 package authorizationotel
 
 import (
@@ -30,7 +33,7 @@ type Config struct {
 	MeterProvider metric.MeterProvider
 }
 
-// Instrumenter records one bounded metric and span observation per Begin call.
+// Instrumenter starts one span and completes metrics once per Begin callback.
 // It does not shut down or otherwise take ownership of either provider.
 type Instrumenter struct{ instrumenter *internal.Instrumenter }
 
@@ -49,7 +52,10 @@ func New(config Config) (*Instrumenter, error) {
 	return &Instrumenter{instrumenter: instrumenter}, nil
 }
 
-// Begin starts an authorization span and returns an idempotent completion function.
+// Begin starts a span and returns a once-only completion callback. SDK work is
+// synchronous and provider-owned; a panic before span.End can leave an unfinished
+// span, and sync.Once does not retry it. Result labels are closed, reasons are not.
+// Direct callbacks require trustworthy event data; no wrapper count cap is added.
 func (instrumenter *Instrumenter) Begin(ctx context.Context) (context.Context, func(authorization.Event)) {
 	return instrumenter.instrumenter.Begin(ctx)
 }

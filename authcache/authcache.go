@@ -14,40 +14,59 @@ import (
 )
 
 var (
+	// ErrManifestTooLarge preserves the direct adapter error identity for errors.Is.
 	ErrManifestTooLarge = adapter.ErrManifestTooLarge
-	ErrInvalidRevision  = adapter.ErrInvalidRevision
-	ErrNilRepository    = adapter.ErrNilRepository
+	// ErrInvalidRevision preserves the direct adapter error identity for errors.Is.
+	ErrInvalidRevision = adapter.ErrInvalidRevision
+	// ErrNilRepository preserves the direct adapter error identity for errors.Is.
+	ErrNilRepository = adapter.ErrNilRepository
 )
 
+// ManifestCodec retains the released named codec and delegates size/profile policy.
 type ManifestCodec struct {
+	// MaxEncodedSize caps admitted encoding; non-positive values select 1 MiB.
 	MaxEncodedSize int
 }
 
+// Encode delegates validated serialization with post-allocation size rejection.
 func (codec ManifestCodec) Encode(manifest policy.Manifest) ([]byte, error) {
 	return adapter.ManifestCodec{MaxEncodedSize: codec.MaxEncodedSize}.Encode(manifest)
 }
 
+// Decode delegates byte admission and application-profile validation.
 func (codec ManifestCodec) Decode(encoded []byte) (policy.Manifest, error) {
 	return adapter.ManifestCodec{MaxEncodedSize: codec.MaxEncodedSize}.Decode(encoded)
 }
 
+// RevisionKeyEncoder retains the released nonzero decimal revision-key contract.
 type RevisionKeyEncoder struct{}
 
+// EncodeKey delegates exact nonzero decimal key encoding.
 func (RevisionKeyEncoder) EncodeKey(revision authorization.Revision) ([]byte, error) {
 	return (adapter.RevisionKeyEncoder{}).EncodeKey(revision)
 }
 
+// Config retains released composition fields; collaborators stay caller-owned.
 type Config struct {
-	Namespace  string
-	Backend    cache.Backend
-	TTL        cache.TTLPolicy
-	Clock      cache.Clock
-	Observer   cache.Observer
-	MaxValue   int
-	MaxBatch   int
+	// Namespace separates application policy cache keys; callers own scope/uniqueness.
+	Namespace string
+	// Backend is borrowed; callers own its capacity, transport and shutdown policy.
+	Backend cache.Backend
+	// TTL is delegated cache expiration policy, not repository verification freshness.
+	TTL cache.TTLPolicy
+	// Clock is borrowed time policy and must be prompt/concurrency-safe; no lifecycle is owned.
+	Clock cache.Clock
+	// Observer is delegated borrowed cache observation; no ownership transfer occurs.
+	Observer cache.Observer
+	// MaxValue caps encoded cache bytes; zero selects 1 MiB.
+	MaxValue int
+	// MaxBatch is delegated to the cache multi-key admission policy.
+	MaxBatch int
+	// MaxKeySize is delegated key admission; zero selects 256.
 	MaxKeySize int
 }
 
+// New delegates to adapters/cache and retains its advisory, borrowed lifecycle.
 func New(config Config) (*cache.Cache[authorization.Revision, policy.Manifest], error) {
 	return adapter.New(adapter.Config{
 		Namespace: config.Namespace, Backend: config.Backend, TTL: config.TTL,
@@ -56,6 +75,8 @@ func New(config Config) (*cache.Cache[authorization.Revision, policy.Manifest], 
 	})
 }
 
+// RepositoryLoader delegates fresh exact-revision reads, not cache-hit
+// verification; direct calls retain raw repository error/callback semantics.
 func RepositoryLoader(
 	repository policy.Repository,
 ) (cache.Loader[authorization.Revision, policy.Manifest], error) {

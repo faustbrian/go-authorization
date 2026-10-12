@@ -13,11 +13,15 @@ var (
 type Outcome uint8
 
 const (
+	// NotApplicable means no applicable policy; Engine converts the final result to default deny.
 	NotApplicable Outcome = iota
+	// Allow is an explicit grant; adapters forward only this valid outcome.
 	Allow
+	// Deny is an explicit refusal.
 	Deny
 )
 
+// String returns a stable outcome label, or unknown for an invalid value.
 func (outcome Outcome) String() string {
 	switch outcome {
 	case NotApplicable:
@@ -33,43 +37,67 @@ func (outcome Outcome) String() string {
 
 // Decision is the result of one or more policy evaluations.
 type Decision struct {
-	Outcome                   Outcome
-	Reason                    ReasonCode
-	MatchedPolicyIDs          []PolicyID
+	// Outcome is Allow, Deny or NotApplicable; Engine validates and default-denies.
+	Outcome Outcome
+	// Reason is caller/model-defined diagnostic text; it must not contain secrets.
+	Reason ReasonCode
+	// MatchedPolicyIDs preserves match order; count caps do not bound identifier bytes.
+	MatchedPolicyIDs []PolicyID
+	// MatchedPolicyIDsTruncated signals incomplete identifier diagnostics, not changed outcome.
 	MatchedPolicyIDsTruncated bool
-	Revision                  Revision
-	Trace                     []TraceEntry
-	TraceTruncated            bool
+	// Revision identifies the declared policy/view generation; it is not an authenticity signature.
+	Revision Revision
+	// Trace contains evaluation-order metadata without dedicated request-value fields.
+	Trace []TraceEntry
+	// TraceTruncated signals incomplete trace diagnostics.
+	TraceTruncated bool
 }
 
 // TraceEntry records one policy result without request or attribute values.
 type TraceEntry struct {
+	// PolicyID is the exact non-secret policy diagnostic identity.
 	PolicyID PolicyID
-	Outcome  Outcome
-	Reason   ReasonCode
+	// Outcome is Allow, Deny or NotApplicable; Engine validates and default-denies.
+	Outcome Outcome
+	// Reason is caller/model-defined diagnostic text; it must not contain secrets.
+	Reason ReasonCode
 }
 
+// ReasonCode is diagnostic text, not a closed enum; keep it non-secret.
 type ReasonCode string
 
 const (
-	ReasonDefaultDeny     ReasonCode = "default-deny"
-	ReasonInvalidRequest  ReasonCode = "invalid-request"
+	// ReasonDefaultDeny marks an engine result with no applicable grant.
+	ReasonDefaultDeny ReasonCode = "default-deny"
+	// ReasonInvalidRequest marks failed Engine request validation.
+	ReasonInvalidRequest ReasonCode = "invalid-request"
+	// ReasonEvaluationError marks failed or invalid evaluator output.
 	ReasonEvaluationError ReasonCode = "evaluation-error"
+	// ReasonContextCanceled marks cancellation observed by Engine.
 	ReasonContextCanceled ReasonCode = "context-canceled"
-	ReasonPolicyInactive  ReasonCode = "policy-inactive"
-	ReasonPolicyStale     ReasonCode = "policy-stale"
+	// ReasonPolicyInactive marks a policy skipped outside its activation window.
+	ReasonPolicyInactive ReasonCode = "policy-inactive"
+	// ReasonPolicyStale marks rejected repository-freshness admission.
+	ReasonPolicyStale ReasonCode = "policy-stale"
 )
 
+// PolicyID is an exact policy diagnostic label; keep it non-secret.
 type PolicyID string
+
+// Revision is a caller-assigned uint64 generation; no overflow, authenticity or backend-range validation is implicit.
 type Revision uint64
 
 // CombiningAlgorithm determines how multiple policy decisions are resolved.
 type CombiningAlgorithm uint8
 
 const (
+	// DenyOverrides prefers any explicit deny over allows.
 	DenyOverrides CombiningAlgorithm = iota
+	// AllowOverrides prefers any explicit allow over denies.
 	AllowOverrides
+	// FirstApplicable selects the first non-NotApplicable input in definition order.
 	FirstApplicable
+	// PriorityOrder selects the first applicable policy after Snapshot sorts descending priority then ID.
 	PriorityOrder
 )
 
@@ -89,7 +117,12 @@ func (algorithm CombiningAlgorithm) String() string {
 	}
 }
 
-// Combine resolves decisions with the selected combining algorithm.
+// Combine validates all supplied outcomes, then selects the decisive/last
+// applicable Decision. Deny/AllowOverrides prefer their named outcome; ordered
+// algorithms take the first applicable input. PriorityOrder does not sort here;
+// NewSnapshot owns priority ordering. Empty/all-inapplicable input stays
+// NotApplicable; only Engine applies default-deny. The selected decision's slices
+// are shared, not merged/copied, and no context/resource admission is performed.
 func Combine(algorithm CombiningAlgorithm, decisions []Decision) (Decision, error) {
 	if algorithm > PriorityOrder {
 		return Decision{}, ErrInvalidCombiningAlgorithm

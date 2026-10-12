@@ -16,17 +16,26 @@ import (
 )
 
 var (
-	ErrNilAuthorizer    = adapter.ErrNilAuthorizer
+	// ErrNilAuthorizer preserves the direct adapter error identity for errors.Is.
+	ErrNilAuthorizer = adapter.ErrNilAuthorizer
+	// ErrNilRequestMapper preserves the direct adapter error identity for errors.Is.
 	ErrNilRequestMapper = adapter.ErrNilRequestMapper
-	ErrNilNextHandler   = adapter.ErrNilNextHandler
+	// ErrNilNextHandler preserves the direct adapter error identity for errors.Is.
+	ErrNilNextHandler = adapter.ErrNilNextHandler
 )
 
+// Authorizer decides from trusted caller-mapped input. Implementations must
+// cooperate with ctx and support concurrent reuse; this seam performs no authentication.
 type Authorizer interface {
+	// Decide returns a valid outcome or error; map errors to failure, never allow.
 	Decide(context.Context, authorization.Request) (authorization.Decision, error)
 }
 
+// RequestMapper maps trusted HTTP identity/scope/facts synchronously;
+// authenticate upstream and do not trust client tenant/ownership claims.
 type RequestMapper func(*http.Request) (authorization.Request, error)
 
+// Option configures construction synchronously; nil/custom options may panic.
 type Option func(*options)
 
 type options struct {
@@ -34,6 +43,7 @@ type options struct {
 	failed http.Handler
 }
 
+// WithDeniedHandler selects denial handling; nil preserves the default 403 response.
 func WithDeniedHandler(handler http.Handler) Option {
 	return func(options *options) {
 		if handler != nil {
@@ -42,6 +52,7 @@ func WithDeniedHandler(handler http.Handler) Option {
 	}
 }
 
+// WithErrorHandler selects failure handling; nil preserves the default 500 response.
 func WithErrorHandler(handler http.Handler) Option {
 	return func(options *options) {
 		if handler != nil {
@@ -82,10 +93,12 @@ func NewHandler(
 	return adapter.NewHandler(authorizer, adapter.RequestMapper(mapper), next, options...)
 }
 
+// DecisionFromContext returns the attached decision by value; its slices remain shared.
 func DecisionFromContext(ctx context.Context) (authorization.Decision, bool) {
 	return adapter.DecisionFromContext(ctx)
 }
 
+// ErrorFromContext returns raw mapper/evaluator error state for a protected local handler.
 func ErrorFromContext(ctx context.Context) (error, bool) {
 	return adapter.ErrorFromContext(ctx)
 }

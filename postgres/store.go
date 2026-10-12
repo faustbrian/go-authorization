@@ -1,4 +1,11 @@
-// Package postgres persists complete policy manifests atomically in PostgreSQL.
+// Package postgres persists a complete manifest in one PostgreSQL singleton row.
+// New borrows pgxpool; Update uses one conditional SQL statement to match expected
+// revision and store a newer manifest. It does not authorize publishers, run schema
+// migrations, retry failures, invalidate caches or close the pool.
+// Public revisions are uint64 but the schema uses signed bigint; select a compatible
+// range. Driver responses materialize before policy.Decode byte admission. Database
+// errors can contain sensitive diagnostics, and failures may require reconciliation
+// when a write committed but response/decoding failed. No DB qualification is implied.
 package postgres
 
 import (
@@ -12,9 +19,13 @@ import (
 )
 
 var (
-	ErrNilPool              = errors.New("authorization postgres pool is nil")
-	ErrNotInitialized       = errors.New("authorization policy is not initialized")
-	ErrRevisionConflict     = errors.New("authorization policy revision conflict")
+	// ErrNilPool identifies authorization postgres pool is nil. Compare with errors.Is, not error text.
+	ErrNilPool = errors.New("authorization postgres pool is nil")
+	// ErrNotInitialized identifies authorization policy is not initialized. Compare with errors.Is, not error text.
+	ErrNotInitialized = errors.New("authorization policy is not initialized")
+	// ErrRevisionConflict identifies authorization policy revision conflict. Compare with errors.Is, not error text.
+	ErrRevisionConflict = errors.New("authorization policy revision conflict")
+	// ErrRevisionNotMonotonic identifies authorization policy revision is not monotonic. Compare with errors.Is, not error text.
 	ErrRevisionNotMonotonic = errors.New("authorization policy revision is not monotonic")
 )
 
@@ -41,10 +52,13 @@ type database interface {
 	queryRow(context.Context, string, ...any) row
 }
 
+// Store borrows a pgx query seam; construct with New, keep schema/pool
+// lifecycle valid and use contexts with deadlines. The zero value is unusable.
 type Store struct {
 	queryRow func(context.Context, string, ...any) pgx.Row
 }
 
+// New borrows a non-nil pool without opening/migrating/closing it.
 func New(pool *pgxpool.Pool) (*Store, error) {
 	if pool == nil {
 		return nil, ErrNilPool
@@ -56,6 +70,10 @@ func newStore(database database) *Store {
 	return &Store{queryRow: database.queryRow}
 }
 
+// Load reads/decodes the singleton manifest, mapping no rows to
+// ErrNotInitialized. It trusts database content and does not cross-check JSON
+// revision against the separate SQL revision column. Row materialization precedes
+// parser admission; raw driver diagnostics remain caller-protected.
 func (store *Store) Load(ctx context.Context) (policy.Manifest, error) {
 	var encoded []byte
 	if err := store.queryRow(ctx, loadManifestSQL).Scan(&encoded); err != nil {
@@ -67,6 +85,11 @@ func (store *Store) Load(ctx context.Context) (policy.Manifest, error) {
 	return policy.Decode(encoded)
 }
 
+// Update validates/encodes next, then conditionally writes one newer
+// revision under expected (zero for initialization). No rows is conflict; raw
+// query errors or post-write decode errors can leave commit state uncertain.
+// Reconcile with Load before repeating unknown outcomes. Revisions must fit SQL
+// bigint; caller graphs are borrowed during encode. No retry/invalidation is owned.
 func (store *Store) Update(
 	ctx context.Context,
 	expected authorization.Revision,

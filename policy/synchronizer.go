@@ -9,33 +9,49 @@ import (
 	authorization "github.com/faustbrian/go-authorization/v3"
 )
 
+// DefaultSyncInterval is the default 30-second repository polling cadence.
 const DefaultSyncInterval = 30 * time.Second
+
+// DefaultMaxStaleness is the default two-minute entry-time freshness allowance.
 const DefaultMaxStaleness = 2 * time.Minute
 
 var (
-	ErrNilRepository       = errors.New("policy synchronizer repository is nil")
-	ErrNilCompiler         = errors.New("policy synchronizer compiler is nil")
-	ErrNilEngine           = errors.New("policy synchronizer engine is nil")
+	// ErrNilRepository identifies policy synchronizer repository is nil. Compare with errors.Is, not error text.
+	ErrNilRepository = errors.New("policy synchronizer repository is nil")
+	// ErrNilCompiler identifies policy synchronizer compiler is nil. Compare with errors.Is, not error text.
+	ErrNilCompiler = errors.New("policy synchronizer compiler is nil")
+	// ErrNilEngine identifies policy synchronizer engine is nil. Compare with errors.Is, not error text.
+	ErrNilEngine = errors.New("policy synchronizer engine is nil")
+	// ErrInvalidSyncInterval identifies policy synchronizer interval is invalid. Compare with errors.Is, not error text.
 	ErrInvalidSyncInterval = errors.New("policy synchronizer interval is invalid")
+	// ErrInvalidMaxStaleness identifies policy synchronizer maximum staleness is invalid. Compare with errors.Is, not error text.
 	ErrInvalidMaxStaleness = errors.New("policy synchronizer maximum staleness is invalid")
-	ErrStaleManifest       = errors.New("policy repository manifest is stale")
-	ErrPolicyStale         = errors.New("authorization policy verification is stale")
+	// ErrStaleManifest identifies policy repository manifest is stale. Compare with errors.Is, not error text.
+	ErrStaleManifest = errors.New("policy repository manifest is stale")
+	// ErrPolicyStale identifies authorization policy verification is stale. Compare with errors.Is, not error text.
+	ErrPolicyStale = errors.New("authorization policy verification is stale")
 )
 
+// SynchronizerOption configures one construction synchronously;
+// nil/custom options are trusted and may panic.
 type SynchronizerOption func(*Synchronizer)
 
+// WithSyncInterval sets a positive polling interval validated at construction.
 func WithSyncInterval(interval time.Duration) SynchronizerOption {
 	return func(synchronizer *Synchronizer) {
 		synchronizer.interval = interval
 	}
 }
 
+// WithMaxStaleness sets a positive admission age validated at construction.
 func WithMaxStaleness(maxStaleness time.Duration) SynchronizerOption {
 	return func(synchronizer *Synchronizer) {
 		synchronizer.maxStaleness = maxStaleness
 	}
 }
 
+// WithSynchronizerClock borrows a prompt concurrency-safe clock; nil
+// is ignored. It may be called under the verification lock and must not reenter.
 func WithSynchronizerClock(clock func() time.Time) SynchronizerOption {
 	return func(synchronizer *Synchronizer) {
 		if clock != nil {
@@ -46,7 +62,11 @@ func WithSynchronizerClock(clock func() time.Time) SynchronizerOption {
 
 // Synchronizer keeps an engine converged with its authoritative repository.
 // Direct repository polling is the correctness path; external invalidation
-// transports may call Observe to reduce propagation latency.
+// transports may call Observe to reduce propagation latency. Reload serializes
+// under reloadMu across repository I/O and compiler callbacks; waiting for that
+// mutex is not context-cancelable. Clocks run under verifiedMu on successful reload
+// and must not reenter verification methods. No collaborators are closed here.
+// Freshness admission samples before Engine.Decide, not throughout a long decision.
 type Synchronizer struct {
 	repository   Repository
 	compiler     *Compiler
@@ -59,6 +79,9 @@ type Synchronizer struct {
 	verifiedAt   time.Time
 }
 
+// NewSynchronizer borrows repository/compiler/engine and creates no worker.
+// Literal nil collaborators and non-positive interval/age fail; typed-nil
+// repositories/custom callbacks are not sandboxed. Caller starts/supervises Run.
 func NewSynchronizer(
 	repository Repository,
 	compiler *Compiler,
@@ -95,8 +118,14 @@ func NewSynchronizer(
 }
 
 // Reload activates a newer repository manifest. Equal revisions are a no-op;
-// older repository state fails rather than rolling the engine back.
+// older repository state fails rather than rolling the engine back. Same-revision
+// envelope validation marks freshness without recompiling or comparing content;
+// repository revisions must identify immutable semantics. Compilation/publication
+// can complete after cancellation inside a successful noncooperative callback.
+// Failed reloads leave the last active engine/freshness time, not a new empty view.
 func (synchronizer *Synchronizer) Reload(ctx context.Context) (bool, error) {
+	// Serialize source reads through activation; independent Engine writers can
+	// still win the later expected-revision check and cause a local conflict.
 	synchronizer.reloadMu.Lock()
 	defer synchronizer.reloadMu.Unlock()
 	switch err := ctx.Err(); err {
@@ -135,7 +164,10 @@ func (synchronizer *Synchronizer) Reload(ctx context.Context) (bool, error) {
 }
 
 // Decide enforces the maximum age of the last successful repository
-// verification before delegating to the active immutable engine snapshot.
+// verification before delegating to Engine. Zero verification or a
+// backward clock fails closed; exact MaxStaleness remains admitted. Age is checked
+// once at entry, not rechecked after an evaluator blocks. Clock panics are not
+// contained; ctx cancellation may be reported as stale first.
 func (synchronizer *Synchronizer) Decide(
 	ctx context.Context,
 	request authorization.Request,
@@ -167,7 +199,9 @@ func (synchronizer *Synchronizer) markVerified() {
 }
 
 // Observe handles an untrusted invalidation revision by reloading the source
-// of truth. It rejects hints ahead of the repository state.
+// of truth. It rejects hints ahead of the repository state. Hints at/below the
+// active revision return immediately without refreshing verification or checking ctx.
+// A hint is never authoritative content or proof of publisher identity.
 func (synchronizer *Synchronizer) Observe(
 	ctx context.Context,
 	revision authorization.Revision,
@@ -185,7 +219,9 @@ func (synchronizer *Synchronizer) Observe(
 }
 
 // Run performs an immediate repository check and then polls until cancellation
-// or the first reload error. Returning errors prevents silent stale operation.
+// or the first reload error. It owns/stops the ticker within the call and creates
+// no detached worker. Applications supervise restart/backoff; no retries are added.
+// Shutdown waits on cooperative repository/compiler work and mutex acquisition.
 func (synchronizer *Synchronizer) Run(ctx context.Context) error {
 	_, err := synchronizer.Reload(ctx)
 	switch err {

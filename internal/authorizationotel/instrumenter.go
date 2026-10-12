@@ -1,3 +1,9 @@
+// Package authorizationotel shares the explicit OpenTelemetry observation
+// implementation used by the direct adapter. It borrows providers/instruments,
+// owns no exporter lifecycle and does not register globals. New constructs metric
+// instruments; Begin owns one span's once-only callback, not durable delivery.
+// SDK callbacks must be valid/cooperative; metric labels are bounded classifications
+// while span reasons are caller-owned strings. No general panic sandbox is added.
 package authorizationotel
 
 import (
@@ -12,12 +18,16 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
+// Instrumenter holds borrowed SDK instruments; the zero value is not usable.
 type Instrumenter struct {
 	tracer    trace.Tracer
 	duration  metric.Float64Histogram
 	decisions metric.Int64Counter
 }
 
+// New constructs the two instruments and tracer from trusted explicit
+// providers, returning instrument-construction errors. No provider validation,
+// rollback/shutdown or panic containment is added at this internal seam.
 func New(scope string, tracerProvider trace.TracerProvider, meterProvider metric.MeterProvider) (*Instrumenter, error) {
 	meter := meterProvider.Meter(scope)
 	duration, err := meter.Float64Histogram(
@@ -39,6 +49,9 @@ func New(scope string, tracerProvider trace.TracerProvider, meterProvider metric
 	return &Instrumenter{tracer: tracerProvider.Tracer(scope), duration: duration, decisions: decisions}, nil
 }
 
+// Begin returns a span context and once-only metric/span completion.
+// If an SDK operation panics before End, completion is not retried and the span
+// can remain unfinished. Borrowed providers own blocking/export/concurrency.
 func (instrumenter *Instrumenter) Begin(ctx context.Context) (context.Context, func(authorization.Event)) {
 	ctx, span := instrumenter.tracer.Start(ctx, "authorization.decide", trace.WithSpanKind(trace.SpanKindInternal))
 	var once sync.Once

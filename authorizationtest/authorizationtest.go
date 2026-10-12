@@ -1,5 +1,7 @@
 // Package authorizationtest provides deterministic fixtures, assertions, and
-// conformance checks for authorization integrations.
+// selected common-contract checks for authorization integrations. Builders are mutable,
+// outputs copy maps/slices, and assertion failures may expose raw fixture errors.
+// Use trusted non-secret fixtures; no external interoperability certification is made.
 package authorizationtest
 
 import (
@@ -13,14 +15,17 @@ import (
 	authorization "github.com/faustbrian/go-authorization/v3"
 )
 
+// FixedTime returns the fixed UTC fixture instant, independent of the process clock.
 func FixedTime() time.Time {
 	return time.Date(2025, time.January, 2, 3, 4, 5, 0, time.UTC)
 }
 
+// RequestBuilder is mutable fixture state; it is not safe for concurrent mutation.
 type RequestBuilder struct {
 	request authorization.Request
 }
 
+// NewRequest returns an independent valid document-read fixture with deterministic identity/time.
 func NewRequest() *RequestBuilder {
 	return &RequestBuilder{request: authorization.Request{
 		Subject: authorization.Subject{
@@ -36,6 +41,7 @@ func NewRequest() *RequestBuilder {
 	}}
 }
 
+// WithSubject replaces kind/ID without validation and returns the same builder.
 func (builder *RequestBuilder) WithSubject(
 	kind authorization.SubjectKind,
 	id authorization.SubjectID,
@@ -45,16 +51,19 @@ func (builder *RequestBuilder) WithSubject(
 	return builder
 }
 
+// WithGroup appends membership without deduplication/validation and returns the same builder.
 func (builder *RequestBuilder) WithGroup(id authorization.SubjectID) *RequestBuilder {
 	builder.request.Subject.Groups = append(builder.request.Subject.Groups, id)
 	return builder
 }
 
+// WithAction replaces the exact operation label and returns the same builder.
 func (builder *RequestBuilder) WithAction(action authorization.Action) *RequestBuilder {
 	builder.request.Action = action
 	return builder
 }
 
+// WithResource replaces type/instance labels and returns the same builder.
 func (builder *RequestBuilder) WithResource(
 	typeName authorization.ResourceType,
 	id authorization.ResourceID,
@@ -64,16 +73,19 @@ func (builder *RequestBuilder) WithResource(
 	return builder
 }
 
+// WithTenant replaces scope without verifying membership and returns the same builder.
 func (builder *RequestBuilder) WithTenant(tenant authorization.TenantID) *RequestBuilder {
 	builder.request.Tenant = tenant
 	return builder
 }
 
+// WithTime normalizes fixture time to UTC without monotonic data.
 func (builder *RequestBuilder) WithTime(at time.Time) *RequestBuilder {
 	builder.request.Environment.Time = at.Round(0).UTC()
 	return builder
 }
 
+// WithSubjectAttribute sets one subject fact and returns the same builder.
 func (builder *RequestBuilder) WithSubjectAttribute(
 	name authorization.AttributeName,
 	value authorization.Value,
@@ -82,6 +94,7 @@ func (builder *RequestBuilder) WithSubjectAttribute(
 	return builder
 }
 
+// WithResourceAttribute sets one resource fact and returns the same builder.
 func (builder *RequestBuilder) WithResourceAttribute(
 	name authorization.AttributeName,
 	value authorization.Value,
@@ -90,6 +103,7 @@ func (builder *RequestBuilder) WithResourceAttribute(
 	return builder
 }
 
+// WithEnvironmentAttribute sets one environment fact and returns the same builder.
 func (builder *RequestBuilder) WithEnvironmentAttribute(
 	name authorization.AttributeName,
 	value authorization.Value,
@@ -98,6 +112,7 @@ func (builder *RequestBuilder) WithEnvironmentAttribute(
 	return builder
 }
 
+// WithAttribute sets one request fact and returns the same builder.
 func (builder *RequestBuilder) WithAttribute(
 	name authorization.AttributeName,
 	value authorization.Value,
@@ -106,6 +121,7 @@ func (builder *RequestBuilder) WithAttribute(
 	return builder
 }
 
+// Build copies group slices and attribute maps; immutable Values are shared by value. It does not validate the request.
 func (builder *RequestBuilder) Build() authorization.Request {
 	request := builder.request
 	request.Subject.Groups = append([]authorization.SubjectID(nil), request.Subject.Groups...)
@@ -139,11 +155,15 @@ func cloneAttributes(attributes authorization.Attributes) authorization.Attribut
 	return clone
 }
 
+// StaticEvaluator returns configured output independently of request/context; keep its state stable across calls.
 type StaticEvaluator struct {
+	// Decision is configured fixture output; Evaluate copies its ID/trace slices.
 	Decision authorization.Decision
-	Err      error
+	// Err is a borrowed error cause; deliberate unwrapping/fixture use can expose its text/type.
+	Err error
 }
 
+// Evaluate copies decision slices and returns the borrowed Err, ignoring cancellation and request validation.
 func (evaluator StaticEvaluator) Evaluate(
 	context.Context,
 	authorization.Request,
@@ -154,6 +174,7 @@ func (evaluator StaticEvaluator) Evaluate(
 	return decision, evaluator.Err
 }
 
+// AllowEvaluator returns an unconditional allow fixture with the supplied non-secret reason.
 func AllowEvaluator(reason authorization.ReasonCode) authorization.Evaluator {
 	return StaticEvaluator{Decision: authorization.Decision{
 		Outcome: authorization.Allow,
@@ -161,6 +182,7 @@ func AllowEvaluator(reason authorization.ReasonCode) authorization.Evaluator {
 	}}
 }
 
+// DenyEvaluator returns an unconditional deny fixture with the supplied non-secret reason.
 func DenyEvaluator(reason authorization.ReasonCode) authorization.Evaluator {
 	return StaticEvaluator{Decision: authorization.Decision{
 		Outcome: authorization.Deny,
@@ -168,19 +190,25 @@ func DenyEvaluator(reason authorization.ReasonCode) authorization.Evaluator {
 	}}
 }
 
+// NotApplicableEvaluator returns an unconditional no-match fixture.
 func NotApplicableEvaluator() authorization.Evaluator {
 	return StaticEvaluator{Decision: authorization.Decision{Outcome: authorization.NotApplicable}}
 }
 
+// ErrorEvaluator returns a no-match fixture with the borrowed error; nil means no error.
 func ErrorEvaluator(err error) authorization.Evaluator {
 	return StaticEvaluator{Err: err}
 }
 
+// TestingT is the assertion seam; Fatalf must stop the test as testing.T does.
 type TestingT interface {
+	// Helper marks the caller as test support code.
 	Helper()
+	// Fatalf reports protected fixture diagnostics and stops the test.
 	Fatalf(string, ...any)
 }
 
+// MustSnapshot constructs a snapshot or fails the test with constructor diagnostics.
 func MustSnapshot(
 	t TestingT,
 	revision authorization.Revision,
@@ -195,6 +223,7 @@ func MustSnapshot(
 	return snapshot
 }
 
+// MustEngine constructs an engine or fails the test with constructor diagnostics.
 func MustEngine(
 	t TestingT,
 	snapshot *authorization.Snapshot,
@@ -208,6 +237,7 @@ func MustEngine(
 	return engine
 }
 
+// RequireDecision requires no error and full deep equality, reporting raw fixture diagnostics on failure.
 func RequireDecision(
 	t TestingT,
 	got authorization.Decision,
@@ -223,6 +253,7 @@ func RequireDecision(
 	}
 }
 
+// RequireOutcome checks only the outcome, not reason/revision/diagnostic equality.
 func RequireOutcome(
 	t TestingT,
 	decision authorization.Decision,
@@ -250,6 +281,7 @@ type traceJSON struct {
 	Reason   string `json:"reason"`
 }
 
+// CanonicalDecisionJSON returns deterministic indented fixture JSON with one LF. It is not a signature/canonicalization standard and normalizes unknown outcome labels through String.
 func CanonicalDecisionJSON(decision authorization.Decision) ([]byte, error) {
 	matched := make([]string, len(decision.MatchedPolicyIDs))
 	for index, id := range decision.MatchedPolicyIDs {
@@ -274,8 +306,10 @@ func CanonicalDecisionJSON(decision authorization.Decision) ([]byte, error) {
 	return append(encoded, '\n'), err
 }
 
+// AuthorizerFactory constructs one authorizer around the supplied fixture evaluator.
 type AuthorizerFactory func(authorization.Evaluator) authorization.Authorizer
 
+// RunAuthorizerConformance runs selected common allow/deny/default-deny/error/invalid/canceled scenarios. It is not exhaustive model or external-standard qualification.
 func RunAuthorizerConformance(t *testing.T, factory AuthorizerFactory) {
 	t.Helper()
 	tests := []struct {

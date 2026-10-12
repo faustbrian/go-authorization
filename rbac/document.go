@@ -10,54 +10,91 @@ import (
 	authorization "github.com/faustbrian/go-authorization/v3"
 )
 
+// DocumentVersion is version 1 of this application model JSON profile.
 const DocumentVersion uint64 = 1
 const maxEncodedDocumentBytes = 1 << 20
 
 const (
+	// EffectAllow is the serialized explicit allow label.
 	EffectAllow = "allow"
-	EffectDeny  = "deny"
+	// EffectDeny is the serialized explicit deny label.
+	EffectDeny = "deny"
 )
 
 var (
-	ErrInvalidDocument            = errors.New("invalid RBAC document")
+	// ErrInvalidDocument identifies invalid RBAC document. Compare with errors.Is, not error text.
+	ErrInvalidDocument = errors.New("invalid RBAC document")
+	// ErrUnsupportedDocumentVersion identifies unsupported RBAC document version. Compare with errors.Is, not error text.
 	ErrUnsupportedDocumentVersion = errors.New("unsupported RBAC document version")
-	ErrDocumentLimitExceeded      = errors.New("RBAC document size limit exceeded")
+	// ErrDocumentLimitExceeded identifies RBAC document size limit exceeded. Compare with errors.Is, not error text.
+	ErrDocumentLimitExceeded = errors.New("RBAC document size limit exceeded")
 )
 
+// RoleDocument is editable same-tenant role inheritance input.
 type RoleDocument struct {
-	ID      RoleID                 `json:"id"`
-	Tenant  authorization.TenantID `json:"tenant,omitempty"`
-	Parents []RoleID               `json:"parents,omitempty"`
+	// ID is an exact application-defined label; keep diagnostic identifiers non-secret.
+	ID RoleID `json:"id"`
+	// Tenant is exact scope; empty means global, not inferred tenant membership.
+	Tenant authorization.TenantID `json:"tenant,omitempty"`
+	// Parents lists same-tenant inherited roles; New copies and validates the acyclic graph.
+	Parents []RoleID `json:"parents,omitempty"`
 }
 
+// PermissionDocument is editable exact role/action/resource permission input.
 type PermissionDocument struct {
-	ID           authorization.PolicyID     `json:"id"`
-	RoleID       RoleID                     `json:"role_id"`
-	Tenant       authorization.TenantID     `json:"tenant,omitempty"`
-	Action       authorization.Action       `json:"action"`
+	// ID is an exact application-defined label; keep diagnostic identifiers non-secret.
+	ID authorization.PolicyID `json:"id"`
+	// RoleID names an existing same-tenant role; constructors validate that relation.
+	RoleID RoleID `json:"role_id"`
+	// Tenant is exact scope; empty means global, not inferred tenant membership.
+	Tenant authorization.TenantID `json:"tenant,omitempty"`
+	// Action is matched byte-for-byte; no wildcard, normalization or permission discovery is implied.
+	Action authorization.Action `json:"action"`
+	// ResourceType is matched exactly; no wildcard or external lookup is implied.
 	ResourceType authorization.ResourceType `json:"resource_type"`
-	ResourceID   authorization.ResourceID   `json:"resource_id,omitempty"`
-	Effect       string                     `json:"effect"`
-	Priority     int                        `json:"priority,omitempty"`
+	// ResourceID is exact when nonempty; empty makes the grant/rule type-wide.
+	ResourceID authorization.ResourceID `json:"resource_id,omitempty"`
+	// Effect must select an explicit allow or deny; model construction rejects other outcomes.
+	Effect string `json:"effect"`
+	// Priority orders higher values first where the selected model supports ordering.
+	Priority int `json:"priority,omitempty"`
 }
 
+// AssignmentDocument is editable exact subject/role scope input.
 type AssignmentDocument struct {
-	ID          authorization.PolicyID    `json:"id"`
+	// ID is an exact application-defined label; keep diagnostic identifiers non-secret.
+	ID authorization.PolicyID `json:"id"`
+	// SubjectKind is the exact principal-kind label, not enforced authentication policy.
 	SubjectKind authorization.SubjectKind `json:"subject_kind"`
-	SubjectID   authorization.SubjectID   `json:"subject_id"`
-	RoleID      RoleID                    `json:"role_id"`
-	Tenant      authorization.TenantID    `json:"tenant,omitempty"`
+	// SubjectID is the exact principal identity; application authentication must establish it.
+	SubjectID authorization.SubjectID `json:"subject_id"`
+	// RoleID names an existing same-tenant role; constructors validate that relation.
+	RoleID RoleID `json:"role_id"`
+	// Tenant is exact scope; empty means global, not inferred tenant membership.
+	Tenant authorization.TenantID `json:"tenant,omitempty"`
 }
 
+// Document is the editable application version-1 JSON model, not an
+// authenticated artifact. Build validates the selected model after caller-owned
+// construction/JSON materialization; inactive fields can be present but unused.
 type Document struct {
-	Version           uint64               `json:"version"`
-	GlobalInheritance bool                 `json:"global_inheritance,omitempty"`
-	Limits            Limits               `json:"limits,omitempty"`
-	Roles             []RoleDocument       `json:"roles"`
-	Permissions       []PermissionDocument `json:"permissions"`
-	Assignments       []AssignmentDocument `json:"assignments"`
+	// Version is the application model version; Build requires DocumentVersion (1).
+	Version uint64 `json:"version"`
+	// GlobalInheritance explicitly enables global assignments/grants for tenant requests.
+	GlobalInheritance bool `json:"global_inheritance,omitempty"`
+	// Limits supplies positive count/inheritance-depth overrides; other values retain defaults.
+	Limits Limits `json:"limits,omitempty"`
+	// Roles supplies editable role definitions; Build/New copies parent slices.
+	Roles []RoleDocument `json:"roles"`
+	// Permissions supplies editable role permission definitions.
+	Permissions []PermissionDocument `json:"permissions"`
+	// Assignments supplies editable exact-subject role bindings; attributes are not assignment identity.
+	Assignments []AssignmentDocument `json:"assignments"`
 }
 
+// Build constructs and validates a fresh model evaluator for DocumentVersion.
+// It does not impose the encoded-byte cap or authenticate provenance. Caller-owned
+// document containers must stay immutable during construction.
 func (document Document) Build() (*Evaluator, error) {
 	if document.Version != DocumentVersion {
 		return nil, ErrUnsupportedDocumentVersion
@@ -98,6 +135,11 @@ func (document Document) Build() (*Evaluator, error) {
 	return New(roles, permissions, assignments, options...)
 }
 
+// DecodeDocument rejects input above 1 MiB before JSON decoding, unknown
+// fields and trailing values, then builds the model. Duplicate JSON member names
+// follow encoding/json last-wins semantics; duplicate model IDs are rejected.
+// Parser diagnostics can include offending characters/field names. No context or
+// pre-parser model-depth/count cap is supplied; decoded trees allocate before Build.
 func DecodeDocument(encoded []byte) (*Evaluator, error) {
 	if len(encoded) > maxEncodedDocumentBytes {
 		return nil, ErrDocumentLimitExceeded
@@ -114,6 +156,9 @@ func DecodeDocument(encoded []byte) (*Evaluator, error) {
 	return document.Build()
 }
 
+// EncodeDocument build-validates, then marshals indented JSON and checks
+// the 1 MiB result cap after allocation. It returns no successful oversize output;
+// field/string memory and caller document ownership remain outside that cap.
 func EncodeDocument(document Document) ([]byte, error) {
 	if _, err := document.Build(); err != nil {
 		return nil, err
@@ -125,8 +170,10 @@ func EncodeDocument(document Document) ([]byte, error) {
 	return encoded, err
 }
 
+// Decoder is the stateless policy.Decoder binding for this version-1 model.
 type Decoder struct{}
 
+// Decode delegates to DecodeDocument; no independent lifecycle or context is added.
 func (Decoder) Decode(document json.RawMessage) (authorization.Evaluator, error) {
 	return DecodeDocument(document)
 }

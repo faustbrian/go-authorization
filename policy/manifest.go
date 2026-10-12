@@ -13,53 +13,88 @@ import (
 )
 
 var (
-	ErrInvalidManifest       = errors.New("invalid policy manifest")
-	ErrDuplicateRecord       = errors.New("duplicate policy record")
+	// ErrInvalidManifest identifies invalid policy manifest. Compare with errors.Is, not error text.
+	ErrInvalidManifest = errors.New("invalid policy manifest")
+	// ErrDuplicateRecord identifies duplicate policy record. Compare with errors.Is, not error text.
+	ErrDuplicateRecord = errors.New("duplicate policy record")
+	// ErrManifestLimitExceeded identifies policy manifest size limit exceeded. Compare with errors.Is, not error text.
 	ErrManifestLimitExceeded = errors.New("policy manifest size limit exceeded")
 )
 
 const maxEncodedManifestBytes = 16 << 20
 
+// Format identifies the editable application envelope version, not a signature.
 type Format string
 
+// FormatV1 identifies the authorization.policy/v1 application envelope.
 const FormatV1 Format = "authorization.policy/v1"
 
+// Algorithm is the serialized combining label accepted by Manifest.Validate.
 type Algorithm string
 
 const (
-	AlgorithmDenyOverrides   Algorithm = "deny-overrides"
-	AlgorithmAllowOverrides  Algorithm = "allow-overrides"
+	// AlgorithmDenyOverrides serializes deny-overrides.
+	AlgorithmDenyOverrides Algorithm = "deny-overrides"
+	// AlgorithmAllowOverrides serializes allow-overrides.
+	AlgorithmAllowOverrides Algorithm = "allow-overrides"
+	// AlgorithmFirstApplicable serializes definition-order first-applicable.
 	AlgorithmFirstApplicable Algorithm = "first-applicable"
-	AlgorithmPriorityOrder   Algorithm = "priority-order"
+	// AlgorithmPriorityOrder serializes priority-order.
+	AlgorithmPriorityOrder Algorithm = "priority-order"
 )
 
+// Model names one decoder registry entry; composite has no implicit builtin decoder.
 type Model string
 
 const (
-	ModelACL       Model = "acl"
-	ModelRBAC      Model = "rbac"
-	ModelABAC      Model = "abac"
+	// ModelACL selects the explicitly registered ACL decoder.
+	ModelACL Model = "acl"
+	// ModelRBAC selects the explicitly registered RBAC decoder.
+	ModelRBAC Model = "rbac"
+	// ModelABAC selects the explicitly registered ABAC decoder.
+	ModelABAC Model = "abac"
+	// ModelComposite requires an explicitly registered application decoder; no implicit composite decoder is installed.
 	ModelComposite Model = "composite"
 )
 
+// Record contains editable metadata and a raw JSON object; model semantics belong
+// to its registered Decoder. RawMessage/maps/time pointers are caller-owned.
 type Record struct {
-	ID          authorization.PolicyID `json:"id"`
-	Revision    authorization.Revision `json:"revision"`
-	Model       Model                  `json:"model"`
-	Priority    int                    `json:"priority,omitempty"`
-	ActiveFrom  *time.Time             `json:"active_from,omitempty"`
-	ActiveUntil *time.Time             `json:"active_until,omitempty"`
-	Metadata    map[string]string      `json:"metadata,omitempty"`
-	Document    json.RawMessage        `json:"document"`
+	// ID is an exact application-defined label; keep diagnostic identifiers non-secret.
+	ID authorization.PolicyID `json:"id"`
+	// Revision identifies the declared policy/view generation; it is not an authenticity signature.
+	Revision authorization.Revision `json:"revision"`
+	// Model names the registered document decoder; composite requires an explicit custom decoder.
+	Model Model `json:"model"`
+	// Priority orders higher values first where the selected model supports ordering.
+	Priority int `json:"priority,omitempty"`
+	// ActiveFrom starts the inclusive activation window; absent/zero means unbounded.
+	ActiveFrom *time.Time `json:"active_from,omitempty"`
+	// ActiveUntil ends the exclusive activation window; absent/zero means unbounded.
+	ActiveUntil *time.Time `json:"active_until,omitempty"`
+	// Metadata contains editable application labels, not authenticated/private storage.
+	Metadata map[string]string `json:"metadata,omitempty"`
+	// Document is caller-owned raw JSON object data, not validated model semantics or an authenticated artifact.
+	Document json.RawMessage `json:"document"`
 }
 
+// Manifest contains one caller-owned revisioned policy candidate. No deep immutability,
+// authenticity or whole-process allocation policy is implied by this data type.
 type Manifest struct {
-	Format    Format                 `json:"format"`
-	Revision  authorization.Revision `json:"revision"`
-	Algorithm Algorithm              `json:"algorithm"`
-	Policies  []Record               `json:"policies"`
+	// Format must be the application authorization.policy/v1 envelope identifier.
+	Format Format `json:"format"`
+	// Revision identifies the declared policy/view generation; it is not an authenticity signature.
+	Revision authorization.Revision `json:"revision"`
+	// Algorithm selects one supported combining policy; it does not authenticate a manifest.
+	Algorithm Algorithm `json:"algorithm"`
+	// Policies is caller-owned ordered record state; Compile copies definitions and borrows decoded evaluators.
+	Policies []Record `json:"policies"`
 }
 
+// Validate checks envelope version/revision/algorithm, unique nonempty
+// IDs, valid models/object JSON and activation windows. It does not validate
+// model semantics, reject duplicate JSON member names or enforce byte/policy caps.
+// Caller-owned documents/maps must remain unchanged during traversal.
 func (manifest Manifest) Validate() error {
 	if manifest.Format != FormatV1 || manifest.Revision == 0 ||
 		!manifest.Algorithm.valid() {
@@ -85,6 +120,9 @@ func (manifest Manifest) Validate() error {
 	return nil
 }
 
+// Encode validates then emits indented JSON with one final newline.
+// The 16 MiB cap includes that newline and is checked after marshal allocation;
+// it is not a constructor/serialization heap cap or canonical signing encoding.
 func Encode(manifest Manifest) ([]byte, error) {
 	if err := manifest.Validate(); err != nil {
 		return nil, err
@@ -100,6 +138,10 @@ func Encode(manifest Manifest) ([]byte, error) {
 	return append(encoded, '\n'), nil
 }
 
+// Decode admits at most 16 MiB before JSON materialization, rejects
+// unknown fields/trailing values and validates the envelope. Duplicate member
+// names follow encoding/json last-wins; error details may expose offending input
+// characters/field names. No context or cryptographic publisher validation is added.
 func Decode(encoded []byte) (Manifest, error) {
 	if len(encoded) > maxEncodedManifestBytes {
 		return Manifest{}, ErrManifestLimitExceeded
@@ -143,8 +185,14 @@ func validDocument(document json.RawMessage) bool {
 }
 
 // Repository is the storage-neutral optimistic-concurrency contract for
-// portable policy manifests.
+// portable policy manifests. Implementations must cooperate with context and
+// preserve atomic expected-revision updates without relying on advisory caches.
+// Returned manifest containers must remain stable while callers validate/compile
+// them; implementations own persistence/trust/durability and their I/O limits.
 type Repository interface {
+	// Load returns authoritative current state or an error, not cached authorization.
 	Load(context.Context) (Manifest, error)
+	// Update uses the expected revision (zero for initialization) and a newer
+	// validated candidate. Errors may need reconciliation if commit state is unknown.
 	Update(context.Context, authorization.Revision, Manifest) (Manifest, error)
 }

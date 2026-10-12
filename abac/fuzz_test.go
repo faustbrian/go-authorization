@@ -7,6 +7,8 @@ import (
 	"testing"
 )
 
+// FuzzDecodeDocument exercises parser/constructor panic safety; it intentionally ignores
+// accepted/rejected results and is not a semantic round-trip or conformance oracle.
 func FuzzDecodeDocument(f *testing.F) {
 	f.Add([]byte(`{"version":1,"rules":[],"named_conditions":[]}`))
 	f.Add([]byte(`{"version":1,"rules":[{"condition":{"operator":"not"}}],"named_conditions":[]}`))

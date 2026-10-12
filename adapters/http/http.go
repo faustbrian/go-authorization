@@ -1,5 +1,9 @@
 // Package authorizationhttp provides fail-closed net/http authorization
-// integration.
+// integration. NewHandler grants only a valid explicit Allow; it does not verify
+// credentials or fetch resource/tenant facts. Authorizers, mappers, handlers and
+// options are borrowed synchronous code; panics/blocking calls are not contained.
+// Default responses contain no cause text, but context helpers expose raw local
+// failures/decision slices. No background worker or handler shutdown is owned.
 package authorizationhttp
 
 import (
@@ -21,6 +25,7 @@ var (
 
 // Authorizer decides whether a mapped HTTP request may reach its downstream handler.
 type Authorizer interface {
+	// Decide returns a valid outcome or error; map errors to failure, never allow.
 	Decide(context.Context, authorization.Request) (authorization.Decision, error)
 }
 
@@ -56,7 +61,10 @@ func WithErrorHandler(handler http.Handler) Option {
 }
 
 // NewHandler constructs fail-closed authorization middleware around next.
-// Only Allow reaches next; denial and failure handlers receive the decision or error in context.
+// Only Allow reaches next; denial/failure handlers receive local context state.
+// Dependencies are literal-nil checked only; typed nils/custom options can panic.
+// Concurrent requests require reusable borrowed callbacks/handlers. Context values
+// contain shared decision slices/raw errors, not sanitized public diagnostics.
 func NewHandler(
 	authorizer Authorizer,
 	mapper RequestMapper,

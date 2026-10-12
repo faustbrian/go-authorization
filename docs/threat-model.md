@@ -31,10 +31,12 @@ The primary security properties are:
 - explicit deny semantics are deterministic for the selected combining model;
 - tenant-scoped rules do not cross tenant boundaries, and global inheritance is
   disabled unless explicitly configured;
-- one decision observes one immutable policy snapshot;
-- snapshot and stored-manifest revisions never roll back;
-- malformed, oversized, cyclic, too-deep, too-costly, canceled, panicking, or
-  otherwise invalid evaluation fails closed;
+- Engine captures one coherent snapshot; borrowed evaluators must remain stable;
+- supported replacement/update operations require increasing revisions, subject
+  to backend numeric ranges and deployment-owned restoration/reset behavior;
+- Engine denies at its request/outcome/error/panic/count and cooperative
+  cancellation boundaries; these do not sandbox clocks, decoders, mappers,
+  options, borrowed implementations or downstream callbacks;
 - invalidation messages are hints and cannot directly activate policy state;
   the authoritative repository is verified before activation; and
 - traces, default HTTP responses, and policy evaluation errors do not include
@@ -47,7 +49,9 @@ boundaries and for ensuring request mappers do not accept attacker-controlled
 identity or tenant claims without verification.
 
 Resource listing is intentionally supported only where the model can enumerate
-a bounded explicit set. An unbounded type-wide ACL grant returns an error rather
+an explicit set rather than fetching storage rows. Matching entries are
+count-capped by MaxMatches, independently of the admitted entry/group
+population. An unbounded type-wide ACL grant returns an error rather
 than causing a storage scan or pretending to return a complete result.
 
 Operationally, applications should supervise synchronizer and invalidation
@@ -57,6 +61,7 @@ protected operation or removing the instance from service.
 
 An evaluator panic is converted to a denied decision and a
 `PolicyEvaluationError` that unwraps to `ErrPolicyPanic`. The panic value is
-discarded because it may contain credentials or policy inputs. Panic recovery
-protects the process boundary; it does not make a faulty evaluator healthy, so
+discarded because it may contain credentials or policy inputs. This recovery
+covers the evaluator call, not arbitrary application callbacks; it does not
+make a faulty evaluator healthy, so
 operators should alert on the sentinel and replace the offending policy code.

@@ -1,6 +1,9 @@
 // Package authorizationcache provides explicit advisory cache adapters for
 // portable policy manifests. Cached manifests never replace repository
-// verification.
+// verification. New composes go-cache/v2 and borrows backend/clock/observer
+// lifecycle. Namespace/revision keys do not authenticate tenant/content identity.
+// RepositoryLoader checks equality on load; an existing cache hit does not perform
+// a fresh repository verification. No refresh policy or backend shutdown is added.
 package authorizationcache
 
 import (
@@ -33,7 +36,8 @@ type ManifestCodec struct {
 	MaxEncodedSize int
 }
 
-// Encode serializes manifest and rejects results larger than MaxEncodedSize.
+// Encode validates/serializes through policy.Encode, then rejects a result above
+// MaxEncodedSize after allocation. Neither cap is a pre-marshaling heap budget.
 func (codec ManifestCodec) Encode(manifest policy.Manifest) ([]byte, error) {
 	encoded, err := policy.Encode(manifest)
 	if err != nil {
@@ -116,7 +120,10 @@ func New(config Config) (*cache.Cache[authorization.Revision, policy.Manifest], 
 	})
 }
 
-// RepositoryLoader returns a loader that reports a hit only for the repository's exact current revision.
+// RepositoryLoader reports Found only when a fresh repository read has the exact
+// requested revision. Literal nil is rejected; typed-nil/blocked/panicking
+// repositories are trusted. It neither validates model content nor sanitizes
+// returned raw errors; cache.GetOrLoad supplies its separate protected boundary.
 func RepositoryLoader(
 	repository policy.Repository,
 ) (cache.Loader[authorization.Revision, policy.Manifest], error) {

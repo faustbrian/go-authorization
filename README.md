@@ -19,7 +19,8 @@ The current implementation includes:
 - typed requests, decisions, reason codes, and policy identities;
 - deny-overrides, allow-overrides, first-applicable, and priority-order
   composition;
-- immutable revisioned snapshots with atomic optimistic replacement;
+- structurally immutable revisioned snapshots with atomic optimistic replacement
+  and borrowed reusable evaluators;
 - bounded batch evaluation and bounded explanation traces;
 - activation windows, fail-closed errors, and default deny;
 - typed, indexed ACL evaluation and resource-ID listing;
@@ -30,12 +31,13 @@ The current implementation includes:
 - strict versioned ACL, RBAC, and ABAC model documents for activation;
 - atomic PostgreSQL manifest persistence with optimistic revision checks and a
   reusable `migrations` migration;
-- monotonic Valkey invalidation with pub/sub wakeups and durable polling
-  fallback;
+- advisory Valkey revision hints with pub/sub wakeups and key polling, subject
+  to backend numeric ranges and deployment-owned durability;
 - direct source-of-truth synchronization independent of cache publication;
 - dependency-neutral authenticated-principal mapping;
 - fail-closed `adapters/http` and native `adapters/jsonrpc` integration;
-- bounded `adapters/slog` audit and `adapters/otel` metrics/trace adapters; and
+- `adapters/slog` audit and `adapters/otel` metrics/trace adapters with
+  wrapper-enforced metadata count caps and caller-owned text privacy; and
 - explicit advisory `adapters/cache` manifest integration.
 
 See the [five-minute ACL quickstart](docs/quickstart-acl.md) and

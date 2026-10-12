@@ -12,63 +12,104 @@ import (
 	authorization "github.com/faustbrian/go-authorization/v3"
 )
 
+// DocumentVersion is version 1 of this application model JSON profile.
 const DocumentVersion uint64 = 1
 const maxEncodedDocumentBytes = 1 << 20
 
 const (
+	// EffectAllow is the serialized explicit allow label.
 	EffectAllow = "allow"
-	EffectDeny  = "deny"
+	// EffectDeny is the serialized explicit deny label.
+	EffectDeny = "deny"
 )
 
 const (
-	SourceSubject     = "subject"
-	SourceResource    = "resource"
-	SourceRequest     = "request"
+	// SourceSubject is the serialized subject attribute-map label.
+	SourceSubject = "subject"
+	// SourceResource is the serialized resource attribute-map label.
+	SourceResource = "resource"
+	// SourceRequest is the serialized request attribute-map label.
+	SourceRequest = "request"
+	// SourceEnvironment is the serialized environment attribute-map label.
 	SourceEnvironment = "environment"
 )
 
 const (
-	OperatorEqual          = "equal"
-	OperatorExists         = "exists"
-	OperatorIsNull         = "is_null"
-	OperatorAll            = "all"
-	OperatorAny            = "any"
-	OperatorNot            = "not"
-	OperatorGreaterThan    = "greater_than"
-	OperatorLessThan       = "less_than"
-	OperatorIn             = "in"
-	OperatorSetContains    = "set_contains"
-	OperatorHasPrefix      = "has_prefix"
-	OperatorHasSuffix      = "has_suffix"
+	// OperatorEqual selects the serialized built-in equality operator; see the corresponding typed constructor.
+	OperatorEqual = "equal"
+	// OperatorExists selects the serialized built-in existence operator; see the corresponding typed constructor.
+	OperatorExists = "exists"
+	// OperatorIsNull selects the serialized built-in null operator; see the corresponding typed constructor.
+	OperatorIsNull = "is_null"
+	// OperatorAll selects the serialized built-in all operator; see the corresponding typed constructor.
+	OperatorAll = "all"
+	// OperatorAny selects the serialized built-in any operator; see the corresponding typed constructor.
+	OperatorAny = "any"
+	// OperatorNot selects the serialized built-in negation operator; see the corresponding typed constructor.
+	OperatorNot = "not"
+	// OperatorGreaterThan selects the serialized built-in greater-than operator; see the corresponding typed constructor.
+	OperatorGreaterThan = "greater_than"
+	// OperatorLessThan selects the serialized built-in less-than operator; see the corresponding typed constructor.
+	OperatorLessThan = "less_than"
+	// OperatorIn selects the serialized built-in membership operator; see the corresponding typed constructor.
+	OperatorIn = "in"
+	// OperatorSetContains selects the serialized built-in set-membership operator; see the corresponding typed constructor.
+	OperatorSetContains = "set_contains"
+	// OperatorHasPrefix selects the serialized built-in prefix operator; see the corresponding typed constructor.
+	OperatorHasPrefix = "has_prefix"
+	// OperatorHasSuffix selects the serialized built-in suffix operator; see the corresponding typed constructor.
+	OperatorHasSuffix = "has_suffix"
+	// OperatorStringContains selects the serialized built-in substring operator; see the corresponding typed constructor.
 	OperatorStringContains = "string_contains"
-	OperatorIPIn           = "ip_in"
+	// OperatorIPIn selects the serialized built-in CIDR-membership operator; see the corresponding typed constructor.
+	OperatorIPIn = "ip_in"
 )
 
 const (
-	ValueNull      = "null"
-	ValueString    = "string"
-	ValueBool      = "bool"
-	ValueInt       = "int"
-	ValueFloat     = "float"
-	ValueTime      = "time"
-	ValueIP        = "ip"
+	// ValueNull is the serialized null value-kind label.
+	ValueNull = "null"
+	// ValueString is the serialized string value-kind label.
+	ValueString = "string"
+	// ValueBool is the serialized bool value-kind label.
+	ValueBool = "bool"
+	// ValueInt is the serialized int value-kind label.
+	ValueInt = "int"
+	// ValueFloat is the serialized float value-kind label.
+	ValueFloat = "float"
+	// ValueTime is the serialized time value-kind label.
+	ValueTime = "time"
+	// ValueIP is the serialized ip value-kind label.
+	ValueIP = "ip"
+	// ValueStringSet is the serialized string_set value-kind label.
 	ValueStringSet = "string_set"
 )
 
 var (
-	ErrInvalidDocument            = errors.New("invalid ABAC document")
+	// ErrInvalidDocument identifies invalid ABAC document. Compare with errors.Is, not error text.
+	ErrInvalidDocument = errors.New("invalid ABAC document")
+	// ErrUnsupportedDocumentVersion identifies unsupported ABAC document version. Compare with errors.Is, not error text.
 	ErrUnsupportedDocumentVersion = errors.New("unsupported ABAC document version")
-	ErrDocumentLimitExceeded      = errors.New("ABAC document size limit exceeded")
+	// ErrDocumentLimitExceeded identifies ABAC document size limit exceeded. Compare with errors.Is, not error text.
+	ErrDocumentLimitExceeded = errors.New("ABAC document size limit exceeded")
 )
 
+// ValueDocument is a tagged literal; only the selected Kind field is consumed.
 type ValueDocument struct {
-	Kind      string   `json:"kind"`
-	String    string   `json:"string,omitempty"`
-	Bool      bool     `json:"bool,omitempty"`
-	Int       int64    `json:"int,omitempty"`
-	Float     float64  `json:"float,omitempty"`
-	Time      string   `json:"time,omitempty"`
-	IP        string   `json:"ip,omitempty"`
+	// Kind selects one supported serialized literal representation; unrelated fields are unused.
+	Kind string `json:"kind"`
+	// String supplies the string literal when Kind selects string; it is retained plaintext.
+	String string `json:"string,omitempty"`
+	// Bool supplies the boolean literal when Kind selects bool.
+	Bool bool `json:"bool,omitempty"`
+	// Int supplies the signed int64 literal when Kind selects int.
+	Int int64 `json:"int,omitempty"`
+	// Float supplies the finite floating literal when Kind selects float.
+	Float float64 `json:"float,omitempty"`
+	// Time is parsed as RFC3339Nano then normalized to UTC when Kind selects time.
+	Time string `json:"time,omitempty"`
+	// IP supplies the parseable address literal when Kind selects ip.
+	IP string `json:"ip,omitempty"`
+	// StringSet supplies copied/sorted/deduplicated literals when Kind selects string_set.
 	StringSet []string `json:"string_set,omitempty"`
 }
 
@@ -103,16 +144,27 @@ func (document ValueDocument) build() (authorization.Value, error) {
 	}
 }
 
+// ConditionDocument is editable recursive expression data; Build visits only
+// operator-selected children before constructing validated Conditions.
 type ConditionDocument struct {
-	Operator   string                      `json:"operator"`
-	Source     string                      `json:"source,omitempty"`
-	Attribute  authorization.AttributeName `json:"attribute,omitempty"`
-	Value      *ValueDocument              `json:"value,omitempty"`
-	Values     []ValueDocument             `json:"values,omitempty"`
-	Conditions []ConditionDocument         `json:"conditions,omitempty"`
-	Condition  *ConditionDocument          `json:"condition,omitempty"`
-	Text       string                      `json:"text,omitempty"`
-	Prefix     string                      `json:"prefix,omitempty"`
+	// Operator selects one supported expression operation; unrelated fields may remain unused.
+	Operator string `json:"operator"`
+	// Source selects the request fact map, not an external data provider.
+	Source string `json:"source,omitempty"`
+	// Attribute names an exact map key for a leaf operation.
+	Attribute authorization.AttributeName `json:"attribute,omitempty"`
+	// Value supplies the comparison literal for equal/greater/less operations.
+	Value *ValueDocument `json:"value,omitempty"`
+	// Values supplies the same-kind membership candidates for in.
+	Values []ValueDocument `json:"values,omitempty"`
+	// Conditions supplies ordered children for all/any; Build validates visited children.
+	Conditions []ConditionDocument `json:"conditions,omitempty"`
+	// Condition supplies the single child for not; other operators do not consume it.
+	Condition *ConditionDocument `json:"condition,omitempty"`
+	// Text supplies the string operand for set/string operations, not executable input.
+	Text string `json:"text,omitempty"`
+	// Prefix is the CIDR operand for ip_in, normalized by IPIn.
+	Prefix string `json:"prefix,omitempty"`
 }
 
 func (document ConditionDocument) build() (Condition, error) {
@@ -214,32 +266,58 @@ func (document ConditionDocument) reference() (Reference, error) {
 	return Reference{Source: source, Name: document.Attribute}, nil
 }
 
+// RuleDocument is editable scoped rule input with either inline or versioned
+// named-condition selection, not authenticated facts.
 type RuleDocument struct {
-	ID               authorization.PolicyID     `json:"id"`
-	Priority         int                        `json:"priority,omitempty"`
-	Tenant           authorization.TenantID     `json:"tenant,omitempty"`
-	Action           authorization.Action       `json:"action"`
-	ResourceType     authorization.ResourceType `json:"resource_type"`
-	ResourceID       authorization.ResourceID   `json:"resource_id,omitempty"`
-	Effect           string                     `json:"effect"`
-	Condition        *ConditionDocument         `json:"condition,omitempty"`
-	ConditionName    string                     `json:"condition_name,omitempty"`
-	ConditionVersion uint64                     `json:"condition_version,omitempty"`
+	// ID is an exact application-defined label; keep diagnostic identifiers non-secret.
+	ID authorization.PolicyID `json:"id"`
+	// Priority orders higher values first where the selected model supports ordering.
+	Priority int `json:"priority,omitempty"`
+	// Tenant is exact scope; empty means global, not inferred tenant membership.
+	Tenant authorization.TenantID `json:"tenant,omitempty"`
+	// Action is matched byte-for-byte; no wildcard, normalization or permission discovery is implied.
+	Action authorization.Action `json:"action"`
+	// ResourceType is matched exactly; no wildcard or external lookup is implied.
+	ResourceType authorization.ResourceType `json:"resource_type"`
+	// ResourceID is exact when nonempty; empty makes the grant/rule type-wide.
+	ResourceID authorization.ResourceID `json:"resource_id,omitempty"`
+	// Effect must select an explicit allow or deny; model construction rejects other outcomes.
+	Effect string `json:"effect"`
+	// Condition supplies editable inline expression data; Build validates the selected tree.
+	Condition *ConditionDocument `json:"condition,omitempty"`
+	// ConditionName selects an exact named condition instead of an inline Condition.
+	ConditionName string `json:"condition_name,omitempty"`
+	// ConditionVersion must be nonzero with ConditionName, otherwise zero.
+	ConditionVersion uint64 `json:"condition_version,omitempty"`
 }
 
+// NamedConditionDocument binds editable expression data to a nonzero name/version.
 type NamedConditionDocument struct {
-	Name      string            `json:"name"`
-	Version   uint64            `json:"version"`
+	// Name is the exact application label; do not place secrets in error-visible names.
+	Name string `json:"name"`
+	// Version is a nonzero named-condition version, independent of DocumentVersion.
+	Version uint64 `json:"version"`
+	// Condition supplies editable inline expression data; Build validates the selected tree.
 	Condition ConditionDocument `json:"condition"`
 }
 
+// Document is the editable application version-1 JSON model, not an
+// authenticated artifact. Build validates the selected model after caller-owned
+// construction/JSON materialization; inactive fields can be present but unused.
 type Document struct {
-	Version         uint64                   `json:"version"`
-	Limits          Limits                   `json:"limits,omitempty"`
-	Rules           []RuleDocument           `json:"rules"`
+	// Version is the application model version; Build requires DocumentVersion (1).
+	Version uint64 `json:"version"`
+	// Limits supplies positive count/depth/cost overrides; non-positive fields retain model defaults.
+	Limits Limits `json:"limits,omitempty"`
+	// Rules supplies editable rule definitions; Build/New validates and sorts them.
+	Rules []RuleDocument `json:"rules"`
+	// NamedConditions supplies editable named/versioned expression definitions.
 	NamedConditions []NamedConditionDocument `json:"named_conditions"`
 }
 
+// Build constructs and validates a fresh model evaluator for DocumentVersion.
+// It does not impose the encoded-byte cap or authenticate provenance. Caller-owned
+// document containers must stay immutable during construction.
 func (document Document) Build() (*Evaluator, error) {
 	if document.Version != DocumentVersion {
 		return nil, ErrUnsupportedDocumentVersion
@@ -325,6 +403,11 @@ func validateConditionDocumentLimits(root *ConditionDocument, limits Limits) err
 	return nil
 }
 
+// DecodeDocument rejects input above 1 MiB before JSON decoding, unknown
+// fields and trailing values, then builds the model. Duplicate JSON member names
+// follow encoding/json last-wins semantics; duplicate model IDs are rejected.
+// Parser diagnostics can include offending characters/field names. No context or
+// pre-parser model-depth/count cap is supplied; decoded trees allocate before Build.
 func DecodeDocument(encoded []byte) (*Evaluator, error) {
 	if len(encoded) > maxEncodedDocumentBytes {
 		return nil, ErrDocumentLimitExceeded
@@ -341,6 +424,9 @@ func DecodeDocument(encoded []byte) (*Evaluator, error) {
 	return document.Build()
 }
 
+// EncodeDocument build-validates, then marshals indented JSON and checks
+// the 1 MiB result cap after allocation. It returns no successful oversize output;
+// field/string memory and caller document ownership remain outside that cap.
 func EncodeDocument(document Document) ([]byte, error) {
 	if _, err := document.Build(); err != nil {
 		return nil, err
@@ -352,8 +438,10 @@ func EncodeDocument(document Document) ([]byte, error) {
 	return encoded, err
 }
 
+// Decoder is the stateless policy.Decoder binding for this version-1 model.
 type Decoder struct{}
 
+// Decode delegates to DecodeDocument; no independent lifecycle or context is added.
 func (Decoder) Decode(document json.RawMessage) (authorization.Evaluator, error) {
 	return DecodeDocument(document)
 }

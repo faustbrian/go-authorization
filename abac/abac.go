@@ -1,5 +1,12 @@
-// Package abac provides a bounded, closed expression model for typed
-// attribute-based authorization.
+// Package abac evaluates a closed typed expression model over caller-owned facts.
+// New binds inline/versioned named conditions and sorts rules by priority then ID.
+// Exact tenant/action/resource scope is required; explicit deny wins among matches,
+// and standalone no-match is NotApplicable. Authentication, attribute truth and
+// external I/O are not owned. Built-in constructors copy expression slices and
+// use immutable Values; the request maps are borrowed during each call.
+// Costs count visited expression nodes, not string bytes, CPU time or allocation.
+// Condition is closed to direct external implementations, not an execution sandbox
+// for embedded/trusted collaborators. Model JSON is the application v1 profile.
 package abac
 
 import (
@@ -13,85 +20,148 @@ import (
 )
 
 var (
-	ErrInvalidRule             = errors.New("invalid ABAC rule")
-	ErrInvalidCondition        = errors.New("invalid ABAC condition")
-	ErrCostExceeded            = errors.New("ABAC evaluation cost exceeded")
-	ErrDepthExceeded           = errors.New("ABAC condition depth exceeded")
-	ErrRuleLimitExceeded       = errors.New("ABAC rule limit exceeded")
-	ErrSetLimitExceeded        = errors.New("ABAC set limit exceeded")
-	ErrMatchLimitExceeded      = errors.New("ABAC match limit exceeded")
-	ErrBatchLimitExceeded      = errors.New("ABAC batch limit exceeded")
-	ErrUnknownNamedCondition   = errors.New("unknown named ABAC condition")
+	// ErrInvalidRule identifies invalid ABAC rule. Compare with errors.Is, not error text.
+	ErrInvalidRule = errors.New("invalid ABAC rule")
+	// ErrInvalidCondition identifies invalid ABAC condition. Compare with errors.Is, not error text.
+	ErrInvalidCondition = errors.New("invalid ABAC condition")
+	// ErrCostExceeded identifies ABAC evaluation cost exceeded. Compare with errors.Is, not error text.
+	ErrCostExceeded = errors.New("ABAC evaluation cost exceeded")
+	// ErrDepthExceeded identifies ABAC condition depth exceeded. Compare with errors.Is, not error text.
+	ErrDepthExceeded = errors.New("ABAC condition depth exceeded")
+	// ErrRuleLimitExceeded identifies ABAC rule limit exceeded. Compare with errors.Is, not error text.
+	ErrRuleLimitExceeded = errors.New("ABAC rule limit exceeded")
+	// ErrSetLimitExceeded identifies ABAC set limit exceeded. Compare with errors.Is, not error text.
+	ErrSetLimitExceeded = errors.New("ABAC set limit exceeded")
+	// ErrMatchLimitExceeded identifies ABAC match limit exceeded. Compare with errors.Is, not error text.
+	ErrMatchLimitExceeded = errors.New("ABAC match limit exceeded")
+	// ErrBatchLimitExceeded identifies ABAC batch limit exceeded. Compare with errors.Is, not error text.
+	ErrBatchLimitExceeded = errors.New("ABAC batch limit exceeded")
+	// ErrUnknownNamedCondition identifies unknown named ABAC condition. Compare with errors.Is, not error text.
+	ErrUnknownNamedCondition = errors.New("unknown named ABAC condition")
+	// ErrDuplicateNamedCondition identifies duplicate named ABAC condition. Compare with errors.Is, not error text.
 	ErrDuplicateNamedCondition = errors.New("duplicate named ABAC condition")
 )
 
 const (
-	ReasonAllow         authorization.ReasonCode = "abac-allow"
-	ReasonExplicitDeny  authorization.ReasonCode = "abac-explicit-deny"
+	// ReasonAllow marks a model grant.
+	ReasonAllow authorization.ReasonCode = "abac-allow"
+	// ReasonExplicitDeny marks a matching model denial.
+	ReasonExplicitDeny authorization.ReasonCode = "abac-explicit-deny"
+	// ReasonLimitExceeded marks model work rejected by a configured count/cost limit.
 	ReasonLimitExceeded authorization.ReasonCode = "abac-limit-exceeded"
 )
 
+// Source selects one of the four independent request attribute maps.
 type Source uint8
 
 const (
+	// Subject selects subject facts.
 	Subject Source = iota
+	// Resource selects resource facts.
 	Resource
+	// Request selects request facts.
 	Request
+	// Environment selects environment facts.
 	Environment
 )
 
+// Reference names an exact attribute in a selected map; no path traversal
+// or external fetch is performed.
 type Reference struct {
+	// Source selects the request fact map, not an external data provider.
 	Source Source
-	Name   authorization.AttributeName
+	// Name is the exact application label; do not place secrets in error-visible names.
+	Name authorization.AttributeName
 }
 
+// Status distinguishes match/no-match, missing, explicit null and kind mismatch.
 type Status uint8
 
 const (
+	// StatusNoMatch reports a well-typed predicate that is false.
 	StatusNoMatch Status = iota
+	// StatusMatch reports a true predicate.
 	StatusMatch
+	// StatusMissing reports an absent or ValueMissing fact.
 	StatusMissing
+	// StatusNull reports explicit null for an operator that does not match it.
 	StatusNull
+	// StatusTypeMismatch reports a fact/literal kind mismatch.
 	StatusTypeMismatch
 )
 
+// Result reports predicate status and accounted node visits, not elapsed
+// cost or a final authorization outcome.
 type Result struct {
+	// Matched reports predicate truth, not a final authorization grant.
 	Matched bool
-	Status  Status
-	Cost    int
+	// Status distinguishes predicate match, missing, null and type mismatch.
+	Status Status
+	// Cost reports consumed expression-node visits, not string-byte work or wall time.
+	Cost int
 }
 
+// Condition is the built-in expression contract with package-private methods.
+// Constructors defer validation to New/EvaluateCondition; do not treat embedding
+// an arbitrary implementation as safe plugin admission.
 type Condition interface {
 	evaluate(*evaluationState) (Result, error)
 	validate() error
 }
 
+// Rule matches exact tenant/action/type and optional instance before
+// evaluating either Condition or a versioned named condition.
 type Rule struct {
-	ID               authorization.PolicyID
-	Priority         int
-	Tenant           authorization.TenantID
-	Action           authorization.Action
-	ResourceType     authorization.ResourceType
-	ResourceID       authorization.ResourceID
-	Effect           authorization.Outcome
-	Condition        Condition
-	ConditionName    string
+	// ID is an exact application-defined label; keep diagnostic identifiers non-secret.
+	ID authorization.PolicyID
+	// Priority orders higher values first where the selected model supports ordering.
+	Priority int
+	// Tenant is exact scope; empty means global, not inferred tenant membership.
+	Tenant authorization.TenantID
+	// Action is matched byte-for-byte; no wildcard, normalization or permission discovery is implied.
+	Action authorization.Action
+	// ResourceType is matched exactly; no wildcard or external lookup is implied.
+	ResourceType authorization.ResourceType
+	// ResourceID is exact when nonempty; empty makes the grant/rule type-wide.
+	ResourceID authorization.ResourceID
+	// Effect must select an explicit allow or deny; model construction rejects other outcomes.
+	Effect authorization.Outcome
+	// Condition is the selected expression; use built-in constructors and avoid nil/embedded unsafe state.
+	Condition Condition
+	// ConditionName selects an exact named condition instead of an inline Condition.
+	ConditionName string
+	// ConditionVersion must be nonzero with ConditionName, otherwise zero.
 	ConditionVersion uint64
 }
 
+// NamedCondition binds a nonempty name/nonzero version to a validated
+// reusable expression; unused definitions are also validated.
 type NamedCondition struct {
-	Name      string
-	Version   uint64
+	// Name is the exact application label; do not place secrets in error-visible names.
+	Name string
+	// Version is a nonzero exact named-condition identity, independent of model format version.
+	Version uint64
+	// Condition is the selected expression; use built-in constructors and avoid nil/embedded unsafe state.
 	Condition Condition
 }
 
+// Limits bounds selected rule/name/depth/cost/set/match/batch counts.
+// Cost counts expression visits; string operations and literal construction are
+// not byte/time budgets, and non-positive overrides retain defaults.
 type Limits struct {
-	MaxRules           int `json:"max_rules,omitempty"`
-	MaxDepth           int `json:"max_depth,omitempty"`
-	MaxCost            int `json:"max_cost,omitempty"`
-	MaxMatches         int `json:"max_matches,omitempty"`
-	MaxSetSize         int `json:"max_set_size,omitempty"`
-	MaxBatchSize       int `json:"max_batch_size,omitempty"`
+	// MaxRules admits rule count; default is 1000.
+	MaxRules int `json:"max_rules,omitempty"`
+	// MaxDepth admits expression depth; default is 32.
+	MaxDepth int `json:"max_depth,omitempty"`
+	// MaxCost caps node visits per evaluation; default is 1000, not CPU/string-time admission.
+	MaxCost int `json:"max_cost,omitempty"`
+	// MaxMatches caps collected matching entries/permissions/rules; default is 100.
+	MaxMatches int `json:"max_matches,omitempty"`
+	// MaxSetSize admits selected literal/runtime collection cardinality; default is 1000, not total bytes.
+	MaxSetSize int `json:"max_set_size,omitempty"`
+	// MaxBatchSize admits request count before result allocation; default is 1000.
+	MaxBatchSize int `json:"max_batch_size,omitempty"`
+	// MaxNamedConditions admits named definition count; default is 1000.
 	MaxNamedConditions int `json:"max_named_conditions,omitempty"`
 }
 
@@ -105,8 +175,12 @@ const (
 	defaultMaxNamedConditions = 1000
 )
 
+// Option configures construction synchronously. Nil/custom options may panic;
+// do not retain evaluator mutation access after New publishes its view.
 type Option func(*Evaluator)
 
+// WithLimits applies only positive fields; zero and negative fields retain defaults.
+// Limits admit selected counts, not total string bytes, wall time or collaborator memory.
 func WithLimits(limits Limits) Option {
 	return func(evaluator *Evaluator) {
 		if limits.MaxRules > 0 {
@@ -133,11 +207,17 @@ func WithLimits(limits Limits) Option {
 	}
 }
 
+// Evaluator holds a sorted constructed rule view with no I/O/lifecycle.
+// Request attribute maps must remain immutable during concurrent evaluation.
 type Evaluator struct {
 	rules  []Rule
 	limits Limits
 }
 
+// New validates exact identities/effects, unique rule IDs, named-condition
+// bindings and expression depth/literal cardinality, then copies/sorts rules.
+// MaxCost is evaluation admission, not a total constructor-node budget. Typed-nil
+// embedded conditions/custom options can panic at uncovered construction seams.
 func New(
 	rules []Rule,
 	namedConditions []NamedCondition,
@@ -214,6 +294,11 @@ func New(
 	return evaluator, nil
 }
 
+// Evaluate matches scopes and evaluates conditions in sorted order; explicit
+// deny wins among all matches and no-match is NotApplicable. One cost counter is
+// shared across matching rules. Request.Validate is not called; ctx is checked
+// at consumed nodes; a request with no matching scope can return NotApplicable
+// even when canceled.
 func (evaluator *Evaluator) Evaluate(
 	ctx context.Context,
 	request authorization.Request,
@@ -261,6 +346,9 @@ func (evaluator *Evaluator) Evaluate(
 	return decision, nil
 }
 
+// EvaluateBatch checks MaxBatchSize before allocation, then returns one ordered result
+// per request and joined errors. It continues after failures/cancellation; an empty
+// batch performs no per-request ctx check. No cross-request transaction is provided.
 func (evaluator *Evaluator) EvaluateBatch(
 	ctx context.Context,
 	requests []authorization.Request,
@@ -356,6 +444,9 @@ func normalizedLimits(limits Limits) Limits {
 	return evaluator.limits
 }
 
+// EvaluateCondition validates depth/literal set policy, then evaluates with a
+// fresh per-call node budget. Cost is reported from the state even on failure;
+// nil conditions fail. No request authentication or complete request validation occurs.
 func EvaluateCondition(
 	ctx context.Context,
 	condition Condition,
@@ -419,6 +510,8 @@ type equalCondition struct {
 	want      authorization.Value
 }
 
+// Equal compares exact kinds and structural Values; explicit null can
+// match null, while missing values and mismatched kinds keep distinct statuses.
 func Equal(reference Reference, want authorization.Value) Condition {
 	return equalCondition{reference: reference, want: want}
 }
@@ -471,6 +564,8 @@ type allCondition struct {
 	conditions []Condition
 }
 
+// All copies child order and short-circuits on the first false/error.
+// Empty or nil children fail later validation, not this constructor.
 func All(conditions ...Condition) Condition {
 	return allCondition{conditions: append([]Condition(nil), conditions...)}
 }

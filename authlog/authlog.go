@@ -14,13 +14,16 @@ import (
 	adapter "github.com/faustbrian/go-authorization/v3/adapters/slog"
 )
 
+// ErrNilLogger preserves the direct adapter error identity for errors.Is.
 var ErrNilLogger = adapter.ErrNilLogger
 
+// Instrumenter retains the released logger/level layout and borrows sink lifecycle.
 type Instrumenter struct {
 	logger *slog.Logger
 	level  slog.Level
 }
 
+// New borrows a non-nil logger/handler and constructs no worker or shutdown.
 func New(logger *slog.Logger, level slog.Level) (*Instrumenter, error) {
 	if logger == nil {
 		return nil, ErrNilLogger
@@ -47,6 +50,7 @@ func (instrumenter *Instrumenter) Begin(
 	}
 }
 
+// Start delegates to the repeatable Begin log callback.
 func (instrumenter *Instrumenter) Start(
 	ctx context.Context,
 ) (context.Context, func(authorization.Event)) {

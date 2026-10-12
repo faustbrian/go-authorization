@@ -4,11 +4,11 @@
 context-first `BeginInstrumenter` contract without changing its decision or
 error. The released `NewInstrumented` constructor remains available for
 `Start`-based implementations. Instrumentation panics and nil derived contexts
-are isolated from authorization behavior. Events contain bounded decision
-metadata only:
+are isolated at observation start/finish/clock calls, not authorizer execution
+or blocked callbacks. Events contain selected count-bounded decision metadata:
 outcome, reason, revision, bounded matched policy IDs, trace counts, duration,
-and failure state. They never contain subjects, tenants, resources, attributes,
-or policy documents.
+and failure state. There are no dedicated subjects, tenants, resources,
+attributes or document fields; reason/ID strings remain caller-controlled, unsanitized and byte-unbounded.
 
 ## Structured audit events
 
@@ -24,7 +24,10 @@ authorizer, err := authorization.NewInstrumentedWithBegin(engine, audit,
     authorization.InstrumentationConfig{MaxPolicyIDs: 100})
 ```
 
-One `authorization decision` record is emitted per call. Matched policy IDs are
+The wrapper invokes completion once after a normal authorizer return; a panic
+in the authorizer bypasses completion. The slog callback logs on each direct
+invocation, so it is not itself idempotent or a durable delivery guarantee.
+Matched policy IDs are
 bounded and explicitly marked when truncated. Applications should apply their
 normal log access controls because policy identifiers may describe internal
 business rules.
@@ -45,4 +48,7 @@ instrumenter, err := authorizationotel.New(authorizationotel.Config{
 Metrics use only the closed results `allow`, `deny`, `not-applicable`, and
 `error`. Subject IDs, policy IDs, reasons, tenants, actions, resources, and
 revisions are not metric labels. Spans include bounded counts, reason, and
-revision for diagnosis but do not include request or attribute values.
+revision for diagnosis. Providers/exporters and shutdown remain caller-owned.
+OTel completion is once-only; an SDK panic before End can leave an unfinished
+span without retry. No dedicated request values are included, but reasons remain
+application text and direct adapter calls add no wrapper count or byte caps.

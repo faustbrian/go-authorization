@@ -8,6 +8,7 @@ import (
 	authorization "github.com/faustbrian/go-authorization/v3"
 )
 
+// BenchmarkEvaluatePredicateCount compares all-matching equality-node counts after construction; string-byte costs are not varied.
 func BenchmarkEvaluatePredicateCount(b *testing.B) {
 	for _, count := range []int{1, 10, 100} {
 		b.Run(fmt.Sprintf("predicates-%d", count), func(b *testing.B) {

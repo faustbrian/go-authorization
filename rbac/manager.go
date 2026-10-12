@@ -7,7 +7,9 @@ import (
 )
 
 // Manager provides synchronized in-memory assignment administration. Each
-// Evaluator call returns a new immutable evaluator view.
+// Evaluator call builds a new structural view. Options run again under manager
+// locks and must not block/reenter the manager. Unused nested Subject attribute
+// maps are not deep-copied. No distributed storage, clock or goroutine is owned.
 type Manager struct {
 	mu          sync.RWMutex
 	roles       []Role
@@ -17,7 +19,9 @@ type Manager struct {
 	revision    authorization.Revision
 }
 
-// NewManager validates and copies an initial RBAC administrative view.
+// NewManager validates/copies roles, permissions, assignments and options.
+// Subject attribute maps remain borrowed; options are rerun during later
+// validation under manager locks and must not reenter/block.
 func NewManager(
 	roles []Role,
 	permissions []Permission,
@@ -73,7 +77,8 @@ func (manager *Manager) RevokeAssignment(id authorization.PolicyID) bool {
 	return false
 }
 
-// Assignments returns defensive copies of exact-scope subject assignments.
+// Assignments returns exact-scope assignment copies, including copied Groups.
+// Nested Subject.Attributes maps remain shared (and are not used for matching).
 func (manager *Manager) Assignments(
 	subject authorization.Subject,
 	tenant authorization.TenantID,
@@ -92,7 +97,9 @@ func (manager *Manager) Assignments(
 	return assignments
 }
 
-// Evaluator returns an immutable evaluator for the manager's current view.
+// Evaluator rebuilds the current view under the read lock, rerunning borrowed
+// options. Returned models fix matching state; unused subject attributes remain
+// borrowed. Options must not reenter the manager or block.
 func (manager *Manager) Evaluator() (*Evaluator, error) {
 	manager.mu.RLock()
 	defer manager.mu.RUnlock()
@@ -100,7 +107,8 @@ func (manager *Manager) Evaluator() (*Evaluator, error) {
 	return New(manager.roles, manager.permissions, manager.assignments, manager.options...)
 }
 
-// Revision returns the manager's monotonic in-memory revision.
+// Revision returns the in-memory counter (initially 1), incremented after accepted
+// assignment mutations. It is not a persisted/global token and has no wrap guard.
 func (manager *Manager) Revision() authorization.Revision {
 	manager.mu.RLock()
 	defer manager.mu.RUnlock()

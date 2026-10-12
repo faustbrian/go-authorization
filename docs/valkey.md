@@ -1,8 +1,11 @@
 # Valkey invalidation
 
 The `valkey` package distributes policy revision changes across application
-processes. It stores the latest published revision in a durable Valkey key and
-publishes a wakeup on a channel in the same Lua operation.
+processes as advisory hints. It sets a revision key and publishes a wakeup in
+the same Lua operation. Persistence/replication, credentials and key isolation
+are deployment-owned; this is not a durable publication transaction with PostgreSQL.
+Lua `tonumber` comparison is not exact across the full uint64 domain: keep
+revisions within the backend numeric representation that the application uses.
 
 ```go
 invalidator, err := authvalkey.New(client, authvalkey.Options{
@@ -33,9 +36,13 @@ group.Go(func() error {
 ```
 
 Pub/sub payloads are deliberately ignored. A message only wakes the watcher,
-which then reads the durable revision key. The watcher also polls that key at
+which then reads the advisory revision key. The watcher also polls that key at
 the configured interval and continues polling after pub/sub disconnects. This
-makes dropped, duplicated, delayed, and out-of-order messages harmless.
+avoids depending on delivery order, but does not preserve a deleted/evicted or
+restored key. A missing key means zero, not proof no policy was published.
+Watch runs the handler serially and advances its local revision only after
+success. It joins the Receive goroutine on exit, so cancellation requires
+cooperative client I/O; handler panic/blocking is not contained.
 
 Valkey is an invalidation transport, not the policy source of truth. A failure
 to read Valkey or reload the manifest is returned to the caller and must not be

@@ -9,6 +9,11 @@ versioning for its Go API and portable policy format.
 
 ### Maintenance
 
+- Clarify trusted request/evaluator ownership, cooperative cancellation,
+  observation privacy and freshness boundaries across core and adapters.
+  Document parser admission versus allocation limits and PostgreSQL/Valkey
+  revision ranges without changing policy formats or execution semantics.
+
 - Adopt OpenTelemetry API and SDK 1.47 with authorization APIs and
   decision semantics unchanged. Caller-owned metric exporters that used
   OTEL_GO_X_METRIC_EXPORT_BATCH_SIZE must configure WithMaxExportBatchSize

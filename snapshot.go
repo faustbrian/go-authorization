@@ -10,27 +10,43 @@ import (
 )
 
 var (
-	ErrInvalidPolicy           = errors.New("invalid policy")
-	ErrDuplicatePolicy         = errors.New("duplicate policy")
+	// ErrInvalidPolicy identifies invalid policy. Compare with errors.Is, not error text.
+	ErrInvalidPolicy = errors.New("invalid policy")
+	// ErrDuplicatePolicy identifies duplicate policy. Compare with errors.Is, not error text.
+	ErrDuplicatePolicy = errors.New("duplicate policy")
+	// ErrInvalidActivationWindow identifies invalid policy activation window. Compare with errors.Is, not error text.
 	ErrInvalidActivationWindow = errors.New("invalid policy activation window")
-	ErrInvalidRevision         = errors.New("invalid policy revision")
+	// ErrInvalidRevision identifies invalid policy revision. Compare with errors.Is, not error text.
+	ErrInvalidRevision = errors.New("invalid policy revision")
 )
 
 // Evaluator is the bounded, I/O-free decision interface implemented by policy
-// models such as ACL, RBAC, and ABAC.
+// models such as ACL, RBAC, and ABAC. This is a collaborator obligation, not an
+// I/O/CPU sandbox: implementations must cooperate with ctx, avoid input mutation
+// and support concurrent calls when shared. Engine catches evaluation panics
+// but cannot undo side effects or preempt blocking work.
 type Evaluator interface {
+	// Evaluate returns a valid outcome or an error, using immutable borrowed
+	// request data. Decision identifiers/reasons must be non-secret application text.
 	Evaluate(context.Context, Request) (Decision, error)
 }
 
 // PolicyDefinition binds a stable policy identity to its evaluator.
 type PolicyDefinition struct {
-	ID          PolicyID
-	Revision    Revision
-	Priority    int
-	ActiveFrom  time.Time
+	// ID is an exact application-defined label; keep diagnostic identifiers non-secret.
+	ID PolicyID
+	// Revision identifies the declared policy/view generation; it is not an authenticity signature.
+	Revision Revision
+	// Priority orders higher values first where the selected model supports ordering.
+	Priority int
+	// ActiveFrom starts the inclusive activation window; absent/zero means unbounded.
+	ActiveFrom time.Time
+	// ActiveUntil ends the exclusive activation window; absent/zero means unbounded.
 	ActiveUntil time.Time
-	Metadata    map[string]string
-	Evaluator   Evaluator
+	// Metadata contains editable application labels, not authenticated/private storage.
+	Metadata map[string]string
+	// Evaluator is borrowed and must be immutable/concurrency-safe/cooperative when shared.
+	Evaluator Evaluator
 }
 
 type policyEntry struct {
@@ -48,25 +64,41 @@ func (policy policyEntry) activeAt(at time.Time) bool {
 		(policy.activeUntil.IsZero() || at.Before(policy.activeUntil))
 }
 
-// PolicyInfo is the safe, inspectable metadata for one snapshotted policy.
+// PolicyInfo is inspectable copied metadata for one snapshotted policy.
+// It is not sanitized; callers must keep labels and metadata non-secret.
 type PolicyInfo struct {
-	ID          PolicyID
-	Revision    Revision
-	Priority    int
-	ActiveFrom  time.Time
+	// ID is an exact application-defined label; keep diagnostic identifiers non-secret.
+	ID PolicyID
+	// Revision identifies the declared policy/view generation; it is not an authenticity signature.
+	Revision Revision
+	// Priority orders higher values first where the selected model supports ordering.
+	Priority int
+	// ActiveFrom starts the inclusive activation window; absent/zero means unbounded.
+	ActiveFrom time.Time
+	// ActiveUntil ends the exclusive activation window; absent/zero means unbounded.
 	ActiveUntil time.Time
-	Metadata    map[string]string
+	// Metadata contains editable application labels, not authenticated/private storage.
+	Metadata map[string]string
 }
 
-// Snapshot is one coherent, immutable policy view used for a complete
-// decision. Its policy contents are intentionally private.
+// Snapshot fixes policy order/activation metadata for a coherent decision.
+// Metadata maps are copied, but Evaluator instances are borrowed and must be
+// immutable/concurrency-safe. Structural immutability is not deep evaluator
+// isolation or authentication. Construct with NewSnapshot; the zero/nil view
+// is not a validated revisioned snapshot.
 type Snapshot struct {
 	revision  Revision
 	algorithm CombiningAlgorithm
 	policies  []policyEntry
 }
 
-// NewSnapshot validates and creates a revisioned policy snapshot.
+// NewSnapshot requires nonzero revision, a supported algorithm and unique
+// nonempty IDs/literal-non-nil evaluators. Typed-nil evaluators are not detected.
+// Zero per-policy revisions inherit the snapshot revision; other revisions need
+// not equal it. Activation is [ActiveFrom, ActiveUntil), with zero ends unbounded.
+// PriorityOrder sorts descending priority then lexical ID; other algorithms
+// preserve definition order. Metadata maps are copied; evaluators are borrowed.
+// Policy count/string/callback admission belongs to callers and Engine limits.
 func NewSnapshot(
 	revision Revision,
 	algorithm CombiningAlgorithm,

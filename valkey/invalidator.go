@@ -1,5 +1,10 @@
 // Package valkey distributes monotonic policy revision invalidations through
-// Valkey without relying on lossy pub/sub delivery for correctness.
+// Valkey as advisory hints, not authorization or policy content. New borrows a
+// native Client; Watch owns a Receive goroutine/ticker only until the call joins
+// on cancellation. The client must cooperate; shutdown can otherwise block.
+// Publish uses Lua numeric comparison, not an exact full-uint64 ordering primitive.
+// Backend persistence/replication, credentials, retries and client close are
+// deployment-owned; repository polling remains the authoritative correctness path.
 package valkey
 
 import (
@@ -15,17 +20,25 @@ import (
 )
 
 const (
-	DefaultPrefix       = "authorization"
+	// DefaultPrefix is the default Valkey key/channel namespace; applications own isolation.
+	DefaultPrefix = "authorization"
+	// DefaultPollInterval is the default 30-second advisory-key polling cadence.
 	DefaultPollInterval = 30 * time.Second
 )
 
 var (
-	ErrNilClient           = errors.New("authorization valkey client is nil")
-	ErrInvalidPrefix       = errors.New("authorization valkey prefix is invalid")
+	// ErrNilClient identifies authorization valkey client is nil. Compare with errors.Is, not error text.
+	ErrNilClient = errors.New("authorization valkey client is nil")
+	// ErrInvalidPrefix identifies authorization valkey prefix is invalid. Compare with errors.Is, not error text.
+	ErrInvalidPrefix = errors.New("authorization valkey prefix is invalid")
+	// ErrInvalidPollInterval identifies authorization valkey poll interval is invalid. Compare with errors.Is, not error text.
 	ErrInvalidPollInterval = errors.New("authorization valkey poll interval is invalid")
-	ErrInvalidRevision     = errors.New("authorization valkey revision is invalid")
-	ErrInvalidResponse     = errors.New("authorization valkey response is invalid")
-	ErrNilHandler          = errors.New("authorization valkey handler is nil")
+	// ErrInvalidRevision identifies authorization valkey revision is invalid. Compare with errors.Is, not error text.
+	ErrInvalidRevision = errors.New("authorization valkey revision is invalid")
+	// ErrInvalidResponse identifies authorization valkey response is invalid. Compare with errors.Is, not error text.
+	ErrInvalidResponse = errors.New("authorization valkey response is invalid")
+	// ErrNilHandler identifies authorization valkey handler is nil. Compare with errors.Is, not error text.
+	ErrNilHandler = errors.New("authorization valkey handler is nil")
 )
 
 const publishScript = `local current = redis.call('GET', KEYS[1])
@@ -37,11 +50,16 @@ redis.call('SET', KEYS[1], ARGV[2])
 redis.call('PUBLISH', ARGV[1], ARGV[2])
 return 1`
 
+// Options selects caller-owned key/channel namespace and polling cadence.
 type Options struct {
-	Prefix       string
+	// Prefix selects Valkey key/channel names; empty chooses DefaultPrefix.
+	Prefix string
+	// PollInterval chooses periodic advisory-key reads; zero selects 30 seconds, negative is invalid.
 	PollInterval time.Duration
 }
 
+// Invalidator borrows a native client with no Close ownership; zero is unusable.
+// Concurrent use depends on client/callback safety, not policy authentication.
 type Invalidator struct {
 	client       native.Client
 	key          string
@@ -49,6 +67,9 @@ type Invalidator struct {
 	pollInterval time.Duration
 }
 
+// New rejects literal nil clients and blank/negative settings, with
+// default prefix/interval for zero fields. Typed-nil clients and callbacks are
+// not panic-contained; caller namespace strings are not authenticated scope.
 func New(client native.Client, options Options) (*Invalidator, error) {
 	if client == nil {
 		return nil, ErrNilClient
@@ -73,8 +94,12 @@ func New(client native.Client, options Options) (*Invalidator, error) {
 	}, nil
 }
 
-// Publish advances the durable invalidation revision and publishes a wakeup
-// atomically. It returns false when the same or a newer revision already exists.
+// Publish atomically sets the key and emits a wakeup within one Lua operation.
+// It rejects zero and otherwise delegates ordering to Lua tonumber, which is not
+// an exact full-uint64 comparator; applications must stay within the backend's
+// exact numeric domain. False means the script considered existing state >= next.
+// Backend persistence/replication is not guaranteed, and an error can require
+// reconciling unknown execution state. No authoritative policy data is published.
 func (invalidator *Invalidator) Publish(
 	ctx context.Context,
 	revision authorization.Revision,
@@ -97,8 +122,10 @@ func (invalidator *Invalidator) Publish(
 	return result == 1, nil
 }
 
-// Revision reads the durable invalidation revision. A missing key means no
-// policy has been published through this invalidator yet.
+// Revision reads the current advisory key as exact nonzero uint64 decimal text.
+// Missing keys return zero; deletion/eviction/restoration can remove/reset state,
+// so zero is not proof that a policy was never published. Client response allocation,
+// credentials, persistence and untrusted mutation remain external trust boundaries.
 func (invalidator *Invalidator) Revision(
 	ctx context.Context,
 ) (authorization.Revision, error) {
@@ -122,8 +149,12 @@ func (invalidator *Invalidator) Revision(
 }
 
 // Watch observes newer revisions. Pub/sub only wakes the watcher; every
-// notification is verified against the durable key, and periodic polling
-// continues if pub/sub disconnects or drops messages.
+// notification triggers a key read and periodic polling continues after Receive
+// exits (its error is not returned). The handler runs serially and advances the
+// local after revision only on success; polling/key/handler errors stop the call.
+// Cancellation joins Receive, requiring cooperative client I/O. Handler panics are
+// not contained and its work is not preempted; repository verification belongs to
+// the handler. The key is advisory and backend durability must be configured.
 func (invalidator *Invalidator) Watch(
 	ctx context.Context,
 	after authorization.Revision,

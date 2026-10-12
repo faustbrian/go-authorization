@@ -1,5 +1,9 @@
 // Package authn maps immutable authenticated principals into authorization
-// subjects without making authentication depend on authorization.
+// subjects without making authentication depend on authorization. Subject maps
+// trusted stable Principal methods; it verifies neither signatures/credentials
+// nor tenant membership. It owns no I/O/lifecycle and accepts no context.
+// Claims, mapping configuration and principal callbacks must remain immutable;
+// literals are copied/normalized into Values, not protected-memory storage.
 package authn
 
 import (
@@ -17,31 +21,54 @@ import (
 const defaultMaxGroups = 100
 
 var (
-	ErrNilPrincipal       = errors.New("authorization authentication principal is nil")
+	// ErrNilPrincipal identifies authorization authentication principal is nil. Compare with errors.Is, not error text.
+	ErrNilPrincipal = errors.New("authorization authentication principal is nil")
+	// ErrAnonymousPrincipal identifies authorization authentication principal is anonymous. Compare with errors.Is, not error text.
 	ErrAnonymousPrincipal = errors.New("authorization authentication principal is anonymous")
-	ErrInvalidPrincipal   = errors.New("authorization authentication principal is invalid")
-	ErrInvalidConfig      = errors.New("authorization authentication mapping config is invalid")
-	ErrMissingClaim       = errors.New("authorization authentication claim is missing")
-	ErrUnsupportedClaim   = errors.New("authorization authentication claim type is unsupported")
-	ErrInvalidGroups      = errors.New("authorization authentication groups are invalid")
+	// ErrInvalidPrincipal identifies authorization authentication principal is invalid. Compare with errors.Is, not error text.
+	ErrInvalidPrincipal = errors.New("authorization authentication principal is invalid")
+	// ErrInvalidConfig identifies authorization authentication mapping config is invalid. Compare with errors.Is, not error text.
+	ErrInvalidConfig = errors.New("authorization authentication mapping config is invalid")
+	// ErrMissingClaim identifies authorization authentication claim is missing. Compare with errors.Is, not error text.
+	ErrMissingClaim = errors.New("authorization authentication claim is missing")
+	// ErrUnsupportedClaim identifies authorization authentication claim type is unsupported. Compare with errors.Is, not error text.
+	ErrUnsupportedClaim = errors.New("authorization authentication claim type is unsupported")
+	// ErrInvalidGroups identifies authorization authentication groups are invalid. Compare with errors.Is, not error text.
+	ErrInvalidGroups = errors.New("authorization authentication groups are invalid")
+	// ErrGroupLimitExceeded identifies authorization authentication group limit exceeded. Compare with errors.Is, not error text.
 	ErrGroupLimitExceeded = errors.New("authorization authentication group limit exceeded")
 )
 
 // Principal is implemented by authentication Principal values and keeps
 // this adapter independent of authentication's package lifecycle.
 type Principal interface {
+	// IsAnonymous distinguishes anonymous input; it is not a verification operation here.
 	IsAnonymous() bool
+	// Subject returns a stable nonempty authenticated identity supplied by the application.
 	Subject() string
+	// Claims returns a stable graph during mapping; claim authority/byte bounds belong to the caller.
 	Claims() map[string]any
 }
 
+// Config selects exact required claims and output subject kind. Only
+// group count is admitted here; map/string/literal conversion allocations are not byte-capped.
 type Config struct {
-	Kind            authorization.SubjectKind
+	// Kind is the caller-selected representation/category, not an authentication assertion.
+	Kind authorization.SubjectKind
+	// AttributeClaims maps exact output attributes to required claim names; input maps must remain stable.
 	AttributeClaims map[authorization.AttributeName]string
-	GroupsClaim     string
-	MaxGroups       int
+	// GroupsClaim is an optional required string-collection claim when nonempty.
+	GroupsClaim string
+	// MaxGroups caps admitted membership count; zero/default policy selects 100.
+	MaxGroups int
 }
 
+// Subject rejects literal nil, anonymous/empty identity and invalid mapping,
+// then constructs a new subject. Typed-nil principals/callback panics are not
+// contained. All configured claims must exist; unsupported types fail with zero
+// subject. Groups are copied before count rejection and their order is preserved.
+// json.Number tries int64, then finite float64 (large integers may round).
+// It does not populate/verify Request.Tenant or enforce authentication policy.
 func Subject(principal Principal, config Config) (authorization.Subject, error) {
 	if principal == nil {
 		return authorization.Subject{}, ErrNilPrincipal

@@ -1,4 +1,11 @@
-// Package acl provides typed subject-to-resource access control lists.
+// Package acl indexes explicit subject/group grants and denials by action and
+// resource type. New constructs a reusable read-only view; Evaluate matches exact
+// identifiers and optional type-wide IDs, with explicit deny winning among matches.
+// Standalone no-match is NotApplicable, not final authorization. Global inheritance
+// is opt-in. Groups/tenant/identity are trusted mapped facts, not authenticated here.
+// Entry containers are indexed but unused nested Subject attributes are borrowed.
+// Calls own no I/O/goroutine; request containers must remain immutable. Document v1
+// is the application JSON format, not complete external ACL-standard conformance.
 package acl
 
 import (
@@ -11,20 +18,31 @@ import (
 )
 
 var (
-	ErrInvalidEntry         = errors.New("invalid ACL entry")
-	ErrDuplicateEntry       = errors.New("duplicate ACL entry")
-	ErrEntryLimitExceeded   = errors.New("ACL entry limit exceeded")
-	ErrGroupLimitExceeded   = errors.New("ACL group limit exceeded")
-	ErrMatchLimitExceeded   = errors.New("ACL match limit exceeded")
-	ErrBatchLimitExceeded   = errors.New("ACL batch limit exceeded")
+	// ErrInvalidEntry identifies invalid ACL entry. Compare with errors.Is, not error text.
+	ErrInvalidEntry = errors.New("invalid ACL entry")
+	// ErrDuplicateEntry identifies duplicate ACL entry. Compare with errors.Is, not error text.
+	ErrDuplicateEntry = errors.New("duplicate ACL entry")
+	// ErrEntryLimitExceeded identifies ACL entry limit exceeded. Compare with errors.Is, not error text.
+	ErrEntryLimitExceeded = errors.New("ACL entry limit exceeded")
+	// ErrGroupLimitExceeded identifies ACL group limit exceeded. Compare with errors.Is, not error text.
+	ErrGroupLimitExceeded = errors.New("ACL group limit exceeded")
+	// ErrMatchLimitExceeded identifies ACL match limit exceeded. Compare with errors.Is, not error text.
+	ErrMatchLimitExceeded = errors.New("ACL match limit exceeded")
+	// ErrBatchLimitExceeded identifies ACL batch limit exceeded. Compare with errors.Is, not error text.
+	ErrBatchLimitExceeded = errors.New("ACL batch limit exceeded")
+	// ErrUnboundedResourceSet identifies ACL resource set is unbounded. Compare with errors.Is, not error text.
 	ErrUnboundedResourceSet = errors.New("ACL resource set is unbounded")
 )
 
+// EntryID preserves PolicyID identity for ACL entry diagnostics.
 type EntryID = authorization.PolicyID
 
 const (
-	ReasonAllow         authorization.ReasonCode = "acl-allow"
-	ReasonExplicitDeny  authorization.ReasonCode = "acl-explicit-deny"
+	// ReasonAllow marks a model grant.
+	ReasonAllow authorization.ReasonCode = "acl-allow"
+	// ReasonExplicitDeny marks a matching model denial.
+	ReasonExplicitDeny authorization.ReasonCode = "acl-explicit-deny"
+	// ReasonLimitExceeded marks model work rejected by a configured count/cost limit.
 	ReasonLimitExceeded authorization.ReasonCode = "acl-limit-exceeded"
 )
 
@@ -37,21 +55,32 @@ const (
 
 // Limits bounds ACL construction and per-request evaluation work.
 type Limits struct {
-	MaxEntries   int `json:"max_entries,omitempty"`
-	MaxGroups    int `json:"max_groups,omitempty"`
-	MaxMatches   int `json:"max_matches,omitempty"`
+	// MaxEntries admits ACL entries at construction; default is 10000.
+	MaxEntries int `json:"max_entries,omitempty"`
+	// MaxGroups caps admitted membership count; zero/default policy selects 100.
+	MaxGroups int `json:"max_groups,omitempty"`
+	// MaxMatches caps collected matching entries/permissions/rules; default is 100.
+	MaxMatches int `json:"max_matches,omitempty"`
+	// MaxBatchSize admits request count before result allocation; default is 1000.
 	MaxBatchSize int `json:"max_batch_size,omitempty"`
 }
 
 // Entry grants or denies one subject an action on a resource type or instance.
 type Entry struct {
-	ID           EntryID
-	Subject      authorization.Subject
-	Action       authorization.Action
+	// ID is an exact application-defined label; keep diagnostic identifiers non-secret.
+	ID EntryID
+	// Subject supplies trusted kind/ID and optional group/fact state; it is not authenticated here.
+	Subject authorization.Subject
+	// Action is matched byte-for-byte; no wildcard, normalization or permission discovery is implied.
+	Action authorization.Action
+	// ResourceType is matched exactly; no wildcard or external lookup is implied.
 	ResourceType authorization.ResourceType
-	ResourceID   authorization.ResourceID
-	Tenant       authorization.TenantID
-	Effect       authorization.Outcome
+	// ResourceID is exact when nonempty; empty makes the grant/rule type-wide.
+	ResourceID authorization.ResourceID
+	// Tenant is exact scope; empty means global, not inferred tenant membership.
+	Tenant authorization.TenantID
+	// Effect must select an explicit allow or deny; model construction rejects other outcomes.
+	Effect authorization.Outcome
 }
 
 type entryKey struct {
@@ -68,6 +97,8 @@ type Evaluator struct {
 	limits        Limits
 }
 
+// Option configures construction synchronously. Nil/custom options may panic;
+// do not retain evaluator mutation access after New publishes its view.
 type Option func(*Evaluator)
 
 // WithGlobalInheritance makes global entries apply to tenant-scoped requests.
@@ -97,7 +128,11 @@ func WithLimits(limits Limits) Option {
 	}
 }
 
-// New validates and indexes ACL entries.
+// New checks entry count, unique IDs, required identity/action/type strings and
+// allow/deny effects before publishing indexes. Entry values are copied, but
+// nested Subject groups/attribute maps are not deeply isolated (they are unused
+// for matching). Nil/custom options may panic; positive limits replace defaults
+// and non-positive fields are ignored. No context/string-byte budget is applied.
 func New(entries []Entry, options ...Option) (*Evaluator, error) {
 	evaluator := &Evaluator{
 		limits: Limits{
@@ -142,7 +177,11 @@ func New(entries []Entry, options ...Option) (*Evaluator, error) {
 	return evaluator, nil
 }
 
-// Evaluate checks matching type and instance entries for one request.
+// Evaluate matches the subject and deduplicated trusted groups in request order.
+// Actions/types/tenant are exact; empty entry ResourceID is type-wide. All matches
+// are collected up to MaxMatches and any deny overrides allows. Limit/cancel errors
+// deny and discard partial diagnostics; no match is NotApplicable. It does not
+// call Request.Validate and checks ctx between principals, not every entry.
 func (evaluator *Evaluator) Evaluate(
 	ctx context.Context,
 	request authorization.Request,
@@ -209,8 +248,9 @@ func (evaluator *Evaluator) Evaluate(
 	return decision, nil
 }
 
-// EvaluateBatch evaluates a bounded request set against the evaluator's
-// immutable ACL view.
+// EvaluateBatch evaluates all requests against the same ACL view and returns
+// each decision with joined per-request errors. Oversized input returns nil;
+// cancellation is delegated to Evaluate and does not short-circuit the batch.
 func (evaluator *Evaluator) EvaluateBatch(
 	ctx context.Context,
 	requests []authorization.Request,
@@ -233,7 +273,10 @@ func (evaluator *Evaluator) EvaluateBatch(
 }
 
 // ListResourceIDs returns only explicitly enumerable instance grants. A
-// resource-type allow is reported as unbounded instead of triggering a scan.
+// resource-type allow is reported as unbounded instead of triggering a storage
+// scan; a type-wide deny returns an empty set immediately. Results are sorted,
+// duplicate principals are ignored and exact matched-entry caps apply. No request
+// authentication/validation is performed; context is checked between principals.
 func (evaluator *Evaluator) ListResourceIDs(
 	ctx context.Context,
 	subject authorization.Subject,

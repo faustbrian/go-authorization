@@ -1,5 +1,8 @@
-// Package authorizationslog emits bounded authorization audit events through
-// log/slog.
+// Package authorizationslog emits authorization audit events through
+// log/slog. New borrows a logger/handler and owns no sink shutdown or delivery
+// persistence. Begin/finish run inline; finish is repeatable, not idempotent.
+// Event count caps are enforced by the outer Instrumented wrapper, not direct
+// callbacks. IDs/reasons are application text and must remain non-secret.
 package authorizationslog
 
 import (
@@ -13,7 +16,7 @@ import (
 // ErrNilLogger reports that New received no logger.
 var ErrNilLogger = errors.New("authorization audit logger is nil")
 
-// Instrumenter emits a bounded structured audit record for each completed observation.
+// Instrumenter emits a structured audit record on each completion invocation.
 // The caller retains ownership of the logger and its handler.
 type Instrumenter struct {
 	logger *slog.Logger
@@ -28,7 +31,9 @@ func New(logger *slog.Logger, level slog.Level) (*Instrumenter, error) {
 	return &Instrumenter{logger: logger, level: level}, nil
 }
 
-// Begin starts one bounded authorization audit observation.
+// Begin returns the same context and a callback that logs on every invocation.
+// No direct event cap, panic containment or exactly-once/durable delivery is added.
+// The logger/handler controls blocking, enabled levels and concurrent reuse.
 func (instrumenter *Instrumenter) Begin(
 	ctx context.Context,
 ) (context.Context, func(authorization.Event)) {

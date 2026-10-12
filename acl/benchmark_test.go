@@ -8,6 +8,7 @@ import (
 	authorization "github.com/faustbrian/go-authorization/v3"
 )
 
+// BenchmarkEvaluateByPolicySize varies the indexed entry population with one instance lookup; construction is outside the timer.
 func BenchmarkEvaluateByPolicySize(b *testing.B) {
 	for _, size := range []int{10, 100, 1000, 10_000} {
 		b.Run(fmt.Sprintf("entries-%d", size), func(b *testing.B) {
