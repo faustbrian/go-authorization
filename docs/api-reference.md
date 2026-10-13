@@ -1,5 +1,7 @@
 # API and package reference
 
+[Documentation index](README.md) · [Repository entry](../README.md)
+
 The Go API is the source of truth. Run `go doc` on a package for every exported
 field and method; the checked-in API baseline detects incompatible changes.
 
@@ -80,3 +82,6 @@ default deny.
 Exported Go symbols follow semantic versioning. The portable manifest format
 and each model document version are separate compatibility contracts. See
 [compatibility and governance](compatibility.md) before changing either.
+
+Choose the next guide in the [documentation index](README.md)
+or return to the [repository entry](../README.md) for installation and ownership.

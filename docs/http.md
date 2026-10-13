@@ -1,5 +1,7 @@
 # HTTP integration
 
+[Documentation index](README.md) · [Repository entry](../README.md)
+
 The `adapters/http` package authorizes standard-library HTTP handlers without
 coupling policy evaluation to routing, authentication, or transport details.
 Applications provide an explicit mapper from `*http.Request` to the typed
@@ -38,3 +40,6 @@ Allowed downstream handlers can read the complete decision with
 original error with `authorizationhttp.ErrorFromContext` for logging, but
 neither default handler writes policy details or internal errors to the
 response body.
+
+Choose the next guide in the [documentation index](README.md)
+or return to the [repository entry](../README.md) for installation and ownership.

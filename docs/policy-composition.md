@@ -1,5 +1,7 @@
 # Policy composition and explanation
 
+[Documentation index](README.md) · [Repository entry](../README.md)
+
 An `authorization.Snapshot` installs one or more typed evaluators and one
 explicit combining algorithm. A decision loads the active snapshot once, so
 concurrent replacement cannot mix policy revisions during a request or batch.
@@ -67,3 +69,6 @@ an access change.
 Dry-run input is application data. Callers remain responsible for avoiding
 sensitive values in their own logs; the report contains decisions, not request
 attributes.
+
+Choose the next guide in the [documentation index](README.md)
+or return to the [repository entry](../README.md) for installation and ownership.

@@ -1,5 +1,7 @@
 # Five-minute ACL quickstart
 
+[Documentation index](README.md) · [Repository entry](../README.md)
+
 ACL entries directly allow or deny a subject an action on a resource type or a
 specific resource. The core engine supplies revisioning, default deny,
 explanation, activation windows, and composition.
@@ -109,3 +111,6 @@ silently scanning or returning an incomplete result.
 batch size. Limit exhaustion returns an error and a deny decision where a
 decision is available. The defaults are intentionally finite; applications
 should lower them when their known policy sizes permit it.
+
+Choose the next guide in the [documentation index](README.md)
+or return to the [repository entry](../README.md) for installation and ownership.

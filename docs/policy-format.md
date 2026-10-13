@@ -1,5 +1,7 @@
 # Policy format and compatibility
 
+[Documentation index](README.md) · [Repository entry](../README.md)
+
 The portable policy envelope is human-readable JSON with the format identifier
 `authorization.policy/v1`. Format compatibility is governed by semantic
 versioning: incompatible interpretation changes require a new format identifier
@@ -121,3 +123,6 @@ meaning or type of an envelope field requires a new envelope format.
 manifests with an expected revision. Durable adapters must provide atomic
 updates, monotonic revisions, and optimistic conflict errors without relying on
 cache invalidation for correctness.
+
+Choose the next guide in the [documentation index](README.md)
+or return to the [repository entry](../README.md) for installation and ownership.

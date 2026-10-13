@@ -1,5 +1,7 @@
 # Compatibility and governance
 
+[Documentation index](README.md) · [Repository entry](../README.md)
+
 ## Go API
 
 The module follows semantic versioning. Exported removals, incompatible type or
@@ -78,3 +80,6 @@ Optional custom GitHub release assets must be checksum-bound if published.
 Until a stable release, only the latest tagged pre-1.0 line is supported. After
 1.0, support windows and deprecation periods must be recorded here before an
 older line is retired.
+
+Choose the next guide in the [documentation index](README.md)
+or return to the [repository entry](../README.md) for installation and ownership.

@@ -1,5 +1,7 @@
 # Five-minute RBAC quickstart
 
+[Documentation index](README.md) · [Repository entry](../README.md)
+
 RBAC assigns subjects to roles and attaches typed permissions to those roles.
 Roles, permissions, and assignments carry explicit tenant scopes; role IDs are
 globally unique within an evaluator.
@@ -131,3 +133,6 @@ once those packages are configured.
 `rbac.WithLimits` bounds roles, permissions, assignments, request groups,
 matched permissions, batch size, and inheritance depth. Construction or
 evaluation fails closed when a limit is exceeded.
+
+Choose the next guide in the [documentation index](README.md)
+or return to the [repository entry](../README.md) for installation and ownership.

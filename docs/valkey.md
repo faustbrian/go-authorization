@@ -1,5 +1,7 @@
 # Valkey invalidation
 
+[Documentation index](README.md) · [Repository entry](../README.md)
+
 The `valkey` package distributes policy revision changes across application
 processes as advisory hints. It sets a revision key and publishes a wakeup in
 the same Lua operation. Persistence/replication, credentials and key isolation
@@ -50,3 +52,6 @@ converted into an allow decision. The synchronizer polls the repository
 directly as the correctness path, so a PostgreSQL publication that occurs while
 Valkey is unavailable is still discovered. Valkey only reduces propagation
 latency.
+
+Choose the next guide in the [documentation index](README.md)
+or return to the [repository entry](../README.md) for installation and ownership.

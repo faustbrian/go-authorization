@@ -2,8 +2,8 @@
 
 [![CI](https://github.com/faustbrian/go-authorization/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/faustbrian/go-authorization/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/badge/CodeQL-required-blue)](https://github.com/faustbrian/go-authorization/actions/workflows/ci.yml)
-[![Coverage](https://img.shields.io/badge/coverage-100%25_required-blue)](CONTRIBUTING.md#verification)
-[![Mutation](https://img.shields.io/badge/mutation-local_and_scheduled-blue)](CONTRIBUTING.md#verification)
+[![Coverage](https://img.shields.io/badge/coverage-risk_selected-blue)](CONTRIBUTING.md#verification)
+[![Mutation](https://img.shields.io/badge/mutation-optional_local%2Fselected_scheduled-blue)](CONTRIBUTING.md#verification)
 [![Documentation](https://img.shields.io/badge/docs-checked_in_CI-blue)](docs/)
 [![Go Reference](https://pkg.go.dev/badge/github.com/faustbrian/go-authorization/v3.svg)](https://pkg.go.dev/github.com/faustbrian/go-authorization/v3)
 [![Release](https://img.shields.io/github/v/release/faustbrian/go-authorization?sort=semver)](https://github.com/faustbrian/go-authorization/releases)
@@ -93,3 +93,12 @@ gates. The package is licensed under the [MIT License](LICENSE).
 
 Start with the [documentation index](docs/README.md) for model selection,
 integration, persistence, operations, and security guidance.
+
+## Documentation navigation
+
+[Complete documentation map](docs/README.md#complete-documentation-map) · [Current source package map](docs/package-map.md)
+
+Use the [versioned ecosystem entry](https://github.com/faustbrian/go-library-tools/tree/531e4db50fd81a7201257a7b488a0cf22d333aca/docs/ecosystem) for package
+selection. The [frozen compatibility cohort](https://github.com/faustbrian/go-library-tools/blob/v1.8.4/docs/ecosystem/compatibility-sets.md)
+is separate from current package releases and unpublished source changes.
+Adopting them does not silently update that cohort.

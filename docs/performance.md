@@ -1,5 +1,7 @@
 # Performance and limits
 
+[Documentation index](README.md) · [Repository entry](../README.md)
+
 Authorization is evaluated in memory against one immutable snapshot. Policy
 evaluation performs no network or database I/O. Persistence and invalidation
 belong on the reload path, outside request decisions.
@@ -81,3 +83,6 @@ than treating the core engine number as request latency.
   cost limits from the worst accepted policy rather than the global maximum.
 - Reload complete immutable snapshots. Do not mutate active evaluator maps or
   slices to save an allocation; doing so breaks decision coherence.
+
+Choose the next guide in the [documentation index](README.md)
+or return to the [repository entry](../README.md) for installation and ownership.

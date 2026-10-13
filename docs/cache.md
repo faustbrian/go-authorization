@@ -1,5 +1,7 @@
 # Cache integration
 
+[Documentation index](README.md) · [Repository entry](../README.md)
+
 The `adapters/cache` package configures a typed `cache` cache for versioned
 policy manifests. It provides a strict manifest codec, hashed revision keys,
 bounded encoded values, and an optional repository loader. The released
@@ -50,3 +52,6 @@ backend operation. The injected backend's lifecycle remains application-owned.
 `authorizationcache.RepositoryLoader` returns a `cache` loader that reports a
 hit only when the repository's current manifest exactly matches the requested revision.
 It does not cache an arbitrary latest manifest under a stale revision key.
+
+Choose the next guide in the [documentation index](README.md)
+or return to the [repository entry](../README.md) for installation and ownership.

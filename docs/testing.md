@@ -1,5 +1,7 @@
 # Authorization testing
 
+[Documentation index](README.md) · [Repository entry](../README.md)
+
 The `authorizationtest` package provides deterministic fixtures without
 requiring an application framework or a storage service. Its default request
 uses stable identifiers and a fixed UTC time; each `Build` call returns fresh
@@ -57,3 +59,6 @@ mutation contract for this module. It requires exact 100 percent efficacy and
 mutant coverage, a nonempty
 report, and `KILLED` status for every viable mutant. Lived, uncovered,
 timed-out, malformed, missing, or unclassified results fail the gate.
+
+Choose the next guide in the [documentation index](README.md)
+or return to the [repository entry](../README.md) for installation and ownership.

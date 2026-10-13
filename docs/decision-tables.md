@@ -1,5 +1,7 @@
 # Decision and precedence tables
 
+[Documentation index](README.md) · [Repository entry](../README.md)
+
 ## Composition
 
 | Inputs encountered | Deny overrides | Allow overrides | First applicable | Priority order |
@@ -60,3 +62,6 @@ non-matches for a rule.
 
 Every table is exercised by model-specific tests, the shared model conformance
 suite, and the exhaustive composition truth table.
+
+Choose the next guide in the [documentation index](README.md)
+or return to the [repository entry](../README.md) for installation and ownership.

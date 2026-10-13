@@ -1,5 +1,7 @@
 # PostgreSQL persistence
 
+[Documentation index](README.md) · [Repository entry](../README.md)
+
 The `postgres` package stores one complete `policy.Manifest` as the current
 authorization state. Updates use the manifest revision as an optimistic lock,
 so policy publication is atomic across every ACL, RBAC, ABAC, and composite
@@ -51,3 +53,6 @@ irreversibly drops the policy table.
 
 The PostgreSQL row remains the source of truth. Caches and invalidation signals
 must never turn a missing, stale, or unavailable policy into an allow decision.
+
+Choose the next guide in the [documentation index](README.md)
+or return to the [repository entry](../README.md) for installation and ownership.

@@ -1,5 +1,7 @@
 # Operations
 
+[Documentation index](README.md) · [Repository entry](../README.md)
+
 ## Startup
 
 Apply the PostgreSQL migration, construct the repository and compiler, load and
@@ -86,3 +88,6 @@ state must change after recovery.
 Periodically exercise startup from backup, repository polling without Valkey,
 duplicate and out-of-order invalidations, and a rolling rollback using a new
 revision.
+
+Choose the next guide in the [documentation index](README.md)
+or return to the [repository entry](../README.md) for installation and ownership.

@@ -1,5 +1,7 @@
 # Policy lifecycle and migration
 
+[Documentation index](README.md) · [Repository entry](../README.md)
+
 One `policy.Manifest` is the portable source-of-truth unit. It names the format,
 revision, combining algorithm, and versioned ACL, RBAC, ABAC, or composite
 records. Activation compiles the complete manifest into one immutable snapshot;
@@ -92,3 +94,6 @@ Apply `postgres.GoMigration` through `migrations` or adopt the SQL from
 migrations before code that requires the repository. Initialize the first
 manifest with expected revision zero; every later update uses the current
 non-zero revision.
+
+Choose the next guide in the [documentation index](README.md)
+or return to the [repository entry](../README.md) for installation and ownership.

@@ -1,5 +1,7 @@
 # Application patterns
 
+[Documentation index](README.md) · [Repository entry](../README.md)
+
 Map authenticated, trusted application state into one typed `Request`, call an
 `Authorizer`, and continue only when the returned outcome is `Allow` and the
 error is nil. Never infer permission from an empty error alone.
@@ -93,3 +95,6 @@ Validate and compile a candidate manifest, diff it, dry-run representative
 requests, then persist it with the expected current revision. Publish the new
 revision hint only after the source-of-truth write succeeds. Restrict this path
 more tightly than ordinary application authorization.
+
+Choose the next guide in the [documentation index](README.md)
+or return to the [repository entry](../README.md) for installation and ownership.

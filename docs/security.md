@@ -1,5 +1,7 @@
 # Security model
 
+[Documentation index](README.md) · [Repository entry](../README.md)
+
 The library authorizes an already authenticated subject against trusted policy
 and application-mapped facts. It does not authenticate identities, secure
 transport, authorize policy administrators, or decide which database fields
@@ -61,3 +63,6 @@ own redaction before logging it. Panic values are discarded entirely.
 
 See the [threat model](threat-model.md) for attacker capabilities and residual
 responsibilities, and [SECURITY.md](../SECURITY.md) for private reporting.
+
+Choose the next guide in the [documentation index](README.md)
+or return to the [repository entry](../README.md) for installation and ownership.

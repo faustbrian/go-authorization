@@ -1,5 +1,7 @@
 # Threat model
 
+[Documentation index](README.md) · [Repository entry](../README.md)
+
 ## Version 3 cache-adoption boundary
 
 The v3 candidate adopts the published `go-cache/v2` contract through both
@@ -65,3 +67,6 @@ discarded because it may contain credentials or policy inputs. This recovery
 covers the evaluator call, not arbitrary application callbacks; it does not
 make a faulty evaluator healthy, so
 operators should alert on the sentinel and replace the offending policy code.
+
+Choose the next guide in the [documentation index](README.md)
+or return to the [repository entry](../README.md) for installation and ownership.

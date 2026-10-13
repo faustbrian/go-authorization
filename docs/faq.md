@@ -1,5 +1,7 @@
 # FAQ and troubleshooting
 
+[Documentation index](README.md) · [Repository entry](../README.md)
+
 ## Why was a request denied with `default-deny`?
 
 No active policy returned an applicable outcome. Check subject kind and ID,
@@ -71,3 +73,6 @@ adapter tests do not require production services.
 
 Use the [model selection decision tree](model-selection.md). If the rule is a
 domain invariant for every caller, keep it in application code.
+
+Choose the next guide in the [documentation index](README.md)
+or return to the [repository entry](../README.md) for installation and ownership.

@@ -1,5 +1,7 @@
 # Authentication integration
 
+[Documentation index](README.md) · [Repository entry](../README.md)
+
 Authorization consumes authenticated identity; it does not validate
 credentials. The `authn` package accepts a small immutable `Principal`
 interface implemented by `authentication` principals, so authentication has
@@ -27,3 +29,6 @@ Authentication scopes and tenant hints are deliberately not converted into
 permissions or authoritative tenant membership. Application code must verify
 tenant membership and decide whether credential scopes have domain meaning
 before constructing the authorization request.
+
+Choose the next guide in the [documentation index](README.md)
+or return to the [repository entry](../README.md) for installation and ownership.

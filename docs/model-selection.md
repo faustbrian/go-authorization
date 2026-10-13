@@ -1,5 +1,7 @@
 # Model selection
 
+[Documentation index](README.md) · [Repository entry](../README.md)
+
 Choose the simplest authority that owns the rule. Combining models is useful,
 but it also increases review and explanation cost.
 
@@ -46,3 +48,6 @@ defeat an explicit deny.
 
 If reviewers cannot predict precedence from the snapshot and its combining
 algorithm, split the authorization boundary or simplify the policies.
+
+Choose the next guide in the [documentation index](README.md)
+or return to the [repository entry](../README.md) for installation and ownership.

@@ -1,5 +1,7 @@
 # JSON-RPC integration
 
+[Documentation index](README.md) · [Repository entry](../README.md)
+
 The `adapters/jsonrpc` package provides native middleware for
 `github.com/faustbrian/go-jsonrpc`. Applications map each method's context and
 raw parameters to a typed authorization request. The released `authrpc` path
@@ -31,3 +33,6 @@ Applications can customize the denial and internal error mapping with
 `WithDeniedError` and `WithErrorMapper`. Returning nil from either custom
 mapper is contained as an internal error. Allowed handlers can inspect the
 decision with `authorizationjsonrpc.DecisionFromContext`.
+
+Choose the next guide in the [documentation index](README.md)
+or return to the [repository entry](../README.md) for installation and ownership.

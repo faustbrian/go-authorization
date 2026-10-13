@@ -1,5 +1,7 @@
 # Five-minute ABAC quickstart
 
+[Documentation index](README.md) · [Repository entry](../README.md)
+
 ABAC evaluates typed attributes supplied by the application on the subject,
 resource, request, and environment. Conditions use a closed expression tree;
 applications cannot inject arbitrary callbacks, reflection-driven operators,
@@ -149,3 +151,6 @@ order and explanation, not whether a deny is honored.
 cost, literal and runtime set cardinality, matched rules, and batch size.
 Cancellation or budget exhaustion returns a deny decision and an error. A
 condition never performs network or database I/O while consuming its budget.
+
+Choose the next guide in the [documentation index](README.md)
+or return to the [repository entry](../README.md) for installation and ownership.

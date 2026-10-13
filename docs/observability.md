@@ -1,5 +1,7 @@
 # Observability and audit
 
+[Documentation index](README.md) · [Repository entry](../README.md)
+
 `authorization.NewInstrumentedWithBegin` decorates any authorizer through the
 context-first `BeginInstrumenter` contract without changing its decision or
 error. The released `NewInstrumented` constructor remains available for
@@ -52,3 +54,6 @@ revision for diagnosis. Providers/exporters and shutdown remain caller-owned.
 OTel completion is once-only; an SDK panic before End can leave an unfinished
 span without retry. No dedicated request values are included, but reasons remain
 application text and direct adapter calls add no wrapper count or byte caps.
+
+Choose the next guide in the [documentation index](README.md)
+or return to the [repository entry](../README.md) for installation and ownership.
