@@ -7,6 +7,15 @@ versioning for its Go API and portable policy format.
 
 ## Unreleased
 
+### Added
+
+- Add opt-in revision-fenced decisions with defensive copies, post-callback
+  cancellation and fail-closed dependency handling, preserving the engine API.
+- Add separately migrated scoped lifecycle epochs with explicit initialization,
+  bounded primary reads, expected-version advancement and transaction-held
+  admission locks. Epoch overflow is terminal; authority is never reset by a
+  read or failed bootstrap. Callers retain protected transaction ownership.
+
 ### Maintenance
 
 - Clarify trusted request/evaluator ownership, cooperative cancellation,

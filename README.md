@@ -14,6 +14,22 @@
 policies. It uses explicit ACL, RBAC, and ABAC models rather than a positional
 string meta-model or separate policy language.
 
+## Unreleased decision and lifecycle boundaries
+
+`NewDecisionService` optionally wraps an existing `Authorizer` with an exact
+positive `DecisionContext.PolicyRevision` fence, defensive input/output copies
+and post-callback cancellation checks. Stale revisions, invalid outcomes,
+dependency failures and panics cannot authorize. The existing engine keeps its
+own API and request-borrowing semantics.
+
+`postgres.AuthoritySchemaMigration` separately allocates forward-only lifecycle
+epoch storage without changing the manifest schema. Native transaction owners
+explicitly initialize and advance exact tenant/namespace/subject epochs and
+hold `RequireAuthority` share locks through their protected effect. Primary
+reads never bootstrap rows. Returned epochs are structural metadata, not a
+renewable freshness lease or an independently committed administrative action.
+These additions are not part of the existing v3.0.0 release.
+
 The current implementation includes:
 
 - typed requests, decisions, reason codes, and policy identities;
