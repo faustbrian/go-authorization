@@ -86,7 +86,9 @@ func TestAuthorityBoundaryRejectsInvalidWithoutQuery(t *testing.T) {
 			t.Fatal("invalid duration", e)
 		}
 	}
-	if err := RequireAuthority(nil, q, good, 1, time.Second); !errors.Is(err, ErrInvalidAuthority) {
+	// Exercise the API's defensive zero-context contract, not normal usage.
+	var missingContext context.Context
+	if err := RequireAuthority(missingContext, q, good, 1, time.Second); !errors.Is(err, ErrInvalidAuthority) {
 		t.Fatal("nil context", err)
 	}
 	if err := RequireAuthority(context.Background(), q, good, 0, time.Second); !errors.Is(err, ErrInvalidAuthority) {
