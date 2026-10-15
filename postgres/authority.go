@@ -74,8 +74,13 @@ func (s AuthorityScope) Key() (string, error) {
 	h := sha256.New()
 	_, _ = h.Write([]byte("golib.authorization.authority.v1\x00"))
 	for _, id := range []string{string(s.TenantID), s.PolicyNamespace, string(s.SubjectID)} {
+		// Keep the admitted byte bound visible at the fixed-width encoding.
+		length := len(id)
+		if length < 1 || length > 128 {
+			return "", ErrInvalidAuthority
+		}
 		var size [2]byte
-		binary.BigEndian.PutUint16(size[:], uint16(len(id)))
+		binary.BigEndian.PutUint16(size[:], uint16(length))
 		_, _ = h.Write(size[:])
 		_, _ = h.Write([]byte(id))
 	}
