@@ -106,7 +106,7 @@ Use git ls-files '*.go' '*go.mod' '*go.sum', modules.json/packages.json, package
 and declaration/marker scans, .golib.yaml and scripts/check-api.sh/Make/CI.
 Root is github.com/faustbrian/go-authorization/v4; nested test module is
  github.com/faustbrian/go-authorization/integration/contracts. Both minimums
-are Go 1.27.0; repository verification pins 1.27.2. All paths are below.
+are Go 1.27.0; repository verification pins 1.27.3. All paths are below.
 
 | Go file | Package | Audit role and existing evidence |
 | --- | --- | --- |
