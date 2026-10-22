@@ -86,7 +86,7 @@ For ecosystem-wide construction, ownership, lifecycle, and composition
 guidance, see the versioned [Golib ecosystem index](https://github.com/faustbrian/go-library-tools/tree/531e4db50fd81a7201257a7b488a0cf22d333aca/docs/ecosystem)
 and its [Service edge family](https://github.com/faustbrian/go-library-tools/blob/v1.4.0/docs/ecosystem/design-language.md#package-families-and-selection).
 
-Use Go 1.27.2 for development and start with `GOWORK=off go test ./...`.
+Use Go 1.27.3 for development and start with `GOWORK=off go test ./...`.
 Install the public `golib` release declared in `.golib.yaml` without building
 it from source. `make check`/`make ci` run bounded checks across both catalog
 modules, retaining PostgreSQL and Valkey prerequisites plus a selected

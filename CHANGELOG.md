@@ -36,7 +36,6 @@ versioning for its Go API and portable policy format.
 - Build with Go 1.27.3 to address GO-2026-6809 in `crypto/x509`.
   Consumers should use Go 1.27.3 or newer.
 
-
 ### Added
 
 - Add opt-in revision-fenced decisions with defensive copies, post-callback

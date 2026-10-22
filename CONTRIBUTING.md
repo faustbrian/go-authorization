@@ -33,7 +33,7 @@ that hide a failing package.
 
 ## Verification
 
-Use Go 1.27.2 from this standalone repository; no sibling checkout or ecosystem
+Use Go 1.27.3 from this standalone repository; no sibling checkout or ecosystem
 goal ledger is required. Start with deterministic tests (including fuzz seeds):
 
 ```bash

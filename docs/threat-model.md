@@ -4,7 +4,7 @@
 
 ## Cache-adoption boundary
 
-The v4 candidate adopts the published `go-cache/v4` contract through the
+Version 4 adopts the published `go-cache/v4` contract through the
 `adapters/cache` package. Cache manifests remain reconstructible hints,
 not authorization decisions or an authoritative policy source.
 

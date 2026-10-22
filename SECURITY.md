@@ -7,7 +7,7 @@ an exploit or sensitive policy data.
 
 Security fixes are made on the latest published stable major. Publication of
 v4 supersedes v3; until v4 is published, v3 remains the latest published line.
-The v4 candidate adopts `go-cache/v4`; follow
+Version 4 adopts `go-cache/v4`; follow
 [compatibility and migration](docs/compatibility.md) and
 [cache ownership and lifecycle](docs/cache.md) when upgrading.
 
