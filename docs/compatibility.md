@@ -26,6 +26,9 @@ source directory or maintenance branch is created for a historical major.
 name, transaction mode, SQL and checksum that v3 recorded. Before the first v4
 run, complete the
 [ledger name upgrade](https://github.com/faustbrian/go-migrations/blob/v4.0.0/docs/operations.md#ledger-name-upgrade).
+Moving the runner from go-migrations v2 to v4 also crosses 4.0.0, which removed
+the `migrationsservice` bindings and changed some cancellation and shutdown exit
+codes; see the [go-migrations changelog](https://github.com/faustbrian/go-migrations/blob/v4.0.0/CHANGELOG.md).
 Portable policy formats, repository verification, and authorization decision
 semantics are unchanged.
 Direct consumers must choose their major migration explicitly; binaries using

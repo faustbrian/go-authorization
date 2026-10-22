@@ -28,7 +28,14 @@ versioning for its Go API and portable policy format.
   receives security fixes only until v4 is published, so migrate instead of
   waiting for v3 fixes.
 
-## Unreleased notes shipped by 3.1.0
+## 3.1.0 - 2026-10-22
+
+### Changed
+
+- Publish the current source and documentation with a fresh immutable tag.
+- Build with Go 1.27.3 to address GO-2026-6809 in `crypto/x509`.
+  Consumers should use Go 1.27.3 or newer.
+
 
 ### Added
 
@@ -76,14 +83,6 @@ versioning for its Go API and portable policy format.
   root publication, retaining its principal, audit-log, and telemetry assertions.
 - Exercise the public authorization v3 manifest cache adapter with Cache/v2
   storage, including a load followed by a hit without another loader call.
-
-## 3.1.0 - 2026-10-22
-
-### Changed
-
-- Publish the current source and documentation with a fresh immutable tag.
-- Build with Go 1.27.3 to address GO-2026-6809 in `crypto/x509`.
-  Consumers should use Go 1.27.3 or newer.
 
 ## 3.0.0 - 2026-09-30
 
