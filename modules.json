@@ -296,6 +296,11 @@
           "github.com/faustbrian/go-authorization/v4": "Use for typed authorization requests and decisions, immutable snapshots, policy composition, and fail-closed evaluation.",
           "github.com/faustbrian/go-authorization/v4/abac": "Use for bounded attribute-based policies with typed conditions and deterministic evaluation limits.",
           "github.com/faustbrian/go-authorization/v4/acl": "Use for typed subject-to-resource access control lists and bounded resource listing.",
+          "github.com/faustbrian/go-authorization/v4/adapters/cache": "Use for advisory cache integration keyed by exact policy revision while retaining the repository as source of truth.",
+          "github.com/faustbrian/go-authorization/v4/adapters/http": "Use for the fail-closed net/http authorization adapter.",
+          "github.com/faustbrian/go-authorization/v4/adapters/jsonrpc": "Use for fail-closed native go-jsonrpc authorization middleware.",
+          "github.com/faustbrian/go-authorization/v4/adapters/otel": "Use to observe authorization decisions through caller-owned OpenTelemetry providers.",
+          "github.com/faustbrian/go-authorization/v4/adapters/slog": "Use to emit bounded authorization audit events through log/slog.",
           "github.com/faustbrian/go-authorization/v4/authn": "Use to map an already authenticated principal into a typed authorization subject without validating credentials.",
           "github.com/faustbrian/go-authorization/v4/authorizationtest": "Use in tests for deterministic requests, evaluators, assertions, snapshots, and adapter conformance.",
           "github.com/faustbrian/go-authorization/v4/policy": "Use for strict portable manifests, compilation, diff, dry-run, synchronization, and revisioned activation.",
@@ -329,6 +334,11 @@
         },
         "optional_owned_dependencies": [],
         "adapters": [
+          "github.com/faustbrian/go-authorization/v4/adapters/cache",
+          "github.com/faustbrian/go-authorization/v4/adapters/http",
+          "github.com/faustbrian/go-authorization/v4/adapters/jsonrpc",
+          "github.com/faustbrian/go-authorization/v4/adapters/otel",
+          "github.com/faustbrian/go-authorization/v4/adapters/slog",
           "github.com/faustbrian/go-authorization/v4/authn",
           "github.com/faustbrian/go-authorization/v4/postgres",
           "github.com/faustbrian/go-authorization/v4/valkey"

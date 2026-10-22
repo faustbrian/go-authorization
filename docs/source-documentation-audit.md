@@ -16,7 +16,7 @@ worktrees and their frozen records are not this task's delivery boundary.
 
 Audit every one of 93 tracked Go files across two modules: public/private
 implementation, adapters, tests/helpers, four declared fuzz boundaries,
-benchmarks, examples and metadata/markers. The root has 23 catalog entries but
+benchmarks, examples and metadata/markers. The root has 17 catalog entries but
 scripts is shell-only: scripts/check-api.sh requires an immutable apidiff identity
 and reads api/authorization.txt, not a full-prose snapshot producer. Root .golib
 API mode is apidiff; preserve the baseline. Integration/contracts contains two
@@ -134,7 +134,7 @@ are Go 1.27.0; repository verification pins 1.27.2. All paths are below.
 | `adapters/jsonrpc/behavior_test.go` | `authorizationjsonrpc` | Existing test/helper evidence: TestMiddlewareAllowsAndExposesDecision, TestMiddlewareMapsDenialsAndFailures, TestMiddlewareOptionsAndValidation |
 | `adapters/jsonrpc/jsonrpc.go` | `authorizationjsonrpc` | Source contract and important private invariant |
 | `adapters/jsonrpc/jsonrpc_test.go` | `authorizationjsonrpc` | Existing test/helper evidence: TestMiddlewareFailuresOptionsAndValidation |
-| `adapters/otel/behavior_test.go` | `authorizationotel` | Existing test/helper evidence: TestInstrumenterRecordsBoundedMetricsAndSpan, TestNewReturnsInstrumentConstructionErrors |
+| `adapters/otel/behavior_test.go` | `authorizationotel` | Existing test/helper evidence: TestInstrumenterRecordsBoundedMetricsAndSpan |
 | `adapters/otel/otel.go` | `authorizationotel` | Source contract and important private invariant |
 | `adapters/otel/otel_test.go` | `authorizationotel` | Existing test/helper evidence: TestNewRejectsLiteralAndTypedNilProviders, TestBeginAndStartUseExplicitProviders, TestNewPreservesInstrumentConstructionErrors |
 | `adapters/slog/behavior_test.go` | `authorizationslog` | Existing test/helper evidence: TestInstrumenterWritesBoundedAuditEvent |

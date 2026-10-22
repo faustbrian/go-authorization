@@ -21,7 +21,12 @@ versioning for its Go API and portable policy format.
   `authotel` and `authrpc` packages. Import `adapters/cache`, `adapters/http`,
   `adapters/slog`, `adapters/otel` or `adapters/jsonrpc` instead. Unlike
   `authotel`, `adapters/otel` has no no-op provider defaults and rejects nil
-  providers.
+  providers, and it reports the instrumentation scope
+  `github.com/faustbrian/go-authorization/adapters/otel` instead of
+  `.../authotel`; update scope-keyed views and dashboards. The removal
+  precedes the announced 180-day window; the v3 line keeps the packages but
+  receives security fixes only until v4 is published, so migrate instead of
+  waiting for v3 fixes.
 
 ## Unreleased notes shipped by 3.1.0
 

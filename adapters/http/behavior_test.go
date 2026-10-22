@@ -32,6 +32,9 @@ func TestHandlerAllowsAndExposesDecision(t *testing.T) {
 				decision.Revision != wantDecision.Revision {
 				t.Errorf("DecisionFromContext() = (%+v, %v)", decision, ok)
 			}
+			if err, ok := ErrorFromContext(request.Context()); ok {
+				t.Errorf("allowed context contains error %v", err)
+			}
 			writer.WriteHeader(http.StatusNoContent)
 		}),
 	)

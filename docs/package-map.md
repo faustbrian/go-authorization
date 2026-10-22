@@ -17,7 +17,7 @@ Internal packages and non-releasable fixtures are intentionally excluded.
 | [`github.com/faustbrian/go-authorization/v4/abac`](../abac/abac.go) | Use for bounded attribute-based policies with typed conditions and deterministic evaluation limits. |
 | [`github.com/faustbrian/go-authorization/v4/acl`](../acl/acl.go) | Use for typed subject-to-resource access control lists and bounded resource listing. |
 | [`github.com/faustbrian/go-authorization/v4/adapters/cache`](../adapters/cache/cache.go) | Use for advisory cache integration keyed by exact policy revision while retaining the repository as source of truth. |
-| [`github.com/faustbrian/go-authorization/v4/adapters/http`](../adapters/http/http.go) | Use for the canonical fail-closed net/http authorization adapter. |
+| [`github.com/faustbrian/go-authorization/v4/adapters/http`](../adapters/http/http.go) | Use for the fail-closed net/http authorization adapter. |
 | [`github.com/faustbrian/go-authorization/v4/adapters/jsonrpc`](../adapters/jsonrpc/jsonrpc.go) | Use for fail-closed native go-jsonrpc authorization middleware. |
 | [`github.com/faustbrian/go-authorization/v4/adapters/otel`](../adapters/otel/otel.go) | Use to observe authorization decisions through caller-owned OpenTelemetry providers. |
 | [`github.com/faustbrian/go-authorization/v4/adapters/slog`](../adapters/slog/slog.go) | Use to emit bounded authorization audit events through log/slog. |

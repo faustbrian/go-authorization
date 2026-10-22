@@ -2,7 +2,6 @@ package authorizationotel
 
 import (
 	"context"
-	"errors"
 	"testing"
 	"time"
 
@@ -12,7 +11,6 @@ import (
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/sdk/trace/tracetest"
 	"go.opentelemetry.io/otel/trace"
-	tracenoop "go.opentelemetry.io/otel/trace/noop"
 )
 
 func TestInstrumenterRecordsBoundedMetricsAndSpan(t *testing.T) {
@@ -56,23 +54,5 @@ func TestInstrumenterRecordsBoundedMetricsAndSpan(t *testing.T) {
 	}
 	if _, finish := instrumenter.Start(context.Background()); finish == nil {
 		t.Fatal("Start() did not delegate to Begin()")
-	}
-}
-
-func TestNewReturnsInstrumentConstructionErrors(t *testing.T) {
-	t.Parallel()
-
-	want := errors.New("instrument failed")
-	for _, meter := range []*failingMeter{
-		{histogramErr: want},
-		{counterErr: want},
-	} {
-		_, err := New(Config{
-			TracerProvider: tracenoop.NewTracerProvider(),
-			MeterProvider:  failingMeterProvider{meter: meter},
-		})
-		if !errors.Is(err, want) {
-			t.Errorf("New() error = %v, want instrument error", err)
-		}
 	}
 }
