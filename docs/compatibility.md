@@ -14,7 +14,10 @@ the `authcache`, `authhttp`, `httpauth`, `authlog`, `authotel` and `authrpc`
 compatibility packages; import `adapters/cache`, `adapters/http`,
 `adapters/slog`, `adapters/otel` and `adapters/jsonrpc` instead. The cache
 adapter exposes `github.com/faustbrian/go-cache/v4` named types, so update
-authorization and cache imports together. Published v1 to v3 authorization
+authorization and cache imports together. Coming from go-cache v2 also crosses
+go-cache 3.0.0, which widened the Redis client interface and changed go-redis
+default timeouts and retries, and 4.0.0, which removed the `backend/*` paths;
+see the [go-cache changelog](https://github.com/faustbrian/go-cache/blob/v4.0.0/CHANGELOG.md). Published v1 to v3 authorization
 modules remain available at their historical import paths and behavior. No
 source directory or maintenance branch is created for a historical major.
 
@@ -33,8 +36,8 @@ authorization and cache releases without local replacements. It exercises
 the canonical manifest cache adapter with the public memory backend, proving
 that a loaded manifest is stored and a subsequent hit does not reload it.
 Principal, audit-log, and telemetry interoperability remain covered against
-a published authorization release. Historical authorization v1/v2 consumers remain separate
-compatibility variants; they do not exercise or inherit the v3 cache contract.
+a published authorization release. Historical authorization v1 to v3 consumers remain separate
+compatibility variants; they do not exercise or inherit the v4 cache contract.
 
 The supported Go versions are the versions exercised by the CI matrix. A
 change to the minimum Go version is documented in the changelog and release

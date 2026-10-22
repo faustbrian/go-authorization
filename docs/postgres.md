@@ -9,7 +9,11 @@ record in that manifest.
 
 Apply `postgres.GoMigration()` with `go-migrations/v4`, or apply the SQL returned
 by `postgres.SchemaMigration()` with the application's migration system. The
-migration creates the `authorization_policy_manifests` table.
+migration creates the `authorization_policy_manifests` table. Existing v3
+deployments must complete the go-migrations
+[ledger name upgrade](https://github.com/faustbrian/go-migrations/blob/v4.0.0/docs/operations.md#ledger-name-upgrade) before the first v4
+run; otherwise the runner sees no history and replays version 1 against
+existing tables.
 
 ```go
 store, err := postgres.New(pool)
