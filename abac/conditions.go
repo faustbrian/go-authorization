@@ -5,7 +5,7 @@ import (
 	"sort"
 	"strings"
 
-	authorization "github.com/faustbrian/go-authorization/v3"
+	authorization "github.com/faustbrian/go-authorization/v4"
 )
 
 type existsCondition struct{ reference Reference }

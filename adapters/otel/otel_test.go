@@ -5,7 +5,7 @@ import (
 	"errors"
 	"testing"
 
-	authorization "github.com/faustbrian/go-authorization/v3"
+	authorization "github.com/faustbrian/go-authorization/v4"
 	"go.opentelemetry.io/otel/metric"
 	metricnoop "go.opentelemetry.io/otel/metric/noop"
 	"go.opentelemetry.io/otel/trace"

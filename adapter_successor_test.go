@@ -1,94 +1,25 @@
-//nolint:staticcheck // This compatibility test intentionally exercises deprecated facades.
 package authorization_test
-
-//lint:file-ignore SA1019 This compatibility test intentionally exercises deprecated facades.
 
 import (
 	"context"
 	"errors"
-	"log/slog"
 	"reflect"
 	"strings"
 	"sync"
 	"testing"
 	"time"
 
-	authorization "github.com/faustbrian/go-authorization/v3"
-	authorizationcache "github.com/faustbrian/go-authorization/v3/adapters/cache"
-	authorizationhttp "github.com/faustbrian/go-authorization/v3/adapters/http"
-	authorizationjsonrpc "github.com/faustbrian/go-authorization/v3/adapters/jsonrpc"
-	authorizationotel "github.com/faustbrian/go-authorization/v3/adapters/otel"
-	authorizationslog "github.com/faustbrian/go-authorization/v3/adapters/slog"
-	legacycache "github.com/faustbrian/go-authorization/v3/authcache"
-	legacyhttpa "github.com/faustbrian/go-authorization/v3/authhttp"
-	legacylog "github.com/faustbrian/go-authorization/v3/authlog"
-	legacyotel "github.com/faustbrian/go-authorization/v3/authotel"
-	legacyjsonrpc "github.com/faustbrian/go-authorization/v3/authrpc"
-	legacyhttpb "github.com/faustbrian/go-authorization/v3/httpauth"
-	"github.com/faustbrian/go-authorization/v3/policy"
-	cache "github.com/faustbrian/go-cache/v2"
-	"go.opentelemetry.io/otel/metric"
-	"go.opentelemetry.io/otel/trace"
+	authorization "github.com/faustbrian/go-authorization/v4"
+	authorizationcache "github.com/faustbrian/go-authorization/v4/adapters/cache"
+	authorizationhttp "github.com/faustbrian/go-authorization/v4/adapters/http"
+	authorizationjsonrpc "github.com/faustbrian/go-authorization/v4/adapters/jsonrpc"
+	authorizationotel "github.com/faustbrian/go-authorization/v4/adapters/otel"
+	authorizationslog "github.com/faustbrian/go-authorization/v4/adapters/slog"
+	"github.com/faustbrian/go-authorization/v4/policy"
+	cache "github.com/faustbrian/go-cache/v4"
 )
 
-func TestAdapterSuccessorsPreserveSentinelIdentity(t *testing.T) {
-	t.Parallel()
-
-	for _, pair := range [][2]error{
-		{legacycache.ErrManifestTooLarge, authorizationcache.ErrManifestTooLarge},
-		{legacycache.ErrInvalidRevision, authorizationcache.ErrInvalidRevision},
-		{legacycache.ErrNilRepository, authorizationcache.ErrNilRepository},
-		{legacyhttpb.ErrNilRequestMapper, authorizationhttp.ErrNilRequestMapper},
-		{legacyhttpb.ErrNilNextHandler, authorizationhttp.ErrNilNextHandler},
-		{legacylog.ErrNilLogger, authorizationslog.ErrNilLogger},
-		{legacyotel.ErrNilTracerProvider, authorizationotel.ErrNilTracerProvider},
-		{legacyotel.ErrNilMeterProvider, authorizationotel.ErrNilMeterProvider},
-		{legacyjsonrpc.ErrNilAuthorizer, authorizationjsonrpc.ErrNilAuthorizer},
-		{legacyjsonrpc.ErrNilRequestMapper, authorizationjsonrpc.ErrNilRequestMapper},
-	} {
-		if !errors.Is(pair[0], pair[1]) || pair[0] != pair[1] {
-			t.Fatalf("sentinel identity differs: %v, %v", pair[0], pair[1])
-		}
-	}
-}
-
-func TestLegacyAdaptersRetainNamedReflectionIdentity(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		value any
-		path  string
-	}{
-		{legacycache.ManifestCodec{}, "github.com/faustbrian/go-authorization/v3/authcache"},
-		{legacycache.RevisionKeyEncoder{}, "github.com/faustbrian/go-authorization/v3/authcache"},
-		{legacycache.Config{}, "github.com/faustbrian/go-authorization/v3/authcache"},
-		{(*legacyhttpa.Authorizer)(nil), "github.com/faustbrian/go-authorization/v3/httpauth"},
-		{legacyhttpa.RequestMapper(nil), "github.com/faustbrian/go-authorization/v3/httpauth"},
-		{legacyhttpa.Option(nil), "github.com/faustbrian/go-authorization/v3/httpauth"},
-		{(*legacyhttpb.Authorizer)(nil), "github.com/faustbrian/go-authorization/v3/httpauth"},
-		{legacyhttpb.RequestMapper(nil), "github.com/faustbrian/go-authorization/v3/httpauth"},
-		{legacyhttpb.Option(nil), "github.com/faustbrian/go-authorization/v3/httpauth"},
-		{legacylog.Instrumenter{}, "github.com/faustbrian/go-authorization/v3/authlog"},
-		{legacyotel.Config{}, "github.com/faustbrian/go-authorization/v3/authotel"},
-		{legacyotel.Instrumenter{}, "github.com/faustbrian/go-authorization/v3/authotel"},
-		{(*legacyjsonrpc.Authorizer)(nil), "github.com/faustbrian/go-authorization/v3/authrpc"},
-		{legacyjsonrpc.RequestMapper(nil), "github.com/faustbrian/go-authorization/v3/authrpc"},
-		{legacyjsonrpc.DeniedError(nil), "github.com/faustbrian/go-authorization/v3/authrpc"},
-		{legacyjsonrpc.ErrorMapper(nil), "github.com/faustbrian/go-authorization/v3/authrpc"},
-		{legacyjsonrpc.Option(nil), "github.com/faustbrian/go-authorization/v3/authrpc"},
-	}
-	for _, test := range tests {
-		typeOf := reflect.TypeOf(test.value)
-		if typeOf.Kind() == reflect.Pointer && typeOf.Elem().Kind() == reflect.Interface {
-			typeOf = typeOf.Elem()
-		}
-		if typeOf.PkgPath() != test.path {
-			t.Errorf("%v package = %q, want %q", typeOf, typeOf.PkgPath(), test.path)
-		}
-	}
-}
-
-func TestLegacyInstrumentersRetainReflectionVisibleLayouts(t *testing.T) {
+func TestInstrumentedRetainsReflectionVisibleLayout(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -102,21 +33,6 @@ func TestLegacyInstrumentersRetainReflectionVisibleLayouts(t *testing.T) {
 				{Name: "instrumenter", Type: reflect.TypeOf((*authorization.Instrumenter)(nil)).Elem()},
 				{Name: "clock", Type: reflect.TypeOf((func() time.Time)(nil))},
 				{Name: "maxPolicyIDs", Type: reflect.TypeOf(int(0))},
-			},
-		},
-		{
-			value: legacylog.Instrumenter{},
-			fields: []reflect.StructField{
-				{Name: "logger", Type: reflect.TypeOf((*slog.Logger)(nil))},
-				{Name: "level", Type: reflect.TypeOf(slog.Level(0))},
-			},
-		},
-		{
-			value: legacyotel.Instrumenter{},
-			fields: []reflect.StructField{
-				{Name: "tracer", Type: reflect.TypeOf((*trace.Tracer)(nil)).Elem()},
-				{Name: "duration", Type: reflect.TypeOf((*metric.Float64Histogram)(nil)).Elem()},
-				{Name: "decisions", Type: reflect.TypeOf((*metric.Int64Counter)(nil)).Elem()},
 			},
 		},
 	}
@@ -142,20 +58,20 @@ func TestSuccessorAdaptersExposeTargetOrientedNamedIdentities(t *testing.T) {
 		value any
 		path  string
 	}{
-		{authorizationcache.ManifestCodec{}, "github.com/faustbrian/go-authorization/v3/adapters/cache"},
-		{authorizationcache.RevisionKeyEncoder{}, "github.com/faustbrian/go-authorization/v3/adapters/cache"},
-		{authorizationcache.Config{}, "github.com/faustbrian/go-authorization/v3/adapters/cache"},
-		{(*authorizationhttp.Authorizer)(nil), "github.com/faustbrian/go-authorization/v3/adapters/http"},
-		{authorizationhttp.RequestMapper(nil), "github.com/faustbrian/go-authorization/v3/adapters/http"},
-		{authorizationhttp.Option(nil), "github.com/faustbrian/go-authorization/v3/adapters/http"},
-		{authorizationslog.Instrumenter{}, "github.com/faustbrian/go-authorization/v3/adapters/slog"},
-		{authorizationotel.Config{}, "github.com/faustbrian/go-authorization/v3/adapters/otel"},
-		{authorizationotel.Instrumenter{}, "github.com/faustbrian/go-authorization/v3/adapters/otel"},
-		{(*authorizationjsonrpc.Authorizer)(nil), "github.com/faustbrian/go-authorization/v3/adapters/jsonrpc"},
-		{authorizationjsonrpc.RequestMapper(nil), "github.com/faustbrian/go-authorization/v3/adapters/jsonrpc"},
-		{authorizationjsonrpc.DeniedError(nil), "github.com/faustbrian/go-authorization/v3/adapters/jsonrpc"},
-		{authorizationjsonrpc.ErrorMapper(nil), "github.com/faustbrian/go-authorization/v3/adapters/jsonrpc"},
-		{authorizationjsonrpc.Option(nil), "github.com/faustbrian/go-authorization/v3/adapters/jsonrpc"},
+		{authorizationcache.ManifestCodec{}, "github.com/faustbrian/go-authorization/v4/adapters/cache"},
+		{authorizationcache.RevisionKeyEncoder{}, "github.com/faustbrian/go-authorization/v4/adapters/cache"},
+		{authorizationcache.Config{}, "github.com/faustbrian/go-authorization/v4/adapters/cache"},
+		{(*authorizationhttp.Authorizer)(nil), "github.com/faustbrian/go-authorization/v4/adapters/http"},
+		{authorizationhttp.RequestMapper(nil), "github.com/faustbrian/go-authorization/v4/adapters/http"},
+		{authorizationhttp.Option(nil), "github.com/faustbrian/go-authorization/v4/adapters/http"},
+		{authorizationslog.Instrumenter{}, "github.com/faustbrian/go-authorization/v4/adapters/slog"},
+		{authorizationotel.Config{}, "github.com/faustbrian/go-authorization/v4/adapters/otel"},
+		{authorizationotel.Instrumenter{}, "github.com/faustbrian/go-authorization/v4/adapters/otel"},
+		{(*authorizationjsonrpc.Authorizer)(nil), "github.com/faustbrian/go-authorization/v4/adapters/jsonrpc"},
+		{authorizationjsonrpc.RequestMapper(nil), "github.com/faustbrian/go-authorization/v4/adapters/jsonrpc"},
+		{authorizationjsonrpc.DeniedError(nil), "github.com/faustbrian/go-authorization/v4/adapters/jsonrpc"},
+		{authorizationjsonrpc.ErrorMapper(nil), "github.com/faustbrian/go-authorization/v4/adapters/jsonrpc"},
+		{authorizationjsonrpc.Option(nil), "github.com/faustbrian/go-authorization/v4/adapters/jsonrpc"},
 	}
 	for _, test := range tests {
 		typeOf := reflect.TypeOf(test.value)
@@ -174,12 +90,6 @@ func cacheConstructors() map[string]func(cache.Backend) (*manifestCache, error) 
 	return map[string]func(cache.Backend) (*manifestCache, error){
 		"canonical": func(backend cache.Backend) (*manifestCache, error) {
 			return authorizationcache.New(authorizationcache.Config{
-				Namespace: "adoption", Backend: backend, Clock: cache.SystemClock{},
-				TTL: cache.TTLPolicy{TTL: time.Minute},
-			})
-		},
-		"legacy": func(backend cache.Backend) (*manifestCache, error) {
-			return legacycache.New(legacycache.Config{
 				Namespace: "adoption", Backend: backend, Clock: cache.SystemClock{},
 				TTL: cache.TTLPolicy{TTL: time.Minute},
 			})

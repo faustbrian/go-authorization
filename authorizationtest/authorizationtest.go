@@ -12,7 +12,7 @@ import (
 	"testing"
 	"time"
 
-	authorization "github.com/faustbrian/go-authorization/v3"
+	authorization "github.com/faustbrian/go-authorization/v4"
 )
 
 // FixedTime returns the fixed UTC fixture instant, independent of the process clock.

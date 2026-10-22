@@ -4,8 +4,7 @@
 
 The `adapters/jsonrpc` package provides native middleware for
 `github.com/faustbrian/go-jsonrpc`. Applications map each method's context and
-raw parameters to a typed authorization request. The released `authrpc` path
-remains a deprecated compatibility facade.
+raw parameters to a typed authorization request.
 
 ```go
 middleware, err := authorizationjsonrpc.NewMiddleware(

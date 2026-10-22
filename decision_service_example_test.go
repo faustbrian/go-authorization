@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	authorization "github.com/faustbrian/go-authorization/v3"
+	authorization "github.com/faustbrian/go-authorization/v4"
 )
 
 func ExampleNewDecisionService() {

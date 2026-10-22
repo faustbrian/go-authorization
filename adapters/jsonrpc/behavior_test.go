@@ -1,4 +1,4 @@
-package authrpc
+package authorizationjsonrpc
 
 import (
 	"context"
@@ -6,15 +6,9 @@ import (
 	"errors"
 	"testing"
 
-	authorization "github.com/faustbrian/go-authorization/v3"
+	authorization "github.com/faustbrian/go-authorization/v4"
 	jsonrpc "github.com/faustbrian/go-jsonrpc"
 )
-
-type authorizerFunc func(context.Context, authorization.Request) (authorization.Decision, error)
-
-func (authorize authorizerFunc) Decide(ctx context.Context, request authorization.Request) (authorization.Decision, error) {
-	return authorize(ctx, request)
-}
 
 func TestMiddlewareAllowsAndExposesDecision(t *testing.T) {
 	t.Parallel()

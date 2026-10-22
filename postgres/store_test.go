@@ -8,9 +8,9 @@ import (
 	"strings"
 	"testing"
 
-	authorization "github.com/faustbrian/go-authorization/v3"
-	"github.com/faustbrian/go-authorization/v3/policy"
-	migrations "github.com/faustbrian/go-migrations/v2"
+	authorization "github.com/faustbrian/go-authorization/v4"
+	"github.com/faustbrian/go-authorization/v4/policy"
+	migrations "github.com/faustbrian/go-migrations/v4"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )

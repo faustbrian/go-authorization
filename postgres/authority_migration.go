@@ -1,7 +1,7 @@
 package postgres
 
 import (
-	migrations "github.com/faustbrian/go-migrations/v2"
+	migrations "github.com/faustbrian/go-migrations/v4"
 	"math"
 )
 

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	authorization "github.com/faustbrian/go-authorization/v3"
+	authorization "github.com/faustbrian/go-authorization/v4"
 )
 
 // BenchmarkEvaluateInheritanceDepth varies one parent chain with a matching inherited permission, not arbitrary graph fan-out.

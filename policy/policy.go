@@ -14,7 +14,7 @@ import (
 	"maps"
 	"slices"
 
-	authorization "github.com/faustbrian/go-authorization/v3"
+	authorization "github.com/faustbrian/go-authorization/v4"
 )
 
 // ErrNilSnapshot identifies policy snapshot is nil. Compare with errors.Is, not error text.

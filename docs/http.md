@@ -5,8 +5,7 @@
 The `adapters/http` package authorizes standard-library HTTP handlers without
 coupling policy evaluation to routing, authentication, or transport details.
 Applications provide an explicit mapper from `*http.Request` to the typed
-authorization request. The released `authhttp` and `httpauth` paths remain
-deprecated compatibility facades.
+authorization request.
 
 ```go
 handler, err := authorizationhttp.NewHandler(

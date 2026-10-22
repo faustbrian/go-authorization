@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	authorization "github.com/faustbrian/go-authorization/v3"
+	authorization "github.com/faustbrian/go-authorization/v4"
 )
 
 // BenchmarkEvaluatePredicateCount compares all-matching equality-node counts after construction; string-byte costs are not varied.

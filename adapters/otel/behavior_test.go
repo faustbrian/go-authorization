@@ -1,4 +1,4 @@
-package authotel
+package authorizationotel
 
 import (
 	"context"
@@ -6,14 +6,13 @@ import (
 	"testing"
 	"time"
 
-	authorization "github.com/faustbrian/go-authorization/v3"
-	"go.opentelemetry.io/otel/metric"
-	metricnoop "go.opentelemetry.io/otel/metric/noop"
+	authorization "github.com/faustbrian/go-authorization/v4"
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/metric/metricdata"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/sdk/trace/tracetest"
 	"go.opentelemetry.io/otel/trace"
+	tracenoop "go.opentelemetry.io/otel/trace/noop"
 )
 
 func TestInstrumenterRecordsBoundedMetricsAndSpan(t *testing.T) {
@@ -60,33 +59,6 @@ func TestInstrumenterRecordsBoundedMetricsAndSpan(t *testing.T) {
 	}
 }
 
-func TestInstrumenterNormalizesBoundedResults(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		event authorization.Event
-		want  string
-	}{
-		{authorization.Event{Outcome: authorization.Allow}, "allow"},
-		{authorization.Event{Outcome: authorization.Deny}, "deny"},
-		{authorization.Event{Outcome: authorization.NotApplicable}, "not-applicable"},
-		{authorization.Event{Outcome: authorization.Allow, Failed: true}, "error"},
-		{authorization.Event{Outcome: 99}, "error"},
-	}
-	for _, test := range tests {
-		if got := result(test.event); got != test.want {
-			t.Errorf("result(%+v) = %q, want %q", test.event, got, test.want)
-		}
-	}
-
-	instrumenter, err := New(Config{})
-	if err != nil {
-		t.Fatalf("New(defaults) error = %v", err)
-	}
-	_, finish := instrumenter.Start(context.Background())
-	finish(authorization.Event{Outcome: authorization.Deny, Failed: true})
-}
-
 func TestNewReturnsInstrumentConstructionErrors(t *testing.T) {
 	t.Parallel()
 
@@ -95,44 +67,12 @@ func TestNewReturnsInstrumentConstructionErrors(t *testing.T) {
 		{histogramErr: want},
 		{counterErr: want},
 	} {
-		_, err := New(Config{MeterProvider: failingMeterProvider{meter: meter}})
+		_, err := New(Config{
+			TracerProvider: tracenoop.NewTracerProvider(),
+			MeterProvider:  failingMeterProvider{meter: meter},
+		})
 		if !errors.Is(err, want) {
 			t.Errorf("New() error = %v, want instrument error", err)
 		}
 	}
-}
-
-type failingMeterProvider struct {
-	metric.MeterProvider
-	meter metric.Meter
-}
-
-func (provider failingMeterProvider) Meter(string, ...metric.MeterOption) metric.Meter {
-	return provider.meter
-}
-
-type failingMeter struct {
-	metric.Meter
-	histogramErr error
-	counterErr   error
-}
-
-func (meter *failingMeter) Float64Histogram(
-	name string,
-	options ...metric.Float64HistogramOption,
-) (metric.Float64Histogram, error) {
-	if meter.histogramErr != nil {
-		return nil, meter.histogramErr
-	}
-	return metricnoop.NewMeterProvider().Meter("test").Float64Histogram(name, options...)
-}
-
-func (meter *failingMeter) Int64Counter(
-	name string,
-	options ...metric.Int64CounterOption,
-) (metric.Int64Counter, error) {
-	if meter.counterErr != nil {
-		return nil, meter.counterErr
-	}
-	return metricnoop.NewMeterProvider().Meter("test").Int64Counter(name, options...)
 }

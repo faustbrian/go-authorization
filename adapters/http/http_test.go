@@ -7,37 +7,13 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	authorization "github.com/faustbrian/go-authorization/v3"
+	authorization "github.com/faustbrian/go-authorization/v4"
 )
 
 type authorizerFunc func(context.Context, authorization.Request) (authorization.Decision, error)
 
 func (authorize authorizerFunc) Decide(ctx context.Context, request authorization.Request) (authorization.Decision, error) {
 	return authorize(ctx, request)
-}
-
-func TestHandlerAllowsAndExposesDecision(t *testing.T) {
-	t.Parallel()
-	want := authorization.Decision{Outcome: authorization.Allow, Revision: 7}
-	handler, err := NewHandler(
-		authorizerFunc(func(context.Context, authorization.Request) (authorization.Decision, error) { return want, nil }),
-		func(*http.Request) (authorization.Request, error) { return authorization.Request{Action: "read"}, nil },
-		http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-			decision, ok := DecisionFromContext(request.Context())
-			if !ok || decision.Revision != want.Revision {
-				t.Errorf("DecisionFromContext() = (%+v, %v)", decision, ok)
-			}
-			writer.WriteHeader(http.StatusNoContent)
-		}),
-	)
-	if err != nil {
-		t.Fatalf("NewHandler() error = %v", err)
-	}
-	recorder := httptest.NewRecorder()
-	handler.ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, "/", nil))
-	if recorder.Code != http.StatusNoContent {
-		t.Fatalf("status = %d", recorder.Code)
-	}
 }
 
 func TestHandlerDenialsFailuresOptionsAndValidation(t *testing.T) {

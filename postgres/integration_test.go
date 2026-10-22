@@ -11,9 +11,9 @@ import (
 	"testing"
 	"time"
 
-	authorization "github.com/faustbrian/go-authorization/v3"
-	"github.com/faustbrian/go-authorization/v3/policy"
-	store "github.com/faustbrian/go-authorization/v3/postgres"
+	authorization "github.com/faustbrian/go-authorization/v4"
+	"github.com/faustbrian/go-authorization/v4/policy"
+	store "github.com/faustbrian/go-authorization/v4/postgres"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 

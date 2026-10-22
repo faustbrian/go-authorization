@@ -1,6 +1,6 @@
 // Package authorizationcache provides explicit advisory cache adapters for
 // portable policy manifests. Cached manifests never replace repository
-// verification. New composes go-cache/v2 and borrows backend/clock/observer
+// verification. New composes go-cache/v4 and borrows backend/clock/observer
 // lifecycle. Namespace/revision keys do not authenticate tenant/content identity.
 // RepositoryLoader checks equality on load; an existing cache hit does not perform
 // a fresh repository verification. No refresh policy or backend shutdown is added.
@@ -11,9 +11,9 @@ import (
 	"errors"
 	"strconv"
 
-	authorization "github.com/faustbrian/go-authorization/v3"
-	"github.com/faustbrian/go-authorization/v3/policy"
-	cache "github.com/faustbrian/go-cache/v2"
+	authorization "github.com/faustbrian/go-authorization/v4"
+	"github.com/faustbrian/go-authorization/v4/policy"
+	cache "github.com/faustbrian/go-cache/v4"
 )
 
 const (

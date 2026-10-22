@@ -1,5 +1,3 @@
-//nolint:staticcheck // Characterize both supported instrumentation surfaces.
-//lint:file-ignore SA1019 Compatibility characterization includes the legacy adapter.
 package authorization_test
 
 import (
@@ -9,9 +7,8 @@ import (
 	"testing"
 	"time"
 
-	authorization "github.com/faustbrian/go-authorization/v3"
-	canonical "github.com/faustbrian/go-authorization/v3/adapters/otel"
-	legacy "github.com/faustbrian/go-authorization/v3/authotel"
+	authorization "github.com/faustbrian/go-authorization/v4"
+	canonical "github.com/faustbrian/go-authorization/v4/adapters/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/metric"
@@ -29,9 +26,6 @@ func TestOTelSDKPreservesBoundedCompletionData(t *testing.T) {
 	}{
 		{"github.com/faustbrian/go-authorization/adapters/otel", func(tracer trace.TracerProvider, meter metric.MeterProvider) (authorization.BeginInstrumenter, error) {
 			return canonical.New(canonical.Config{TracerProvider: tracer, MeterProvider: meter})
-		}},
-		{"github.com/faustbrian/go-authorization/authotel", func(tracer trace.TracerProvider, meter metric.MeterProvider) (authorization.BeginInstrumenter, error) {
-			return legacy.New(legacy.Config{TracerProvider: tracer, MeterProvider: meter})
 		}},
 	} {
 		t.Run(adapter.scope, func(t *testing.T) {

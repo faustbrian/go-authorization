@@ -4,12 +4,11 @@
 
 The `adapters/cache` package configures a typed `cache` cache for versioned
 policy manifests. It provides a strict manifest codec, hashed revision keys,
-bounded encoded values, and an optional repository loader. The released
-`authcache` path remains a deprecated compatibility facade.
+bounded encoded values, and an optional repository loader.
 
-Both v3 paths use `github.com/faustbrian/go-cache/v2`. Update backend, clock,
+The adapter uses `github.com/faustbrian/go-cache/v4`. Update backend, clock,
 TTL, observer, loader, and returned cache imports together; published
-authorization v2 adapters continue using the historical v1 cache contract.
+authorization v3 adapters continue using the historical v2 cache contract.
 
 ```go
 manifests, err := authorizationcache.New(authorizationcache.Config{

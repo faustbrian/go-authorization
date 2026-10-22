@@ -1,6 +1,6 @@
 package postgres
 
-import migrations "github.com/faustbrian/go-migrations/v2"
+import migrations "github.com/faustbrian/go-migrations/v4"
 
 // Migration is caller-owned executable schema SQL metadata; it is not applied here.
 type Migration struct {
@@ -30,7 +30,7 @@ func SchemaMigration() Migration {
 	}
 }
 
-// GoMigration binds the SQL to go-migrations/v2 default transaction policy;
+// GoMigration binds the SQL to go-migrations/v4 default transaction policy;
 // it creates a definition, not a database migration execution.
 func GoMigration() (migrations.Migration, error) {
 	migration := SchemaMigration()

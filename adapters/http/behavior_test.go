@@ -1,4 +1,4 @@
-package httpauth
+package authorizationhttp
 
 import (
 	"context"
@@ -7,17 +7,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	authorization "github.com/faustbrian/go-authorization/v3"
+	authorization "github.com/faustbrian/go-authorization/v4"
 )
-
-type authorizerFunc func(context.Context, authorization.Request) (authorization.Decision, error)
-
-func (authorize authorizerFunc) Decide(
-	ctx context.Context,
-	request authorization.Request,
-) (authorization.Decision, error) {
-	return authorize(ctx, request)
-}
 
 func TestHandlerAllowsAndExposesDecision(t *testing.T) {
 	t.Parallel()

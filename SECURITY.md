@@ -6,9 +6,8 @@ GitHub private vulnerability reporting. Do not open a public issue containing
 an exploit or sensitive policy data.
 
 Security fixes are made on the latest published stable major. Publication of
-v3 supersedes v2; breaking cache security contracts are not silently backported
-to the v2 public API. Until v3 is published, v2 remains the latest published
-line. The v3 candidate adopts `go-cache/v2`; follow
+v4 supersedes v3; until v4 is published, v3 remains the latest published line.
+The v4 candidate adopts `go-cache/v4`; follow
 [compatibility and migration](docs/compatibility.md) and
 [cache ownership and lifecycle](docs/cache.md) when upgrading.
 

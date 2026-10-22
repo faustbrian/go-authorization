@@ -2,10 +2,10 @@
 
 [Documentation index](README.md) · [Repository entry](../README.md)
 
-## Version 3 cache-adoption boundary
+## Cache-adoption boundary
 
-The v3 candidate adopts the published `go-cache/v2` contract through both
-canonical and legacy adapters. Cache manifests remain reconstructible hints,
+The v4 candidate adopts the published `go-cache/v4` contract through the
+`adapters/cache` package. Cache manifests remain reconstructible hints,
 not authorization decisions or an authoritative policy source.
 
 | Risk | Disposition and evidence | Owner, mitigation and review trigger |

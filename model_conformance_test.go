@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"testing"
 
-	authorization "github.com/faustbrian/go-authorization/v3"
-	"github.com/faustbrian/go-authorization/v3/abac"
-	"github.com/faustbrian/go-authorization/v3/acl"
-	"github.com/faustbrian/go-authorization/v3/authorizationtest"
-	"github.com/faustbrian/go-authorization/v3/rbac"
+	authorization "github.com/faustbrian/go-authorization/v4"
+	"github.com/faustbrian/go-authorization/v4/abac"
+	"github.com/faustbrian/go-authorization/v4/acl"
+	"github.com/faustbrian/go-authorization/v4/authorizationtest"
+	"github.com/faustbrian/go-authorization/v4/rbac"
 )
 
 type modelFactory func(authorization.Outcome) (authorization.Evaluator, error)

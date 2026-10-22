@@ -14,8 +14,7 @@ attributes or document fields; reason/ID strings remain caller-controlled, unsan
 
 ## Structured audit events
 
-`adapters/slog` accepts the standard `*slog.Logger` returned by `log`. The
-released `authlog` path remains a deprecated compatibility implementation:
+`adapters/slog` accepts the standard `*slog.Logger` returned by `log`:
 
 ```go
 audit, err := authorizationslog.New(logger, slog.LevelInfo)
@@ -37,8 +36,8 @@ business rules.
 ## Metrics and traces
 
 `adapters/otel` accepts explicit OpenTelemetry providers, including providers
-owned by a `telemetry` runtime. The released `authotel` path remains a
-deprecated compatibility implementation and retains its no-op defaults:
+owned by a `telemetry` runtime. Both providers are required; literal or
+typed-nil providers are rejected:
 
 ```go
 instrumenter, err := authorizationotel.New(authorizationotel.Config{

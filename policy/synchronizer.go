@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	authorization "github.com/faustbrian/go-authorization/v3"
+	authorization "github.com/faustbrian/go-authorization/v4"
 )
 
 // DefaultSyncInterval is the default 30-second repository polling cadence.

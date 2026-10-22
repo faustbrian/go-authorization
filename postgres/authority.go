@@ -14,7 +14,7 @@ import (
 	"time"
 	"unicode/utf8"
 
-	authorization "github.com/faustbrian/go-authorization/v3"
+	authorization "github.com/faustbrian/go-authorization/v4"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 

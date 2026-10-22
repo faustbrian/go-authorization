@@ -15,7 +15,7 @@ import (
 	"strings"
 	"time"
 
-	authorization "github.com/faustbrian/go-authorization/v3"
+	authorization "github.com/faustbrian/go-authorization/v4"
 	native "github.com/valkey-io/valkey-go"
 )
 

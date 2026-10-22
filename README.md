@@ -5,7 +5,7 @@
 [![Coverage](https://img.shields.io/badge/coverage-risk_selected-blue)](CONTRIBUTING.md#verification)
 [![Mutation](https://img.shields.io/badge/mutation-optional_local%2Fselected_scheduled-blue)](CONTRIBUTING.md#verification)
 [![Documentation](https://img.shields.io/badge/docs-checked_in_CI-blue)](docs/)
-[![Go Reference](https://pkg.go.dev/badge/github.com/faustbrian/go-authorization/v3.svg)](https://pkg.go.dev/github.com/faustbrian/go-authorization/v3)
+[![Go Reference](https://pkg.go.dev/badge/github.com/faustbrian/go-authorization/v4.svg)](https://pkg.go.dev/github.com/faustbrian/go-authorization/v4)
 [![Release](https://img.shields.io/github/v/release/faustbrian/go-authorization?sort=semver)](https://github.com/faustbrian/go-authorization/releases)
 [![Go](https://img.shields.io/badge/go-1.27.0-00ADD8?logo=go)](https://go.dev/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
@@ -14,7 +14,7 @@
 policies. It uses explicit ACL, RBAC, and ABAC models rather than a positional
 string meta-model or separate policy language.
 
-## Unreleased decision and lifecycle boundaries
+## Decision and lifecycle boundaries
 
 `NewDecisionService` optionally wraps an existing `Authorizer` with an exact
 positive `DecisionContext.PolicyRevision` fence, defensive input/output copies
@@ -28,7 +28,6 @@ explicitly initialize and advance exact tenant/namespace/subject epochs and
 hold `RequireAuthority` share locks through their protected effect. Primary
 reads never bootstrap rows. Returned epochs are structural metadata, not a
 renewable freshness lease or an independently committed administrative action.
-These additions are not part of the existing v3.0.0 release.
 
 The current implementation includes:
 
@@ -78,9 +77,6 @@ Authentication mapping and transport behavior are documented in
 [HTTP integration](docs/http.md), and [JSON-RPC integration](docs/jsonrpc.md).
 Audit, telemetry, and cache boundaries are covered in
 [observability](docs/observability.md) and [cache integration](docs/cache.md).
-The released `authcache`, `authhttp`, `httpauth`, `authlog`, `authotel`, and
-`authrpc` paths remain supported compatibility paths during their documented
-migration interval.
 Reusable fixtures, assertions, decision snapshots, and integration conformance
 checks are documented in [authorization testing](docs/testing.md).
 Default resource bounds, the benchmark matrix, reference measurements, and

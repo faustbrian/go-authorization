@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	authorization "github.com/faustbrian/go-authorization/v3"
-	invalidation "github.com/faustbrian/go-authorization/v3/valkey"
+	authorization "github.com/faustbrian/go-authorization/v4"
+	invalidation "github.com/faustbrian/go-authorization/v4/valkey"
 	native "github.com/valkey-io/valkey-go"
 )
 

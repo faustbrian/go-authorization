@@ -5,7 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project follows semantic
 versioning for its Go API and portable policy format.
 
-## Unreleased
+## 4.0.0 - 2026-10-22
+
+### Changed
+
+- Move the module to `github.com/faustbrian/go-authorization/v4`, adopt
+  `go-cache/v4` in `adapters/cache` and `go-migrations/v4` in `postgres`.
+  `GoMigration` and `AuthorityGoMigration` keep the v3 version, name, SQL and
+  checksum; complete the go-migrations ledger name upgrade before the first
+  v4 run.
+
+### Removed
+
+- Remove the deprecated `authcache`, `authhttp`, `httpauth`, `authlog`,
+  `authotel` and `authrpc` packages. Import `adapters/cache`, `adapters/http`,
+  `adapters/slog`, `adapters/otel` or `adapters/jsonrpc` instead. Unlike
+  `authotel`, `adapters/otel` has no no-op provider defaults and rejects nil
+  providers.
+
+## Unreleased notes shipped by 3.1.0
 
 ### Added
 

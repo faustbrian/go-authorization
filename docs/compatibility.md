@@ -9,27 +9,31 @@ method changes, and material semantic changes require the corresponding major
 version decision. `./scripts/check-api.sh` compares the current module with the
 checked-in API baseline.
 
-The published v3 release uses `github.com/faustbrian/go-authorization/v3`.
-Update all authorization imports and cache imports together: canonical and
-legacy cache adapters expose `github.com/faustbrian/go-cache/v2` named types.
-The previous concrete cache return and configuration types cannot silently
-change in an authorization v2 patch. Published v1 and v2 authorization modules
-remain available at their historical import paths and behavior; they do not
-gain the v3 cache protections. No source directory or maintenance branch is
-created for either historical major.
+The v4 release uses `github.com/faustbrian/go-authorization/v4`. It removes
+the `authcache`, `authhttp`, `httpauth`, `authlog`, `authotel` and `authrpc`
+compatibility packages; import `adapters/cache`, `adapters/http`,
+`adapters/slog`, `adapters/otel` and `adapters/jsonrpc` instead. The cache
+adapter exposes `github.com/faustbrian/go-cache/v4` named types, so update
+authorization and cache imports together. Published v1 to v3 authorization
+modules remain available at their historical import paths and behavior. No
+source directory or maintenance branch is created for a historical major.
 
-`postgres.GoMigration` continues returning a
-`github.com/faustbrian/go-migrations/v2` migration. Portable policy formats,
-repository verification, and authorization decision semantics are unchanged.
+`postgres.GoMigration` and `postgres.AuthorityGoMigration` return
+`github.com/faustbrian/go-migrations/v4` migrations with the same version,
+name, transaction mode, SQL and checksum that v3 recorded. Before the first v4
+run, complete the
+[ledger name upgrade](https://github.com/faustbrian/go-migrations/blob/v4.0.0/docs/operations.md#ledger-name-upgrade).
+Portable policy formats, repository verification, and authorization decision
+semantics are unchanged.
 Direct consumers must choose their major migration explicitly; binaries using
 different major imports can coexist but their named types are not interchangeable.
 
 The non-releasable `integration/contracts` module consumes published
-authorization v3.0.0 and Cache/v2 v2.0.0 without local replacements. It exercises
+authorization and cache releases without local replacements. It exercises
 the canonical manifest cache adapter with the public memory backend, proving
 that a loaded manifest is stored and a subsequent hit does not reload it.
 Principal, audit-log, and telemetry interoperability remain covered against
-published v3. Historical authorization v1/v2 consumers remain separate
+a published authorization release. Historical authorization v1/v2 consumers remain separate
 compatibility variants; they do not exercise or inherit the v3 cache contract.
 
 The supported Go versions are the versions exercised by the CI matrix. A

@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/faustbrian/go-authorization/v3/abac"
-	"github.com/faustbrian/go-authorization/v3/acl"
-	"github.com/faustbrian/go-authorization/v3/policy"
-	"github.com/faustbrian/go-authorization/v3/rbac"
+	"github.com/faustbrian/go-authorization/v4/abac"
+	"github.com/faustbrian/go-authorization/v4/acl"
+	"github.com/faustbrian/go-authorization/v4/policy"
+	"github.com/faustbrian/go-authorization/v4/rbac"
 )
 
 // BenchmarkCompilerCompile measures one empty ACL record compiled repeatedly; it excludes repository I/O.

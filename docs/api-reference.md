@@ -7,7 +7,7 @@ field and method; the checked-in API baseline detects incompatible changes.
 
 ## Core package
 
-`github.com/faustbrian/go-authorization/v3` defines the shared contract:
+`github.com/faustbrian/go-authorization/v4` defines the shared contract:
 
 - `Request`, `Subject`, `Resource`, and `Environment` carry typed inputs.
 - `Value` constructors create closed string, bool, integer, float, time, IP,
@@ -58,22 +58,17 @@ default deny.
 - `valkey` publishes a monotonic durable revision and uses pub/sub only as a
   wakeup hint.
 - `adapters/cache` configures an explicit typed `cache` manifest cache with
-  exact revision loading. It is never a source of truth. `authcache` remains a
-  compatibility facade.
+  exact revision loading. It is never a source of truth.
 
 ## Application adapters
 
 - `authn` maps a structurally compatible authenticated principal into a typed
   subject without coupling the core engine to authentication middleware.
-- `adapters/http` is the canonical `net/http` package. `authhttp` and
-  `httpauth` remain compatibility facades.
-- `adapters/jsonrpc` supplies native `jsonrpc` fail-closed middleware;
-  `authrpc` remains a compatibility facade.
-- `adapters/slog` emits bounded `log/slog` records and accepts `log` loggers;
-  `authlog` remains a compatibility implementation.
+- `adapters/http` is the `net/http` package.
+- `adapters/jsonrpc` supplies native `jsonrpc` fail-closed middleware.
+- `adapters/slog` emits bounded `log/slog` records and accepts `log` loggers.
 - `adapters/otel` records bounded OpenTelemetry metrics and spans and accepts
-  providers managed by `telemetry`; `authotel` remains a compatibility
-  implementation.
+  providers managed by `telemetry`.
 - `authorizationtest` supplies deterministic builders, evaluator fixtures,
   assertions, canonical decision JSON, and an authorizer conformance suite.
 

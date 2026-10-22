@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	store "github.com/faustbrian/go-authorization/v3/postgres"
+	store "github.com/faustbrian/go-authorization/v4/postgres"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 

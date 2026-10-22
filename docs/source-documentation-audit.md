@@ -10,19 +10,19 @@ ACL/RBAC/ABAC evaluation, coherent engine publication and optional adapters.
 Applications own authentication, tenant/resource/action trust, data freshness,
 source/SDK/database/client lifecycle and configuration/refresh policy. Direct
 consumers include Engine/Authorizer callers, policy publication/synchronization,
-HTTP/JSON-RPC gates, cache/log/OTel adapters, compatibility facades and the separate
+HTTP/JSON-RPC gates, cache/log/OTel adapters and the separate
 public-dependency integration/contracts test module. Existing identity-platform
 worktrees and their frozen records are not this task's delivery boundary.
 
 Audit every one of 93 tracked Go files across two modules: public/private
-implementation, adapters/facades, tests/helpers, four declared fuzz boundaries,
+implementation, adapters, tests/helpers, four declared fuzz boundaries,
 benchmarks, examples and metadata/markers. The root has 23 catalog entries but
 scripts is shell-only: scripts/check-api.sh requires an immutable apidiff identity
 and reads api/authorization.txt, not a full-prose snapshot producer. Root .golib
 API mode is apidiff; preserve the baseline. Integration/contracts contains two
 Go test files and frozen released dependency bindings, not library source APIs.
-No generated Go/build tag/go:generate marker is present; valid facade Deprecated
-and explicit lint directives must be preserved.
+No generated Go/build tag/go:generate marker is present; explicit lint
+directives must be preserved.
 
 Named risks: identity/action/resource/tenant matching versus authentication;
 default-deny and combining precedence/short circuits; snapshot evaluator copying
@@ -45,7 +45,6 @@ Initially missing: root canonical package comment, many exported identifiers,
 fields/interface methods and option contracts; semantic matching/ownership and
 resource/callback/lifecycle/privacy boundaries; important cache/snapshot/reload
 invariants and test/fuzz/benchmark intent. Existing useful comments stay.
-Deprecated facades retain their versioned successor links and actual identities.
 No TODO/FIXME/HACK/generated/build marker was found.
 
 Investigated: exact identity/action/resource/tenant matching is separate from
@@ -79,9 +78,9 @@ Observation schemas omit dedicated request fields, not arbitrary secret-bearing
 IDs/reasons/raw causes. Count caps do not bound text; direct slog callbacks are
 repeatable and OTel completion is once-only, not durable delivery. SDK panic before
 End and authorizer panic before finish can leave observations incomplete. OTel
-v1.47.0, cache/v2, JSON-RPC v1.1.1, migrations/v2, pgx v5.11.0 and Valkey v1.0.78
-remain exact existing dependencies, not newly qualified integrations. Seven facade
-Deprecated contracts/reflection identities and lint directives remain intact.
+v1.47.0, cache/v4, JSON-RPC v1.1.1, migrations/v4, pgx v5.11.0 and Valkey v1.0.78
+remain exact existing dependencies, not newly qualified integrations. Lint
+directives remain intact.
 
 Rationale supported by tests includes [coherent replacement](../engine_test.go),
 [missing/null expression semantics](../abac/abac_test.go),
@@ -105,7 +104,7 @@ scoped behavioral decision; this pass documents those observable limitations.
 
 Use git ls-files '*.go' '*go.mod' '*go.sum', modules.json/packages.json, package
 and declaration/marker scans, .golib.yaml and scripts/check-api.sh/Make/CI.
-Root is github.com/faustbrian/go-authorization/v3; nested test module is
+Root is github.com/faustbrian/go-authorization/v4; nested test module is
  github.com/faustbrian/go-authorization/integration/contracts. Both minimums
 are Go 1.27.0; repository verification pins 1.27.2. All paths are below.
 
@@ -126,42 +125,37 @@ are Go 1.27.0; repository verification pins 1.27.2. All paths are below.
 | `acl/document_test.go` | `acl` | Existing test/helper evidence: TestDocumentDecodeEncodeAndEvaluate, TestDocumentRejectsInvalidInput |
 | `acl/example_test.go` | `acl_test` | Existing test/helper evidence: Example |
 | `acl/fuzz_test.go` | `acl` | Existing test/helper evidence: FuzzDecodeDocument |
-| `adapter_successor_test.go` | `authorization_test` | Existing test/helper evidence: TestAdapterSuccessorsPreserveSentinelIdentity, TestLegacyAdaptersRetainNamedReflectionIdentity, TestLegacyInstrumentersRetainReflectionVisibleLayouts, TestSuccessorAdaptersExposeTargetOrientedNamedIdentities, TestManifestCacheBoundsCanceledDistinctKeyFlights, TestManifestCacheProtectsRepositoryDiagnostics, TestManifestCacheCloseBoundsNonCooperativeRepository, TestManifestCacheShutdownPropagatesCancellationAndJoins |
+| `adapter_successor_test.go` | `authorization_test` | Existing test/helper evidence: TestInstrumentedRetainsReflectionVisibleLayout, TestSuccessorAdaptersExposeTargetOrientedNamedIdentities, TestManifestCacheBoundsCanceledDistinctKeyFlights, TestManifestCacheProtectsRepositoryDiagnostics, TestManifestCacheCloseBoundsNonCooperativeRepository, TestManifestCacheShutdownPropagatesCancellationAndJoins |
 | `adapters/cache/cache.go` | `authorizationcache` | Source contract and important private invariant |
 | `adapters/cache/cache_test.go` | `authorizationcache` | Existing test/helper evidence: TestManifestCodecRoundTripsStrictPolicyFormat, TestNewManifestCacheUsesIsolatedRevisionKeys, TestRevisionKeyEncoderAndRepositoryLoader |
+| `adapters/http/behavior_test.go` | `authorizationhttp` | Existing test/helper evidence: TestHandlerAllowsAndExposesDecision, TestHandlerDeniesWithoutCallingNext, TestHandlerFailsClosedOnMapperEvaluatorAndOutcomeErrors, TestHandlerSupportsCustomDenialAndErrorHandlers, TestNewHandlerValidatesDependencies |
 | `adapters/http/http.go` | `authorizationhttp` | Source contract and important private invariant |
-| `adapters/http/http_test.go` | `authorizationhttp` | Existing test/helper evidence: TestHandlerAllowsAndExposesDecision, TestHandlerDenialsFailuresOptionsAndValidation |
+| `adapters/http/http_test.go` | `authorizationhttp` | Existing test/helper evidence: TestHandlerDenialsFailuresOptionsAndValidation |
+| `adapters/jsonrpc/behavior_test.go` | `authorizationjsonrpc` | Existing test/helper evidence: TestMiddlewareAllowsAndExposesDecision, TestMiddlewareMapsDenialsAndFailures, TestMiddlewareOptionsAndValidation |
 | `adapters/jsonrpc/jsonrpc.go` | `authorizationjsonrpc` | Source contract and important private invariant |
-| `adapters/jsonrpc/jsonrpc_test.go` | `authorizationjsonrpc` | Existing test/helper evidence: TestMiddlewareAllowsAndExposesDecision, TestMiddlewareFailuresOptionsAndValidation |
+| `adapters/jsonrpc/jsonrpc_test.go` | `authorizationjsonrpc` | Existing test/helper evidence: TestMiddlewareFailuresOptionsAndValidation |
+| `adapters/otel/behavior_test.go` | `authorizationotel` | Existing test/helper evidence: TestInstrumenterRecordsBoundedMetricsAndSpan, TestNewReturnsInstrumentConstructionErrors |
 | `adapters/otel/otel.go` | `authorizationotel` | Source contract and important private invariant |
 | `adapters/otel/otel_test.go` | `authorizationotel` | Existing test/helper evidence: TestNewRejectsLiteralAndTypedNilProviders, TestBeginAndStartUseExplicitProviders, TestNewPreservesInstrumentConstructionErrors |
+| `adapters/slog/behavior_test.go` | `authorizationslog` | Existing test/helper evidence: TestInstrumenterWritesBoundedAuditEvent |
 | `adapters/slog/slog.go` | `authorizationslog` | Source contract and important private invariant |
 | `adapters/slog/slog_test.go` | `authorizationslog` | Existing test/helper evidence: TestInstrumenterBeginWritesRepeatableBoundedEvents, TestNewRejectsNilLogger |
 | `attribute.go` | `authorization` | Source contract and important private invariant |
 | `attribute_test.go` | `authorization` | Existing test/helper evidence: TestTypedAttributeValues, TestValueEqualityAndOrdering, TestValueCollectionLength |
-| `authcache/authcache.go` | `authcache` | Source contract and important private invariant |
-| `authcache/authcache_test.go` | `authcache` | Existing test/helper evidence: TestManifestCodecRoundTripsStrictPolicyFormat, TestNewManifestCacheUsesIsolatedRevisionKeys, TestRevisionKeyEncoderAndRepositoryLoader |
-| `authhttp/authhttp.go` | `authhttp` | Source contract and important private invariant |
-| `authhttp/authhttp_test.go` | `authhttp` | Existing test/helper evidence: TestHandlerCompatibilitySurface |
-| `authlog/authlog.go` | `authlog` | Source contract and important private invariant |
-| `authlog/authlog_test.go` | `authlog` | Existing test/helper evidence: TestInstrumenterWritesBoundedAuditEvent, TestNewRejectsNilLogger |
 | `authn/authn.go` | `authn` | Source contract and important private invariant |
 | `authn/authn_test.go` | `authn` | Existing test/helper evidence: TestSubjectMapsExplicitClaimsAndGroups, TestSubjectAcceptsGroupsAtExactLimit, TestSubjectFailsClosed, TestClaimValueSupportsEveryBoundedScalar |
 | `authorizationtest/authorizationtest.go` | `authorizationtest` | Source contract and important private invariant |
 | `authorizationtest/authorizationtest_internal_test.go` | `authorizationtest` | Existing test/helper evidence: TestFailureReportingBranches |
 | `authorizationtest/authorizationtest_test.go` | `authorizationtest_test` | Existing test/helper evidence: TestRequestBuilderCreatesIndependentDeterministicRequests, TestRequestBuilderOverridesTypedFields, TestStaticEvaluators, TestCanonicalDecisionJSON, TestMustHelpersAndDecisionAssertions, TestRunAuthorizerConformance |
-| `authotel/authotel.go` | `authotel` | Source contract and important private invariant |
-| `authotel/authotel_test.go` | `authotel` | Existing test/helper evidence: TestInstrumenterRecordsBoundedMetricsAndSpan, TestInstrumenterNormalizesBoundedResults, TestNewReturnsInstrumentConstructionErrors |
-| `authrpc/authrpc.go` | `authrpc` | Source contract and important private invariant |
-| `authrpc/authrpc_test.go` | `authrpc` | Existing test/helper evidence: TestMiddlewareAllowsAndExposesDecision, TestMiddlewareMapsDenialsAndFailures, TestMiddlewareOptionsAndValidation |
 | `benchmark_test.go` | `authorization` | Existing test/helper evidence: BenchmarkEngineDecideWarm, BenchmarkEngineDecideCold, BenchmarkEngineDecideBatch100, BenchmarkEngineReload |
 | `decision.go` | `authorization` | Source contract and important private invariant |
+| `decision_service.go` | `authorization` | Source contract and important private invariant |
+| `decision_service_example_test.go` | `authorization_test` | Existing test/helper evidence: ExampleNewDecisionService |
+| `decision_service_test.go` | `authorization` | Existing test/helper evidence: TestIdentityContractFailClosedService, TestIdentityContractDecisionBoundary |
 | `decision_test.go` | `authorization` | Existing test/helper evidence: TestCombineDenyOverrides, TestCombineAllowOverrides, TestCombineOrderedAlgorithms, TestCombineRejectsInvalidInput, TestCombiningAlgorithmString, TestOutcomeString, TestCombiningAlgorithmsExhaustiveTruthTables |
 | `engine.go` | `authorization` | Source contract and important private invariant |
 | `engine_test.go` | `authorization` | Existing test/helper evidence: TestEngineDefaultsToDeny, TestEngineCombinesAndExplainsApplicablePolicies, TestEngineEvaluatesPriorityOrderUntilApplicable, TestEngineStopsAfterDecisiveOutcome, TestEngineFailsClosed, TestEngineDecideBatchMatchesIndependentDecisions, TestEngineReplaceSnapshotIsMonotonicAndOptimistic, TestEngineBoundsPoliciesAndTrace, TestEngineZeroLimitsRetainDefaultsAndExactPolicyLimitIsAccepted, TestEngineHonorsCancellationBeforeEvaluation, TestEngineUsesRequestTimeForActivationWindows, TestNewEngineRejectsNilSnapshot, TestEngineRevision, TestEngineUsesInjectedClock, TestPolicyEvaluationErrorRedactsCause, TestEngineReplaceSnapshotRejectsNilAndOversizedSnapshots, TestEngineBatchReturnsDecisionsWithValidationErrors, TestEngineHonorsCancellationBetweenPolicies, TestEngineFailsClosedForCorruptedSnapshotAlgorithm, TestEngineAllowsOnlyOneConcurrentSnapshotReplacement, TestEngineConcurrentDecisionsUseOneCoherentSnapshot, TestEnginePreservesEvaluatorMatchedPolicyIDs |
 | `examples/tenant_documents/main.go` | `main` | Source contract and important private invariant |
-| `httpauth/httpauth.go` | `httpauth` | Source contract and important private invariant |
-| `httpauth/httpauth_test.go` | `httpauth` | Existing test/helper evidence: TestHandlerAllowsAndExposesDecision, TestHandlerDeniesWithoutCallingNext, TestHandlerFailsClosedOnMapperEvaluatorAndOutcomeErrors, TestHandlerSupportsCustomDenialAndErrorHandlers, TestNewHandlerValidatesDependencies |
 | `instrumentation.go` | `authorization` | Source contract and important private invariant |
 | `instrumentation_test.go` | `authorization` | Existing test/helper evidence: TestNewInstrumentedWithBeginRejectsNilDependenciesBeforeClock, TestInstrumentedWithBeginUsesBoundedCommonObservation, TestInstrumentedWithBeginIsolatesObservationPanics, TestInstrumentedAuthorizerEmitsBoundedEvent, TestInstrumentedAuthorizerPreservesUpstreamDiagnosticTruncation, TestInstrumentedAuthorizerPreservesExactInstrumentationBoundaries, TestInstrumentedAuthorizerPreservesFailuresAndIsolatesInstrumentation, TestInstrumentedAuthorizerValidatesConfigAndClampsClock |
 | `integration/contracts/authentication_v2_test.go` | `contracts_test` | Existing test/helper evidence: TestAuthenticationV2AdmissionAndMapping, TestAuthenticationV2MappingRejectsInvalidSubjects |
@@ -183,9 +177,14 @@ are Go 1.27.0; repository verification pins 1.27.2. All paths are below.
 | `policy/rolling_test.go` | `policy_test` | Existing test/helper evidence: TestRollingDeploymentConvergesOnOneRevision |
 | `policy/synchronizer.go` | `policy` | Source contract and important private invariant |
 | `policy/synchronizer_test.go` | `policy` | Existing test/helper evidence: TestSynchronizerReloadsNewerManifest, TestSynchronizerAuthorizerFailsClosedOutsideFreshnessWindow, TestSynchronizerFailsClosed, TestSynchronizerRejectsCanceledAndConcurrentReplacement, TestSynchronizerObserveVerifiesHintAgainstRepository, TestSynchronizerRunPollsSourceOfTruth, TestSynchronizerRunReturnsCancellation, TestSynchronizerRunReturnsReloadError, TestSynchronizerRunReturnsPollingError, TestNewSynchronizerValidatesDependencies |
+| `postgres/authority.go` | `postgres` | Source contract and important private invariant |
+| `postgres/authority_integration_test.go` | `postgres_test` | Existing test/helper evidence: TestIntegrationScopedAuthority |
+| `postgres/authority_migration.go` | `postgres` | Source contract and important private invariant |
+| `postgres/authority_test.go` | `postgres` | Existing test/helper evidence: TestAuthorityScopeAndCanonicalEpoch, TestAuthorityBoundaryRejectsInvalidWithoutQuery, FuzzAuthorityScope |
 | `postgres/cancellation_integration_test.go` | `postgres_test` | Existing test/helper evidence: TestIntegrationCanceledBlockedUpdateReleasesConnection |
 | `postgres/integration_test.go` | `postgres_test` | Existing test/helper evidence: TestIntegrationAtomicManifestUpdates |
 | `postgres/migration.go` | `postgres` | Source contract and important private invariant |
+| `postgres/migration_checksum_test.go` | `postgres` | Existing test/helper evidence: TestGoMigrationChecksumsMatchPublishedV3 |
 | `postgres/store.go` | `postgres` | Source contract and important private invariant |
 | `postgres/store_test.go` | `postgres` | Existing test/helper evidence: TestStoreLoadAndUpdateManifest, TestStoreErrorsAreFailClosed, TestNewValidatesPool, TestSchemaMigrationAndGoMigration |
 | `rbac/benchmark_test.go` | `rbac` | Existing test/helper evidence: BenchmarkEvaluateInheritanceDepth |

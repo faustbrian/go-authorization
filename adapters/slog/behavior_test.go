@@ -1,4 +1,4 @@
-package authlog
+package authorizationslog
 
 import (
 	"bytes"
@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	authorization "github.com/faustbrian/go-authorization/v3"
+	authorization "github.com/faustbrian/go-authorization/v4"
 )
 
 func TestInstrumenterWritesBoundedAuditEvent(t *testing.T) {
@@ -42,13 +42,5 @@ func TestInstrumenterWritesBoundedAuditEvent(t *testing.T) {
 	}
 	if _, finish := instrumenter.Start(ctx); finish == nil {
 		t.Fatal("Start() did not delegate to Begin()")
-	}
-}
-
-func TestNewRejectsNilLogger(t *testing.T) {
-	t.Parallel()
-
-	if _, err := New(nil, slog.LevelInfo); err == nil {
-		t.Error("New(nil) error = nil")
 	}
 }

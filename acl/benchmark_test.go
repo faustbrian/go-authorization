@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	authorization "github.com/faustbrian/go-authorization/v3"
+	authorization "github.com/faustbrian/go-authorization/v4"
 )
 
 // BenchmarkEvaluateByPolicySize varies the indexed entry population with one instance lookup; construction is outside the timer.

@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"io"
 
-	authorization "github.com/faustbrian/go-authorization/v3"
+	authorization "github.com/faustbrian/go-authorization/v4"
 )
 
 // DocumentVersion is version 1 of this application model JSON profile.

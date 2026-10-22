@@ -6,7 +6,7 @@ import (
 	"errors"
 	"testing"
 
-	authorization "github.com/faustbrian/go-authorization/v3"
+	authorization "github.com/faustbrian/go-authorization/v4"
 	jsonrpc "github.com/faustbrian/go-jsonrpc"
 )
 
@@ -14,31 +14,6 @@ type authorizerFunc func(context.Context, authorization.Request) (authorization.
 
 func (authorize authorizerFunc) Decide(ctx context.Context, request authorization.Request) (authorization.Decision, error) {
 	return authorize(ctx, request)
-}
-
-func TestMiddlewareAllowsAndExposesDecision(t *testing.T) {
-	t.Parallel()
-	middleware, err := NewMiddleware(
-		authorizerFunc(func(context.Context, authorization.Request) (authorization.Decision, error) {
-			return authorization.Decision{Outcome: authorization.Allow, Revision: 4}, nil
-		}),
-		func(context.Context, json.RawMessage) (authorization.Request, error) {
-			return authorization.Request{}, nil
-		},
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
-	result, err := middleware(func(ctx context.Context, _ json.RawMessage) (any, error) {
-		decision, ok := DecisionFromContext(ctx)
-		if !ok || decision.Revision != 4 {
-			t.Errorf("decision = %+v, %v", decision, ok)
-		}
-		return "ok", nil
-	})(context.Background(), nil)
-	if err != nil || result != "ok" {
-		t.Fatalf("result = %v, %v", result, err)
-	}
 }
 
 func TestMiddlewareFailuresOptionsAndValidation(t *testing.T) {
