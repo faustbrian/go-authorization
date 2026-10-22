@@ -54,6 +54,12 @@ versioning for its Go API and portable policy format.
 - Exercise the public authorization v3 manifest cache adapter with Cache/v2
   storage, including a load followed by a hit without another loader call.
 
+## 3.1.0 - 2026-10-22
+
+### Changed
+
+- Publish the current source and documentation with a fresh immutable tag.
+
 ## 3.0.0 - 2026-09-30
 
 ### Changed
