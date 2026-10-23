@@ -413,10 +413,7 @@
       ],
       "reverse_owned_dependencies": [],
       "external_runtime_dependencies": [],
-      "required_services": [
-        "postgresql",
-        "valkey"
-      ],
+      "required_services": [],
       "build_tags": [],
       "test_tags": [],
       "interoperability_tools": [],

@@ -111,7 +111,7 @@ func TestOwnedModuleInteroperability(t *testing.T) {
 	if err != nil {
 		t.Fatalf("authorizationslog.New() error = %v", err)
 	}
-	_, finishLog := logInstrumenter.Start(context.Background())
+	_, finishLog := logInstrumenter.Begin(context.Background())
 	finishLog(authorization.Event{Outcome: authorization.Allow, Revision: 1})
 	if handler.Len() != 1 {
 		t.Fatalf("captured audit events = %d, want 1", handler.Len())
