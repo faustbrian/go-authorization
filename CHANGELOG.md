@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project follows semantic
 versioning for its Go API and portable policy format.
 
-## 4.0.0 - 2026-10-22
+## 4.0.0 - 2026-10-23
 
 ### Changed
 
