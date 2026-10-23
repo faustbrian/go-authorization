@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	authentication "github.com/faustbrian/go-authentication/v2"
-	authorization "github.com/faustbrian/go-authorization/v3"
-	"github.com/faustbrian/go-authorization/v3/authn"
+	authorization "github.com/faustbrian/go-authorization/v4"
+	"github.com/faustbrian/go-authorization/v4/authn"
 )
 
 func TestAuthenticationV2AdmissionAndMapping(t *testing.T) {

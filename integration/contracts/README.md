@@ -18,7 +18,7 @@ GOWORK=off go test -mod=readonly ./...
 This resolves the Authorization version declared in this module's `go.mod`.
 It does not substitute the current root source.
 
-## Workspace run (pinned until the v4 rebind)
+## Local-source composition
 
 From the repository root, run:
 
@@ -26,9 +26,7 @@ From the repository root, run:
 go test -mod=readonly ./integration/contracts/...
 ```
 
-The harness stays pinned to published Authorization v3 and Cache v2 until
-Authorization v4 is published and the harness is rebound, so a workspace run
-exercises the published v3 module, not the local v4 source. These HTTP and
-policy tests do not establish JSON-RPC wire behavior;
+The repository workspace composes the local Authorization source with this
+harness. These HTTP and policy tests do not establish JSON-RPC wire behavior;
 the root dispatcher tests cover that boundary separately. See the
 [root documentation](../../README.md) for the supported APIs.

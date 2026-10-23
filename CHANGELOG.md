@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project follows semantic
 versioning for its Go API and portable policy format.
 
+## Unreleased
+
+### Maintenance
+
+- Rebind the non-releasable integration harness to published authorization
+  v4, cache v4 and telemetry v4, and observe through `Begin`.
+
 ## 4.0.0 - 2026-10-23
 
 ### Changed

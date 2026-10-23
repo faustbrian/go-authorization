@@ -8,17 +8,17 @@ import (
 	"time"
 
 	authentication "github.com/faustbrian/go-authentication/v2"
-	authorization "github.com/faustbrian/go-authorization/v3"
-	authorizationcache "github.com/faustbrian/go-authorization/v3/adapters/cache"
-	authorizationotel "github.com/faustbrian/go-authorization/v3/adapters/otel"
-	authorizationslog "github.com/faustbrian/go-authorization/v3/adapters/slog"
-	"github.com/faustbrian/go-authorization/v3/authn"
-	"github.com/faustbrian/go-authorization/v3/policy"
-	cache "github.com/faustbrian/go-cache/v2"
-	memory "github.com/faustbrian/go-cache/v2/adapters/memory"
+	authorization "github.com/faustbrian/go-authorization/v4"
+	authorizationcache "github.com/faustbrian/go-authorization/v4/adapters/cache"
+	authorizationotel "github.com/faustbrian/go-authorization/v4/adapters/otel"
+	authorizationslog "github.com/faustbrian/go-authorization/v4/adapters/slog"
+	"github.com/faustbrian/go-authorization/v4/authn"
+	"github.com/faustbrian/go-authorization/v4/policy"
+	cache "github.com/faustbrian/go-cache/v4"
+	memory "github.com/faustbrian/go-cache/v4/adapters/memory"
 	log "github.com/faustbrian/go-log/v2"
 	"github.com/faustbrian/go-log/v2/handler/capture"
-	"github.com/faustbrian/go-telemetry/testtelemetry"
+	"github.com/faustbrian/go-telemetry/v4/testtelemetry"
 )
 
 func TestPublishedManifestCacheLoadsThenHits(t *testing.T) {
@@ -130,7 +130,7 @@ func TestOwnedModuleInteroperability(t *testing.T) {
 	if err != nil {
 		t.Fatalf("authorizationotel.New() error = %v", err)
 	}
-	_, finishTelemetry := telemetryInstrumenter.Start(context.Background())
+	_, finishTelemetry := telemetryInstrumenter.Begin(context.Background())
 	finishTelemetry(authorization.Event{Outcome: authorization.Allow, Revision: 1})
 	if len(telemetry.Spans()) != 1 {
 		t.Fatalf("recorded authorization spans = %d, want 1", len(telemetry.Spans()))
