@@ -36,66 +36,12 @@
     },
     {
       "execution_revision": "c09c5268b1facb88317f933913b2e7cf4377948b",
-      "gate_input_digest": "08512328ecb71d86df637f79543598c4e79a33d890f12c66995233c36453c36d",
-      "gremlins_verifier_sha256": "9a9499ff68a8dfd49a0be7995590297a8ee563a1aa226bfd8b9361dc53058108",
-      "gremlins_version": "v0.6.0",
-      "module": ".",
-      "package": "authcache",
-      "report_sha256": "97200115d0aefa60aacac46bdd1f3f135bacef5d292cace056b9f0760cf571be"
-    },
-    {
-      "execution_revision": "61805082782695a3197ac1218ffeafb85cf570f5",
-      "gate_input_digest": "f89eef0aabb1ae3649b2fefb294230dd4b33a2b89a10011d3751241a2f93c3d3",
-      "gremlins_verifier_sha256": "9a9499ff68a8dfd49a0be7995590297a8ee563a1aa226bfd8b9361dc53058108",
-      "gremlins_version": "v0.6.0",
-      "module": ".",
-      "package": "authhttp",
-      "report_sha256": "72094c8b2dcf0bfb4f1d7ef1e19f4be87352e3165051f0a9f28b3169215a5896"
-    },
-    {
-      "execution_revision": "c09c5268b1facb88317f933913b2e7cf4377948b",
-      "gate_input_digest": "68137a37f910ae35098bec90e2393b41c841bd230da7525523c9153ac033d49d",
-      "gremlins_verifier_sha256": "9a9499ff68a8dfd49a0be7995590297a8ee563a1aa226bfd8b9361dc53058108",
-      "gremlins_version": "v0.6.0",
-      "module": ".",
-      "package": "authlog",
-      "report_sha256": "9fb809fee8f0904243b8d8f985176239ebeced0a8e18df011c1f3aefb72de817"
-    },
-    {
-      "execution_revision": "c09c5268b1facb88317f933913b2e7cf4377948b",
       "gate_input_digest": "bcfa5af8da58d6687f37947776314b0edc7cb840ee19732f88c8649de13c24fb",
       "gremlins_verifier_sha256": "9a9499ff68a8dfd49a0be7995590297a8ee563a1aa226bfd8b9361dc53058108",
       "gremlins_version": "v0.6.0",
       "module": ".",
       "package": "authn",
       "report_sha256": "0c5ec45eb3cc94e19906803c219334b22bd6a55a12baf76a2fab56ff1d44ecca"
-    },
-    {
-      "execution_revision": "c09c5268b1facb88317f933913b2e7cf4377948b",
-      "gate_input_digest": "c97c53ee118fffcd702eb9bae5f969c75c10c20d5e630b6a259fd465966104f4",
-      "gremlins_verifier_sha256": "9a9499ff68a8dfd49a0be7995590297a8ee563a1aa226bfd8b9361dc53058108",
-      "gremlins_version": "v0.6.0",
-      "module": ".",
-      "package": "authotel",
-      "report_sha256": "015691768cc96732a42a1d8a5919edab7a82be64e7ddd9e5f000d8f65a0ec395"
-    },
-    {
-      "execution_revision": "c09c5268b1facb88317f933913b2e7cf4377948b",
-      "gate_input_digest": "df18b3dd28cd1ff83c532ce0c83bed47062592af9dace4e0b6ee6bfba8c250d8",
-      "gremlins_verifier_sha256": "9a9499ff68a8dfd49a0be7995590297a8ee563a1aa226bfd8b9361dc53058108",
-      "gremlins_version": "v0.6.0",
-      "module": ".",
-      "package": "authrpc",
-      "report_sha256": "a963498d9fb1577de4138328a6b223f464502fe6b4771e00bd6264add540ecac"
-    },
-    {
-      "execution_revision": "c09c5268b1facb88317f933913b2e7cf4377948b",
-      "gate_input_digest": "ea1fefdcf834a246000511452363d686dc5da32d2da3d4399c906697477af61b",
-      "gremlins_verifier_sha256": "9a9499ff68a8dfd49a0be7995590297a8ee563a1aa226bfd8b9361dc53058108",
-      "gremlins_version": "v0.6.0",
-      "module": ".",
-      "package": "httpauth",
-      "report_sha256": "8306833ecb2805a82ef168057123224fbac65b947102d58c9e3513b77b05ea7b"
     },
     {
       "execution_revision": "c09c5268b1facb88317f933913b2e7cf4377948b",
@@ -161,69 +107,11 @@
     },
     {
       "execution_revision": "8cb85e2f184a5fd013396bdb6521ecead1a61cc4",
-      "gate_input_digest": "6a1b24755db144b412544805fae99cb4e9bb2deabb90130796b353381052d7a5",
-      "gremlins_version": "v0.6.0",
-      "module": ".",
-      "package": "authcache",
-      "report_sha256": "1ff219079bfdf79ec40b32add631b79337f37bcd01436f6f4940f23aa6ad9803"
-    },
-    {
-      "execution_revision": "c09c5268b1facb88317f933913b2e7cf4377948b",
-      "gate_input_digest": "8c71a162887211947bcc96964ec5a1d97ae33874dbaa941d7cd641583fafdeba",
-      "gremlins_version": "v0.6.0",
-      "migration_reason": "owned-module-version-locator-canonicalization",
-      "module": ".",
-      "package": "authcache",
-      "replacement_gate_input_digest": "08512328ecb71d86df637f79543598c4e79a33d890f12c66995233c36453c36d",
-      "report_sha256": "97200115d0aefa60aacac46bdd1f3f135bacef5d292cace056b9f0760cf571be"
-    },
-    {
-      "execution_revision": "8cb85e2f184a5fd013396bdb6521ecead1a61cc4",
-      "gate_input_digest": "6b56921839a7ba9613442be2125e0399a8a1599b0853edacaede7a92ee0ca5c2",
-      "gremlins_version": "v0.6.0",
-      "module": ".",
-      "package": "authhttp",
-      "report_sha256": "72094c8b2dcf0bfb4f1d7ef1e19f4be87352e3165051f0a9f28b3169215a5896"
-    },
-    {
-      "execution_revision": "8cb85e2f184a5fd013396bdb6521ecead1a61cc4",
-      "gate_input_digest": "62f867cadb2ae8d423f49e1c0a7ffaed13bf1a598d88995c173d505317ccfede",
-      "gremlins_version": "v0.6.0",
-      "module": ".",
-      "package": "authlog",
-      "report_sha256": "f8903a7d2dd7906f3917b3269051f6d61d5fd630a324f0be9f810739ff11a724"
-    },
-    {
-      "execution_revision": "8cb85e2f184a5fd013396bdb6521ecead1a61cc4",
       "gate_input_digest": "25bd2caf763f5d6fac619833bf7cc7789b6ee4372f4857b13d233bc14ca92486",
       "gremlins_version": "v0.6.0",
       "module": ".",
       "package": "authn",
       "report_sha256": "a8175ff1e21c75b2d516e0a82705c6bf3f415265cfb539ef29ca8af9a1c65d6f"
-    },
-    {
-      "execution_revision": "8cb85e2f184a5fd013396bdb6521ecead1a61cc4",
-      "gate_input_digest": "9cfe0f343aef7f5341a2fa10cd2c291c7944efefb691059c252d17bef4770653",
-      "gremlins_version": "v0.6.0",
-      "module": ".",
-      "package": "authotel",
-      "report_sha256": "9561743bcd2c2880e008f6f18b1637a8dc41647e3ecbce41fbd2c1ba0e8f686c"
-    },
-    {
-      "execution_revision": "8cb85e2f184a5fd013396bdb6521ecead1a61cc4",
-      "gate_input_digest": "b2233a7abcfe2a311ad86fcde9823709d6219e8f9f2cd7b6e0d613447029f971",
-      "gremlins_version": "v0.6.0",
-      "module": ".",
-      "package": "authrpc",
-      "report_sha256": "3386f0d5d2fa5348d420b0bcc820e1fbcb3944c01b62920609dca2b5e3a09c10"
-    },
-    {
-      "execution_revision": "8cb85e2f184a5fd013396bdb6521ecead1a61cc4",
-      "gate_input_digest": "730c030e96b63f21e1fa809c355928bdefc94998c5bef546fd503ad035f81888",
-      "gremlins_version": "v0.6.0",
-      "module": ".",
-      "package": "httpauth",
-      "report_sha256": "32fbed49cc5731d0b2e231e12db4c3043ab56e47ee6277ddc545ef69d99ff64c"
     },
     {
       "execution_revision": "8cb85e2f184a5fd013396bdb6521ecead1a61cc4",
