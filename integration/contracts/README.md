@@ -1,7 +1,8 @@
 # Authorization integration contracts
 
 This non-releasable module tests composition between Authorization and its
-HTTP, authentication, and sibling policy dependencies. It has no independent
+authentication, cache, logging and telemetry dependencies: principal mapping,
+manifest cache load and hit, slog audit and OpenTelemetry instrumentation. It has no independent
 release tag or application entry point.
 
 The public module minimum is Go 1.27.0. Development and CI use Go 1.27.3 so
@@ -27,6 +28,6 @@ go test -mod=readonly ./integration/contracts/...
 ```
 
 The repository workspace composes the local Authorization source with this
-harness. These HTTP and policy tests do not establish JSON-RPC wire behavior;
+harness. These composition tests do not establish HTTP or JSON-RPC behavior;
 the root dispatcher tests cover that boundary separately. See the
 [root documentation](../../README.md) for the supported APIs.
