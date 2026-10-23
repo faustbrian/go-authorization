@@ -7,17 +7,19 @@ require (
 	github.com/faustbrian/go-authorization/v3 v3.0.0
 	github.com/faustbrian/go-cache/v2 v2.0.0
 	github.com/faustbrian/go-log/v2 v2.0.0
-	github.com/faustbrian/go-telemetry v1.0.0
+	github.com/faustbrian/go-telemetry v1.2.0
 )
 
 require (
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/faustbrian/go-clock v1.1.0 // indirect
+	github.com/faustbrian/go-correlation v1.1.2 // indirect
 	github.com/faustbrian/go-jsonrpc v1.1.1 // indirect
 	github.com/go-logr/logr v1.4.4 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/jackc/pgx/v5 v5.11.0 // indirect
+	github.com/redis/go-redis/v9 v9.22.0 // indirect
 	github.com/valkey-io/valkey-go v1.0.78 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	go.opentelemetry.io/otel v1.47.0 // indirect
