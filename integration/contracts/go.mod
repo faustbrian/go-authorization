@@ -6,7 +6,7 @@ require (
 	github.com/faustbrian/go-authentication/v2 v2.0.0
 	github.com/faustbrian/go-authorization/v4 v4.0.0
 	github.com/faustbrian/go-cache/v4 v4.0.0
-	github.com/faustbrian/go-log/v2 v2.0.0
+	github.com/faustbrian/go-log/v2 v2.0.2
 	github.com/faustbrian/go-telemetry/v4 v4.0.0
 )
 
